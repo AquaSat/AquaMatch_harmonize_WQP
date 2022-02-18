@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Indiana_tss_001.feather.ind
+type: file
+hash: 6d9e51c769b5ad24e504fc11f5e74afd
+time: 2019-05-06 04:41:53 UTC
+depends:
+  partition_Indiana_tss_001: 0b637f6c832ada719a51633190bc8300
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: f0b1bab14786c5dc4e0322712af368c6
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

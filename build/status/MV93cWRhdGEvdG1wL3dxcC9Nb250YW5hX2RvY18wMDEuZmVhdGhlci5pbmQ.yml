@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Montana_doc_001.feather.ind
+type: file
+hash: 43fa4c5ed2ce948aceadfa38724c2afa
+time: 2019-05-04 21:54:57 UTC
+depends:
+  partition_Montana_doc_001: ebbce9a50e9de417a7dfbeb26a21d8a6
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 83096286e97ca6d396c38c861425a662
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

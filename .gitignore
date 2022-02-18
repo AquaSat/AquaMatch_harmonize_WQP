@@ -1,0 +1,32 @@
+# Ignore
+.DS_Store
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.httr-oauth
+*.Rproj
+.remake/
+*.feather
+*.RData
+*.Rdata
+*.csv
+*.shp
+*.Feather
+*.dbf
+*.prj
+*.shp
+*.shx
+*.xml
+*.zip
+tasks_*.yml
+.RDataTmp
+*.pdf
+lib/cfg/gd_config.yml
+lib/cfg/gee_config.yml
+.html
+**/AquaSat_WRR_Submission/
+
+# Allow
+!*/out/placeholder.txt
+!docs/*.html

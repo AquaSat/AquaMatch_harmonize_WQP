@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Illinois_tss_001.feather.ind
+type: file
+hash: e414fec2ae527fb3f9d4ccb7d2ac417f
+time: 2019-05-04 04:17:15 UTC
+depends:
+  partition_Illinois_tss_001: 8a8cb26e75822abab76501d3998fad10
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 7e8f29e469ce620d4715487c5d297a5c
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

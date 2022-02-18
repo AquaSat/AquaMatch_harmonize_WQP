@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_wqdata/out/wqp/West_Virginia_doc_001.feather.ind
+type: file
+hash: 7099f2afbe6184f4c0919d6ed2ffd22c
+time: 2019-05-05 23:46:04 UTC
+depends:
+  1_wqdata/tmp/wqp/West_Virginia_doc_001.feather.ind: 7099f2afbe6184f4c0919d6ed2ffd22c
+fixed: ef192190b7aa0bf3c4b04e6c4f3a58a2
+code:
+  functions: {}
+

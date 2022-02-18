@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Minnesota_chlorophyll_002.feather.ind
+type: file
+hash: b41389ff8aa2e45b1c2ae6205b676d8c
+time: 2018-02-16 09:13:14 UTC
+depends:
+  partition_Minnesota_chlorophyll_002: b26b7eca4a6c2f8beb3e3a570f906675
+  wq_dates: eb7e5d0ef034fdbac6d9e70fdf2e99db
+fixed: b6643b92e759b88dff4977f9788e61db
+code:
+  functions:
+    get_wqp_data: 9830b4cd9f07ab20fae1269583c1031e
+

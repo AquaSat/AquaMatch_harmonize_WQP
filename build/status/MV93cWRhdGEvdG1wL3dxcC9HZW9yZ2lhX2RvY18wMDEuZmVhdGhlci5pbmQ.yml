@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Georgia_doc_001.feather.ind
+type: file
+hash: 59666c16edbf89c2f0e272540fa0f8a5
+time: 2019-05-04 01:19:58 UTC
+depends:
+  partition_Georgia_doc_001: 4919ca6fea5dd2147b49b74321abb259
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 15d4c17f2080adaea8f9e84c786d811f
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

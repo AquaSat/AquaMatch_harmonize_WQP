@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_wqdata/out/wqp/all_nitrate.feather.ind
+type: file
+hash: 0a21cdace0ab4b9c125cce4712344f16
+time: 2018-05-02 21:17:54 UTC
+depends:
+  1_wqdata/tmp/wqp/all_raw_nitrate.feather: 26de9d553e3753385dc96f11176cc7c6
+fixed: 6322f39094275efa49564a12b02816a4
+code:
+  functions: {}
+

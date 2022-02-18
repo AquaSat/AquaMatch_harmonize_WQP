@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Michigan_cdom_001.feather.ind
+type: file
+hash: 56cba7fb4b8de3d2d84304eba815567f
+time: 2019-05-04 14:08:13 UTC
+depends:
+  partition_Michigan_cdom_001: 5534c07407456e19e873a2af69f36feb
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 36cb61f169598bcdd08e5d0639edc594
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/New_Hampshire_tss_001.feather.ind
+type: file
+hash: 5461d0b112865eac75a52065bd85a9e4
+time: 2019-05-05 01:47:59 UTC
+depends:
+  partition_New_Hampshire_tss_001: 4e1ded3f45f9618ff14e627d577e368f
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 318c491fe4f82b2bf9fbfb7fd91d15e9
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

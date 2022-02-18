@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Nebraska_secchi_001.feather.ind
+type: file
+hash: 135419d6051e431328612365ca14798b
+time: 2019-05-06 07:54:57 UTC
+depends:
+  partition_Nebraska_secchi_001: 60c3a56a01b40a13742b3bf12b957241
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 8d0590ac5e811b86aad2bc42798fd443
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

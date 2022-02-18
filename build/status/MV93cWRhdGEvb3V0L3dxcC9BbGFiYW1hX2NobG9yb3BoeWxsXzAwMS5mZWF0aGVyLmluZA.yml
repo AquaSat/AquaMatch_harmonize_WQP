@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_wqdata/out/wqp/Alabama_chlorophyll_001.feather.ind
+type: file
+hash: a5d394c8790c8ba6f9f470d4babc715a
+time: 2019-05-03 14:43:56 UTC
+depends:
+  1_wqdata/tmp/wqp/Alabama_chlorophyll_001.feather.ind: a5d394c8790c8ba6f9f470d4babc715a
+fixed: b6a0ae48541f4b3c86e27bf6df90e993
+code:
+  functions: {}
+

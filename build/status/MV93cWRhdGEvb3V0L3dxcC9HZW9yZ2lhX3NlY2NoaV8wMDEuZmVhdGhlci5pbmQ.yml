@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_wqdata/out/wqp/Georgia_secchi_001.feather.ind
+type: file
+hash: b4f73496b92a0d87d10e477a40e09dfc
+time: 2019-05-04 01:36:40 UTC
+depends:
+  1_wqdata/tmp/wqp/Georgia_secchi_001.feather.ind: b4f73496b92a0d87d10e477a40e09dfc
+fixed: 19fcac132dc63c958985b8c0b7224b09
+code:
+  functions: {}
+

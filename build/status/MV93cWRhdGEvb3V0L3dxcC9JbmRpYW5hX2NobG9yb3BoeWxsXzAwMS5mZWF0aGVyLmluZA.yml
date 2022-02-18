@@ -1,0 +1,11 @@
+version: 0.3.0
+name: 1_wqdata/out/wqp/Indiana_chlorophyll_001.feather.ind
+type: file
+hash: 07940aafcd905d6acd7fd6c83546ddeb
+time: 2019-05-06 04:25:24 UTC
+depends:
+  1_wqdata/tmp/wqp/Indiana_chlorophyll_001.feather.ind: 07940aafcd905d6acd7fd6c83546ddeb
+fixed: 36c70a220364337e3222519b522d4671
+code:
+  functions: {}
+

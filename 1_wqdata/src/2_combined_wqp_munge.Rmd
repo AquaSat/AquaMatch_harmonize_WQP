@@ -1,0 +1,81 @@
+---
+title: "2_combined_wqp_munge"
+author: "Matthew Ross"
+date: "6/6/2018"
+output:
+  html_document:
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=F, warnings='hide'}
+library(feather)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(pander)
+library(LAGOSNE)
+library(lubridate)
+library(parallel)
+library(foreach)
+
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir='../..')
+```
+
+# Munging on full dataset
+
+Now we have a fully harmonized dataset in terms of units, methods, etc... But we have yet more cleaning to do first starting with cleaning up the dataset for repeat observations and multiple observations on the same day
+
+## Date time cleaning
+
+The vast majority of water quality portal data (> 80% ) that we have gathered is a unique collection for a given site, datetime, and parameter. However there are plenty of times where there are multiple observations at the same site with the same parameter value and same time. These double, triple, larger multiples of the same observation could arise several different ways. First samples could have been taken at several points in a water body at around the same time and the time recorded reflects a general time not an exact one. This data can safely be averaged over and will still accurately reflect the general water clarity conditions. The other way for this kind of double data to occur is for there to be errors in the data recording, the data integration, or data management. With the data we have it is impossible to distinguish between these very different cases. So to keep as much data as possible, we are only keeping data that is either unique or has less than 5 simultaneous observations with the same datetime and 20 with the same date. For sites with multiple observations at the same time, we are only keeping data with a coefficient of variation of less than 10%. Unlike with the data harmonization code, the guts of this code is in a fairly nested format that makes it difficult to display exactly which sites/dates are dropped, but we do store all dropped samples for posterity.  
+
+
+```{r functions}
+
+source('1_wqdata/src/merge_unity_functions.R')
+
+```
+
+
+
+```{r file setup}
+#Setup paths for reading in data
+harmonized.files <- list.files('1_wqdata/tmp/harmonized',full.names =T)
+
+
+
+#make a vector of names
+file.names <- c('chl.a','doc','sand','secchi','tis','tss')
+
+#Combine into a tibble
+file.df.all <- tibble(path=harmonized.files,names=file.names)
+```
+
+
+
+### Dropping and taking median of all samples
+
+
+```{r}
+
+#Loop over the various parameters and unify the date_time and date results. 
+# The meat of these functions is in 1_wqdata/src/merge_unity_functions
+for(i in 1:nrow(file.df.all)) {
+  df <- read_feather(file.df.all$path[i])
+  out <- date.time.splitter(df) %>%
+    select(-depth_conversion,characteristicName=parameter)
+  
+  write_feather(out,path=paste0('1_wqdata/out/unity/',
+                              file.df.all$names[i],'_unity.feather'))
+
+rm(out,df)
+gc()
+}
+
+```
+
+
+

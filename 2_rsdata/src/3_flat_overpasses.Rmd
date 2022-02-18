@@ -1,0 +1,142 @@
+---
+title: "3_Flat_Overpasses"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Widen data for final pre-processing before sending data to join with reflectance data.
+
+The way data is downloaded from the Water Quality Portal, each site*characteristic combination is downloaded independently so if sediment and chlorophyll were measured on the same day at the same site, they will be recorded as separate records. Here we merge that data together in a single wide data frame so that reflectance values for these simultaneous samples will be the exact same and only pulled down once. 
+
+```{r setup}
+library(knitr)
+library(feather)
+library(googledrive)
+library(tidyverse)
+library(sf)
+library(lubridate)
+library(scipiper)
+library(data.table)
+
+opts_knit$set(root.dir='../..')
+
+
+```
+
+
+## Read in full datasets from WQP and LAGOS
+
+```{r}
+#Read in wrs inventory with path row
+
+#This is the landsat visible path row data
+wrs.inv <- read_feather('2_rsdata/out/site_inventory_path_row.feather') %>%
+  arrange(SiteID)
+
+
+#This is the inventory of wrs data with source attached
+unq.inv <- read_feather('2_rsdata/out/unique_site_inventory.feather') %>%
+  arrange(SiteID) %>%
+  filter(!is.na(source)) %>%
+  select(-lat,-long)
+
+
+#Grab back source column (lagos or wqp)
+wrs.source.inv <- unq.inv %>%
+  #Remove the lagos tag in the id (this kept lagos and wqp separate for the gee pull) 
+  inner_join(wrs.inv,by=c('SiteID')) %>%
+  mutate(SiteID=gsub('lagos-','',SiteID)) %>%
+  distinct(SiteID,source,PATH,ROW,lat,long)
+
+
+#Read in the full water quality portal lagos data
+wqp.lagos <- read_feather('1_wqdata/out/wqp_lagos_unity.feather')
+
+site.candidates <- wqp.lagos %>%
+  inner_join(wrs.source.inv,by=c('SiteID','source')) %>%
+  #add a date column
+  mutate(date=as.Date(date_unity)) 
+
+rm(unq.inv,wqp.lagos,wrs.source.inv)
+
+```
+
+
+
+#Read in cloudiness data
+```{r}
+
+#Load in cloudy dataset which is called dat. 
+cloud.raw <- read_feather('2_rsdata/out/clouds.feather')
+
+#Subset to only WRS path rows in the inventory data. 
+clouds <- cloud.raw %>%
+  filter(WRS_PATH %in% wrs.inv$PATH &
+           WRS_ROW %in% wrs.inv$ROW) %>%
+  mutate(sat = str_split_fixed(LANDSAT_ID,'_',5)[,1]) %>%
+  mutate(date=ymd(str_split_fixed(LANDSAT_ID,'_',6)[,4])) %>%
+  select(PATH=WRS_PATH,ROW=WRS_ROW,date,clouds=CLOUD_COVER,sat,time='SENSING_TIME',landsat_id=LANDSAT_ID) 
+
+#Convert sat into a numeric
+clouds$sat <- as.numeric(str_split_fixed(clouds$sat,'0',2)[,2])
+
+rm(cloud.raw)
+```
+
+
+## Join WQ data to WRS data by date and path row. 
+
+Here we join the WQP data to the cloud dataset. We do this for same day observations, but we also shoulder the *in situ* data by one day. Previous work has shown that within about a day, mostly in lakes, reflectance information can still be predictive of water quality. Users can later decide to not use these shoulder dates. 
+
+This is a major decisison if you are working in estuaries and in the dataset you should consider joining data closer to the exact hour when landsat passed overhead. `date_unity` will preserve this time information
+
+On dates where in situ measurements were made both the day of an overpass and the days after or before, we simply keep the days with same day observations and throw away the shoulder days. 
+
+```{r}
+#Same date join
+#Crazy speed gains by using data.table instead of dplyr. This is a known issue when you have 
+# Lots and lots of groups, for some reason dplyr is much slower in these cases.  
+
+wqp.pull.same <- inner_join(site.candidates,clouds,by=c('PATH','ROW','date')) %>%
+  mutate(timediff=date_unity-time) %>% 
+  data.table::data.table(.) %>%
+  .[,.SD[timediff==min(timediff)],keyby=list(SiteID,date)]
+
+
+
+
+
+#Shoulder the data by 1 day and make sure that sites where sequential samples occur only 
+#keep the same day sampling
+wqp.pull.plus1 <- site.candidates %>%
+  mutate(date = date + 1) %>%
+  anti_join(wqp.pull.same, by=c('SiteID','date')) %>%
+  inner_join(clouds,by=c('PATH','ROW','date')) %>%
+  mutate(timediff=date_unity-time) %>%
+  data.table::data.table(.) %>%
+  .[,.SD[timediff==min(timediff)],keyby=list(SiteID,date)]
+
+
+#Shoulder the data by -1 day
+wqp.pull.minus1 <- site.candidates %>%
+  mutate(date=date-1) %>%
+  anti_join(wqp.pull.same, by=c('SiteID','date')) %>%
+  inner_join(clouds,by=c('PATH','ROW','date')) %>%
+  mutate(timediff=date_unity-time) %>%
+  data.table::data.table(.) %>%
+  .[,.SD[timediff==min(timediff)],keyby=list(SiteID,date)]
+
+
+
+#Bind all this data together
+wqp.pull <- bind_rows(wqp.pull.same,wqp.pull.plus1,wqp.pull.minus1)
+
+# write and push the file to Drive
+data_file <- '2_rsdata/out/wide_pull.feather'
+write_feather(wqp.pull,path=data_file)
+gd_put(scipiper::as_ind_file(data_file), data_file)
+```
+
+
+

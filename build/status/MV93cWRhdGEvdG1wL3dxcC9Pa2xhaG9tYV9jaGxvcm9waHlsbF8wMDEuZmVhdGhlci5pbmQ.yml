@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Oklahoma_chlorophyll_001.feather.ind
+type: file
+hash: b5139b9df8ce8d192b4239aec51a4e7b
+time: 2019-05-05 11:09:56 UTC
+depends:
+  partition_Oklahoma_chlorophyll_001: 5b3a8e6014a38cfd79cef765b4ef0ff1
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 1c1b593ed3955a1b1bed11c3ceefd739
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Oregon_chlorophyll_001.feather.ind
+type: file
+hash: 9659f4705e7384b289caa1643e7bbcbe
+time: 2019-05-05 13:02:22 UTC
+depends:
+  partition_Oregon_chlorophyll_001: 8b26d2845e5ecdaa0ebf93db3ee94147
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: 116e2e6b7509b445277e49eab98d1fb0
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

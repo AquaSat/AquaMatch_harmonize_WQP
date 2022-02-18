@@ -1,0 +1,13 @@
+version: 0.3.0
+name: 1_wqdata/tmp/wqp/Michigan_tss_001.feather.ind
+type: file
+hash: 8154d3be4088b30045a3676e3266b925
+time: 2019-05-04 15:50:45 UTC
+depends:
+  partition_Michigan_tss_001: 44810ba4e2526d70aa341e42d8c8b400
+  wq_dates: 15780afca857867605ab32d0b8a9c0f3
+fixed: ff161c65d4f0b7176668ce0a8543581f
+code:
+  functions:
+    get_wqp_data: 446f3aa5fcf3d10d2b2512c284f000c6
+

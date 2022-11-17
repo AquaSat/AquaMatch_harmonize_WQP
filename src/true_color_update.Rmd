@@ -1,0 +1,569 @@
+---
+title: "True_Color"
+author: "Daniel Dominguez"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+#page-layout: full
+fig-width: 15
+execute:
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+
+```{r, echo=FALSE}
+
+tar_load(raw_true_color)
+tar_load(p_codes)
+```
+
+### ~ ~ ~ An example WQP exploratory workflow ~ ~ ~ 
+
+
+## First step is to read in the data and make it workable, we'll then filter the data to 1984 and beyond
+```{r}
+raw_true_color <- raw_true_color %>% 
+    dplyr::select(date=ActivityStartDate,
+                parameter=CharacteristicName,
+                parm_cd=USGSPCode,
+                units=ResultMeasure.MeasureUnitCode,
+                SiteID=MonitoringLocationIdentifier,
+                org=OrganizationFormalName,
+                org_id=OrganizationIdentifier,
+                time=ActivityStartTime.Time,
+                value=ResultMeasureValue,
+                sample_method=SampleCollectionMethod.MethodName,
+                analytical_method=ResultAnalyticalMethod.MethodName,
+                particle_size=ResultParticleSizeBasisText,
+                date_time=ActivityStartDateTime,
+                media=ActivityMediaName,
+                type=ActivityMediaSubdivisionName,
+                sample_depth=ActivityDepthHeightMeasure.MeasureValue,
+                sample_depth_unit=ActivityDepthHeightMeasure.MeasureUnitCode,
+                fraction=ResultSampleFractionText,
+                status=ResultStatusIdentifier,
+                field_comments=ActivityCommentText,
+                lab_comments=ResultLaboratoryCommentText,
+                result_comments=ResultCommentText) %>%
+  left_join(p_codes, by='parm_cd') %>%
+  mutate(year=year(date),
+         units = trimws(units)) %>%
+  filter(year >= 1984) %>%
+  rowid_to_column(.,"index")
+```
+
+
+## Word Matrices
+
+Developing word matrices to be used in identifying erroneous/failed data across relevant data columns. This is Michael Meyer's code. Essentially, we can use these matrices as justification for choosing our downstream `grepl` functions to pull out the erroneous/failed data. 
+
+```{r, eval=FALSE}
+
+# Script for word frequency enumeration
+
+gc()
+memory.limit(size=28000000) # big data!
+
+vals <- str_replace_all(raw_true_color$field_comments, c("0|1|2|3|4|5|6|7|8|9" = ""))
+
+# First create text_in with only the abstracts
+text_in <- vals
+
+# Remove NAs
+text_in <- text_in[which(is.na(text_in)==FALSE)]
+
+# For these procedures, object needs to be of class Corpus
+text0 <- Corpus(x = VectorSource(x = text_in))
+
+# Various text processing steps. 
+text <-  TermDocumentMatrix(text0, 
+                           control = 
+                             list(removePunctuation = TRUE,
+                                  stopwords = TRUE,
+                                  tolower = TRUE,
+                                  stemming = FALSE,
+                                  removeNumbers = TRUE,
+                                  bounds = list(global = c(1, Inf)))) 
+
+
+# Find the frequency of certain terms that appear at least 
+# 20 times, and then sort them in decreasing order. 
+# The final outputted matrix will be saved as a CSV. 
+ft <- findFreqTerms(text, lowfreq = 20, highfreq = Inf)
+ft_matrix <- as.matrix(text[ft,]) 
+sorted_matrix <- sort(apply(ft_matrix, 1, sum), decreasing = TRUE)
+
+write.csv(sorted_matrix, "C:/Users/ddomi/Documents/Code/Ross/Data/Outputs/raw_true_color_field_comments_matrix.csv")
+
+# LAB COMMENTS
+
+# First create text_in with only the abstracts
+text_in <- raw_true_color$lab_comments
+
+# Remove NAs
+text_in <- text_in[which(is.na(text_in)==FALSE)]
+
+# For these procedures, object needs to be of class Corpus
+text0 <- Corpus(x = VectorSource(x = text_in))
+
+# Various text processing steps. 
+text <-  TermDocumentMatrix(text0, 
+                           control = 
+                             list(removePunctuation = TRUE,
+                                  stopwords = TRUE,
+                                  tolower = TRUE,
+                                  stemming = FALSE,
+                                  removeNumbers = TRUE,
+                                  bounds = list(global = c(1, Inf)))) 
+
+
+# Find the frequency of certain terms that appear at least 
+# 20 times, and then sort them in decreasing order. 
+# The final outputted matrix will be saved as a CSV. 
+ft <- findFreqTerms(text, lowfreq = 20, highfreq = Inf)
+ft_matrix <- as.matrix(text[ft,]) 
+sorted_matrix <- sort(apply(ft_matrix, 1, sum), decreasing = TRUE)
+
+write.csv(sorted_matrix, "C:/Users/ddomi/Documents/Code/Ross/Data/Outputs/raw_true_color_lab_comments_matrix.csv")
+
+# RESULT COMMENTS
+
+# First create text_in with only the abstracts
+text_in <- raw_true_color$result_comments
+
+# Remove NAs
+text_in <- text_in[which(is.na(text_in)==FALSE)]
+
+# For these procedures, object needs to be of class Corpus
+text0 <- Corpus(x = VectorSource(x = text_in))
+
+# Various text processing steps. 
+text <-  TermDocumentMatrix(text0, 
+                           control = 
+                             list(removePunctuation = TRUE,
+                                  stopwords = TRUE,
+                                  tolower = TRUE,
+                                  stemming = FALSE,
+                                  removeNumbers = TRUE,
+                                  bounds = list(global = c(1, Inf)))) 
+
+
+# Find the frequency of certain terms that appear at least 
+# 20 times, and then sort them in decreasing order. 
+# The final outputted matrix will be saved as a CSV. 
+ft <- findFreqTerms(text, lowfreq = 20, highfreq = Inf)
+ft_matrix <- as.matrix(text[ft,]) 
+sorted_matrix <- sort(apply(ft_matrix, 1, sum), decreasing = TRUE)
+
+write.csv(sorted_matrix, "C:/Users/ddomi/Documents/Code/Ross/Data/Outputs/raw_true_color_result_comments_matrix.csv")
+
+# VALUE COMMENTS
+
+
+vals <- str_replace_all(raw_true_color$value, c("0|1|2|3|4|5|6|7|8|9" = ""))
+
+# First create text_in with only the abstracts
+text_in <- vals
+
+# Remove NAs
+text_in <- text_in[which(is.na(text_in)==FALSE)]
+
+# For these procedures, object needs to be of class Corpus
+text0 <- Corpus(x = VectorSource(x = text_in))
+
+# Various text processing steps. 
+text <-  TermDocumentMatrix(text0, 
+                           control = 
+                             list(removePunctuation = TRUE,
+                                  stopwords = TRUE,
+                                  tolower = TRUE,
+                                  stemming = FALSE,
+                                  removeNumbers = TRUE,
+                                  bounds = list(global = c(1, Inf)))) 
+
+
+# Find the frequency of certain terms that appear at least 
+# 20 times, and then sort them in decreasing order. 
+# The final outputted matrix will be saved as a CSV. 
+ft <- findFreqTerms(text, lowfreq = 20, highfreq = Inf)
+ft_matrix <- as.matrix(text[ft,]) 
+sorted_matrix <- sort(apply(ft_matrix, 1, sum), decreasing = TRUE)
+
+write.csv(sorted_matrix, "C:/Users/ddomi/Documents/Code/Ross/Data/Outputs/raw_true_color_values_matrix.csv")
+```
+
+## Initial Data Cleaning Steps
+
+First off, let's focus our data set to "water" samples (as done in original AquaSat). Then we can remove any samples from our data set that failed, or don't have enough lab metadata to make assumptions about the values presented. (In the future, these `grepl` functions can be based on the word matrices we just produced upstream!)
+
+```{r}
+true_color_no_data_samples <- raw_true_color %>%
+  filter(is.na(value)&is.na(units)&is.na(lab_comments)&is.na(result_comments)) #identify samples that have no meaningful data related to an NA value
+
+true_color_fails_removed <- raw_true_color %>%
+  filter(media=="Water") %>%
+  filter(status %in% c('Accepted','Final','Historical','Validated')) %>%
+  filter(!grepl("fail|suspect|error|beyond accept|interference|questionable|outside of accept|problem|contaminat|improper|violation|invalid|unable|no test|cancelled|instrument down|no result|time exceed|not accept|QC EXCEEDED",field_comments,ignore.case=T)|is.na(field_comments)) %>% #no failure-related field comments, slightly different list of words than lab and result list (not including things that could be used to describe field conditions like "warm", "ice", etc.)
+  filter(!grepl("fail|suspect|error|beyond accept|interference|questionable|outside of accept|problem|contaminat|improper|warm|violation|invalid|unable|no test|cancelled|instrument down|no result|time exceed|not accept|QC EXCEEDED|not ice|ice melt|PAST HOLDING TIME|beyond|exceeded|failed|exceededs",lab_comments,ignore.case=T)|is.na(lab_comments)) %>% #no failure-related lab, should we remove controls comments
+  filter(!grepl("fail|suspect|error|beyond accept|interference|questionable|outside of accept|problem|contaminat|improper|warm|violation|invalid|unable|no test|cancelled|instrument down|no result|time exceed|not accept|QC EXCEEDED|not ice|ice melt|PAST HOLDING TIME|null|unavailable|exceeded|rejected",result_comments,ignore.case=T)|is.na(result_comments)) %>% #no failure-related result comments
+  filter(!grepl("fail|suspect|error|beyond accept|interference|questionable|outside of accept|problem|contaminat|improper|warm|violation|invalid|unable|no test|cancelled|instrument down|no result|time exceed|not accept|QC EXCEEDED|not ice|ice melt|PAST HOLDING TIME",value,ignore.case=T)|is.na(value)) %>% #no failure-related values
+  filter(!index %in% true_color_no_data_samples$index) #remove samples that have no values and no lab/result metadata
+```
+
+### The result of dropping the data based on various words in the lab, field, result comments. 
+```{r}
+print(paste('We kept', round(nrow(true_color_fails_removed)/nrow(raw_true_color)*100,2),'% of samples, because the method used did not make sense. These methods are:'))
+```
+
+```{r, echo=F, message=F}
+rm(pcodes,true_color_no_data_samples) 
+```
+
+
+# Next we begin filtering the results to exclude qualitative results this is because there are various color specifications (such as green, yellow, brown, etc.) that altough give an estimation of apparent color do not provide a relevant scale which is comparable to the other apparent/ true color scales. 
+```{r}
+
+true_color_fails_removed$value <- gsub("[a-zA-Z]","",true_color_fails_removed$value)# this removes the qualitative results from the dataset
+
+testsamples<-true_color_fails_removed %>% 
+  count(value) # Create a dataframe from values to identify special characters and see if they're worth keeping
+  
+true_color_vals_filtered <- true_color_fails_removed %>%
+  filter(!grepl("*<|#|>| |-|,|/",value,ignore.case=F)|is.na(value)) #no failure-related values|
+
+testsamples<-true_color_vals_filtered %>% 
+  count(value) # rerun to make sure special characters were removed, still having a problem removing asterisk without removing valied values
+
+# write_feather(true_color_vals_filtered,"../data/true_color_vals_filtered.feather")
+# 
+# gc()
+```
+
+### The result of dropping all values that are qualitative and not quantitative is
+
+```{r}
+print(paste('We kept', round(nrow(true_color_vals_filtered)/nrow(true_color_fails_removed)*100,2),'% of samples, because the values were qualitative and not quantitative.'))
+```
+### Since we kept the majority of the data, exclusion of qualitative data should not be impactful for the rest of the dataset.
+
+## There are three parameter classifications when there should be two Apparent/True Color, the third "Color" classification needs to be further explore so for now we'll split the data into three dataframes. 
+```{r}
+# true_color_vals_filtered<- read_feather("C:/Users/ddomi/Documents/Code/Ross/Data/true_color_vals_filtered.feather")
+
+gc()
+
+Truecolor_Apparent<- true_color_vals_filtered %>% 
+  filter(parameter== "Apparent color") 
+
+Truecolor_Color<- true_color_vals_filtered %>% 
+  filter(parameter== "Color") 
+
+Truecolor_True<- true_color_vals_filtered %>% 
+  filter(parameter== "True color")
+
+Parameter_count<-true_color_vals_filtered %>% 
+  count(parameter) %>% 
+  mutate(paramer_percentage=n/sum(n)*100)
+```
+
+### The good news is that the true color measurments are the significant portion of the data, with apparent color also being the other significant variable that we know how to deal with, while color is only a small fraction of the data
+```{r}
+ggplot(true_color_vals_filtered)+
+  geom_bar(aes(parameter, fill=parameter))+
+  theme_classic()+
+  labs(x="Parameter Variable",
+       y="Parameter Count")
+```
+
+```{r}
+kable(Parameter_count, "html") %>% 
+  kable_styling("striped", full_width = F)
+```
+
+## Next we will analyze the analytical and sample methods to see how the samples are being analyzed and proccessed
+```{r}
+Apparent_methods<- Truecolor_Apparent %>% 
+  count(analytical_method)
+
+Color_methods<- Truecolor_Color %>% 
+  count(analytical_method)
+
+Truecolor_methods<- Truecolor_True %>% 
+  count(analytical_method)
+
+
+```
+
+### First we will see how the unique analytical methods are being analyzed. Unfortunately it seems like a little over a third of the data is being lost do to no analytical method being present.
+```{r}
+Truecolor_uniquemethods<- true_color_vals_filtered %>% 
+  count(analytical_method)%>% 
+  mutate(samp_perc= n/sum(n)*100)
+
+Truecolor_samplemethods<- true_color_vals_filtered %>% 
+  count(sample_method) %>% 
+  mutate(samp_perc= n/sum(n)*100)
+
+```
+
+
+```{r}
+kable(Truecolor_uniquemethods, "html") %>% 
+  kable_styling("striped", full_width = F)
+
+kable(Truecolor_samplemethods, "html") %>% 
+  kable_styling("striped", full_width = F)
+
+```
+
+
+### Now we create a classification groups based on analytical methods to sort samples into (Visual, Spectrophotogrametry, photogrametry)
+
+```{r}
+
+gc()
+visual_methods<-tibble(group=c("visual"),
+                       analytical_method=c("2120 B ~ Color in Water by Visual Comparison",
+                                 "Color - Visual Comparison Method",
+                                 "Color in Water by Visual Comparison",
+                                 "STANDARD METHODS 2120B COLOR BY VISUAL",
+                                 "2320 B ~ Alkalinity by Gran Titration"))
+  
+Specphoto_methods<-tibble(group=c("Spectrophotometry"),
+                       analytical_method=c("2120 C ~ Color in Water by Spectrophotometry",
+                                 "Color - Spectrophotometric Single Wavelength Method",
+                                 "Color by Spectrophotometric Analysis",
+                                 "Color in Water by Spectrophotometry Modified",
+                                 "Color in Water by Spectrophotometry"))
+
+photo_methods<-tibble(group=c("Photometry"),
+                       analytical_method=c("2120 E ~ Color in Water Using the ADMI Method",
+                                 "Color by Calculating ADMI Values",
+                                 "Color, wf, visual comparison",
+                                 "Color by Calculating ADMI Values"))
+
+Ambigous_methods<-tibble(group=c("Ambigous"),
+                       analytical_method=c("10-308-00-1 A ~ Determination of Color in Water",
+                                 "Analytical procedure not specified",
+                                 "Color",
+                                 "COLOR",
+                                 "Color - Pt/Co units",
+                                 "COLOR (PLATINUM-COBALT UNITS)",
+                                 "COLOR 345 C",
+                                 "COLOR 345 F .45",
+                                 "COLOR 440 F .22",
+                                 "Color Analysis Using Platinum/Cobalt",
+                                 "COLOR IN WATERS",
+                                 "Color, APHA Platinum-Cobalt",
+                                 "Color, True",
+                                 "DEP-SOP-NU-094",
+                                 "EPA110.2",
+                                 "Estero Bay Aquatic Preserve tributary sampling",
+                                 "Field measurement/observation, generic method",
+                                 "Field Office procedures",
+                                 "FIIR - NPHL",
+                                 "Laboratory Procedures for Water Quality Chemical Analysis",
+                                 "LAKE COUNTY QUALITY SYSTEMS MANUAL",
+                                 "Lake Trafford",
+                                 "LEGACY",
+                                 "Legacy STORET migration; analytical procedure not specified",
+                                 "Measurement of Water Color",
+                                 "N/A Calculation",
+                                 "Other of Unknown Procedure",
+                                 "Other or Unknown Procedure",
+                                 "SM182120B",
+                                 "SM2120C",
+                                 "Standard Methods for the Examination of Water and Wastewater",
+                                 "To be updated",
+                                 "USEPA Methods for Chemical Analysis or Water and Wastewater; EPA 600/4-79-020",
+                                 NA,
+                                 "Color (EPA)",
+                                 "Field - Color",
+                                 "ANALYSIS OF COLOR IN WATERS - MODIFIED LACHAT METHOD 10-308-00-1-A",
+                                 "Apparent color (EPA110.2 /DODEC)",
+                                 "Apparent color (StdMeth /DODEC)",
+                                 "Apparent Color, Hach Color Wheel Method",
+                                 "Color in the Field by Unknown Limnology Color Chart",
+                                 "Color, APHA Platinum-Cobalt",
+                                 "COLOR,APPARENT(UNFILTERED SAMPLE) PLAT-COB UNITS",
+                                 "DEP Field Analytical Procedures",
+                                 "General Listing of Field and Lab Analytical Procedures for Manatee County",
+                                 "HACH KIT",
+                                 "I1250",
+                                 "LAKE COUNTY QUALITY SYSTEMS MANUAL",
+                                 "LaMotte Smart 2 Colorimeter",
+                                 "LEGACY",
+                                 "Legacy STORET migration; analytical procedure not specified",
+                                 "Other of Unknown Procedure",
+                                 "QA Plan #900456" ))
+
+methods_stacked<- rbind(visual_methods, Specphoto_methods, photo_methods, Ambigous_methods)
+
+```
+
+#### Now join the new method classifications and we will drop the datat with no analytical methods since we can not be sure how the data is being analyzed to sort into the classifcations for inslusion in the final aquasat dataset.
+
+```{r}
+
+true_color_method_groups<- left_join(true_color_vals_filtered, methods_stacked, by="analytical_method")
+
+true_color_goup_NA<- true_color_method_groups %>% 
+  filter(is.na(group))### Check to make sure onbservations all have group vals
+
+true_color_ambigous_methods_dropped<-true_color_method_groups %>% 
+  filter(!group=="Ambigous")### Drop the ambigous methods since we want to keep high quality data, will have to check to make sure that we do want to drop these vals
+
+print(paste('We kept', round(nrow(true_color_ambigous_methods_dropped)/nrow(true_color_vals_filtered)*100,2),'% of samples, because the method  could not be classified into an apparent/true color standard:'))
+
+```
+
+```{r}
+rm(true_color_vals_filtered,Truecolor_Apparent, Truecolor_Color,Truecolor_True )
+```
+
+
+### Now we rerun and filter out nonsensical methods like filtered methods for apparent color that can't exist becasue apparent color is nonfiltered while checking to make sure we dropped everything else
+```{r}
+Apparent_methods_check<- true_color_ambigous_methods_dropped %>% 
+  filter(parameter== "Apparent color") %>% 
+  count(analytical_method) %>% 
+  mutate(percent= n/sum(n)*100)
+
+Color_methods_check<- true_color_ambigous_methods_dropped %>% 
+    filter(parameter== "Color") %>% 
+  count(analytical_method)%>% 
+  mutate(percent= n/sum(n)*100)
+
+Truecolor_methods__check<- true_color_ambigous_methods_dropped %>% 
+    filter(parameter== "True color") %>% 
+  count(analytical_method)%>% 
+  mutate(percent= n/sum(n)*100)
+```
+
+```{r}
+ggplot(Apparent_methods_check)+
+  geom_col(aes(x=analytical_method, y=percent))+
+  theme_classic()+
+  labs(x="Analytical method",
+       y="Percent of data",
+       title = "Apparent Color")+
+  theme(axis.text.x = element_text(angle=45, hjust=1, size = 6))
+
+```
+
+```{r}
+ggplot(Color_methods_check)+
+  geom_col(aes(x=analytical_method, y=percent))+
+  theme_classic()+
+  labs(x="Analytical method",
+       y="Percent of data",
+       title = "Color")+
+  theme(axis.text.x = element_text(angle=45, hjust=1, size = 6))
+
+```
+
+```{r}
+ggplot(Truecolor_methods__check)+
+  geom_col(aes(x=analytical_method, y=percent))+
+  theme_classic()+
+  labs(x="Analytical method",
+       y="Percent of data",
+       title = "True Color")+
+  theme(axis.text.x = element_text(angle=45, hjust=1, size = 6))
+
+```
+
+## The next step is to drop methods that can not occur with specific parameter classification i.e apparent color can only be measured using visual methods because all other standard require the sample to be filtered before measuring and therefore making it apparent color. Luckily the Color parameter classification comes with the USGS P-code so we can be sure that these are actually True color measurements (00080,	Physical	Color, water, filtered, platinum cobalt units	Agree, Dissolved, Color, PCU)
+
+## Should we change these Apparent Color to True Color or not since we cant be 100% sure what they logged here????
+```{r}
+Apparent_nonsensical_methods_dropped <- true_color_ambigous_methods_dropped %>% 
+  filter(parameter=="Apparent color") %>% 
+  filter(!grepl("2120 C ~ Color in Water by Spectrophotometry|2120 E ~ Color in Water Using the ADMI Method|2320 B ~ Alkalinity by Gran Titration|Color - Spectrophotometric Single Wavelength Method|Color by Calculating ADMI Values|Color by Spectrophotometric Analysis|Color in Water by Spectrophotometry|Color in Water by Spectrophotometry Modified", analytical_method, ignore.case = T))
+
+Apparent_nonsensical_methods<- true_color_ambigous_methods_dropped %>% 
+  filter(parameter=="Apparent color") 
+
+Color_nonsensical_methods_dropped<- true_color_ambigous_methods_dropped %>% 
+    filter(parameter== "Color")
+
+Truecolor_nonsensical_methods_dropped<- true_color_ambigous_methods_dropped %>% 
+    filter(parameter== "True color") 
+
+Water_Color_final_filter<- rbind(Apparent_nonsensical_methods_dropped,
+                          Color_nonsensical_methods_dropped,
+                          Truecolor_nonsensical_methods_dropped)
+
+```
+
+```{r}
+print(paste('We kept', round(nrow(Apparent_nonsensical_methods_dropped)/nrow(Apparent_nonsensical_methods)*100,2),'% of samples, because the method  could  be classified into an apparent color standard that makes sense:'))
+```
+
+
+## Lastly we filter by non-sensical units only keeping those that make sense which are Platinum Cobalt Units and ADMI for the 2120E standard
+```{r}
+water_color_units<-Water_Color_final_filter %>% 
+  count(units)  ### looks like most of the units at this point are in PCU, so now we can drop the rest of the units that dont make sense, we have to make another set of tibbles because using grepl it will drop PCU units when we filte CU
+
+water_color_units_filetered<- Water_Color_final_filter %>% 
+    filter(!grepl("AU|CU|mg/l|None|pt|units/cm|uS/cm", units, ignore.case = T)) 
+
+Senseless_unit_vals<- tibble(unit_type=c("drop"),
+                             units= c("AU","CU","mg/l","None","pt","units/cm","uS/cm"))
+
+sense_unit_vals<- tibble(unit_type= c("keep"),
+                         units=c("ADMI",
+                         "PCU"))
+
+
+units<- rbind(Senseless_unit_vals,sense_unit_vals)
+
+Water_color_unit_drop<- left_join(Water_Color_final_filter, units, by= "units") %>% 
+  filter(!unit_type== "drop")
+
+Water_color_unit_check<- Water_color_unit_drop %>% 
+  count(units)
+
+
+```
+
+### Looks like we kept the vast majority of data at this stage of the filtering
+```{r}
+print(paste('We kept', round(nrow(Water_color_unit_drop)/nrow(Water_Color_final_filter)*100,2),'% of samples, because the units made sense for Apparent/True Color measurements:'))
+```
+
+
+## Last step check for numerical values
+```{r}
+vals_cleaned <- Water_color_unit_drop %>%
+  mutate(value=as.numeric(value)) %>%
+  filter(!is.na(value))
+
+Vals_cleaned_classification<- vals_cleaned %>% 
+  group_by(parameter,group) %>% 
+  count()%>% 
+  mutate(percent= n/sum(n)*100)
+```
+
+```{r}
+print(paste('We kept', round(nrow(vals_cleaned)/nrow(raw_true_color)*100,2),'% of samples after all the cleaning steps'))
+```
+
+```{r}
+ggplot(Vals_cleaned_classification)+
+  geom_col(aes(x=group, y=n, fill=parameter))+
+  theme_classic()+
+  labs(x="Group Classification",
+       y="Observation Count")
+```
+
+
+
+
+
+

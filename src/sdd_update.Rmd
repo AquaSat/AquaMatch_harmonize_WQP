@@ -16,8 +16,8 @@ execute:
 ---
 
 ```{r, echo=FALSE}
-tar_load(raw_sdd)
-tar_load(p_codes)
+raw_sdd <- input_var$raw_sdd
+p_codes <- input_var$p_codes
 ```
 
 ## First step is to read in the data and make it workable, we'll then filter the data to 1984 and beyond
@@ -286,3 +286,7 @@ rm(p_codes,trucolor_no_data_samples, raw_sdd)
 ## Lastly we filter by non-sensical units only keeping those that make sense which are Platinum Cobalt Units and ADMI for the 2120E standard
 
 Around this point I (MRB) start to be confused by whether this script is finished or a combination of multiple parameters, not just Secchi
+
+```{r echo=FALSE}
+return_value <- trucolor_fails_removed
+```

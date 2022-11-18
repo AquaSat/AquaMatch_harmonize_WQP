@@ -40,3 +40,4 @@ vignettes/*.pdf
 
 # Data
 data/
+_targets/

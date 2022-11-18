@@ -7,6 +7,7 @@ raw_silica|stem|64f69e78c1591132|36c1552f0d675ce1|aa8e406f0668b103|705269164||t1
 raw_silica_file|stem|1e119e19ae7cd0a7|00afd09edd0e40fe|ef46db3751d8e999|94661548|data/raw_silica_202211.feather|t19307.2930555556s|93e833aa5515145e|1100114808|file|local|vector|||0.077||
 raw_true_color|stem|ec219179930170db|4cd176f263a634f4|6a4db822f2cef1fa|-2091853244||t19312.9190305828s|0c41d20fa2ab281e|232050650|feather|local|vector|||4.773||
 raw_true_color_file|stem|8d77915c9f9f2457|2cd74536312b47b5|ef46db3751d8e999|-1411393326|data/raw_color_202211.feather|t19307.2902777778s|7d28fff37544ba2a|803388024|file|local|vector|||0||
-sdd_update|stem|3123f0b81f69e9b7|adfd8cd7a82c9009|5b21ccd26717fa79|-538717776|src/sdd_update.html*src/sdd_update.Rmd|t19312.9231585537s|6691c0435daa7daf|646925|file|local|vector|||18.236||
-silica_update|stem|3d7aadadd0bd48c0|a5d863933adafe23|6af3dc033306df52|-1840372969|src/silica_update.html*src/silica_update.Rmd|t19312.9229384187s|206ddabba774883c|1356647|file|local|vector|||41.909||
-true_color_update|stem|235e4d4b04d8cde2|e112bdaadf64cda4|a74e9240d6d3d664|-1080485468|src/true_color_update.html*src/true_color_update.Rmd|t19312.9759293318s|b6e2d1361ad0c359|1259228|file|local|vector|||19.748||
+render_and_return|function|3c8867e8eb21fc3f|||||||||||||||
+sdd_update|stem|372b25427891cfe2|947271d4fba8fd07|0351be0960605a2c|-538717776||t19314.7969451604s|92375cdf84e4aeb2|235553810|feather|local|vector|||18.828||
+silica_update|stem|4933a17cf1fbd895|6e6c304b65161d77|bea7bf9074f2c16f|-1840372969||t19314.7967031994s|fb62369458346580|117972098|feather|local|vector|||41.071||
+true_color_update|stem|0b4f4c0d7b8f8f1b|5d57e0cc51d03037|a2913c71a8381636|-1080485468||t19314.8000272993s|1befc1ea9e19eb8d|36258994|feather|local|vector|||20.227||

@@ -20,5 +20,17 @@ get_p_codes <- function(){
   return(p_codes)
 }
 
+# A function that allows you to knit an Rmd and also return a value from that
+# Rmd back to the pipeline. Based on:
+# https://stackoverflow.com/questions/58315771/can-rmarkdown-return-a-value-to-a-target
+# Targets does not allow this otherwise:
+# https://github.com/ropensci/tarchetypes/discussions/125
+render_and_return <- function(input_var, input_file, output_file) {
+  # Knit the Rmd:
+  rmarkdown::render(input = input_file, output_file = output_file,
+                    quiet = TRUE)
 
+  # Variable to be returned. Assigned in the report:
+  return_value
+}
 

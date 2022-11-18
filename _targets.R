@@ -88,33 +88,33 @@ list(
   #                "tm", "stringr")
   # ),
   
-  # Quarto isn't working, so use Rmds for now:
+  # Quarto isn't working, so use Rmds for now. Each of these renders an Rmd and
+  # returns a cleaned dataset back to the pipeline
+  tar_target(sdd_update,
+             render_and_return(input_var = list(raw_sdd = raw_sdd,
+                                                p_codes = p_codes),
+                               input_file = "~/Documents/aquasat_v2/src/sdd_update.Rmd", 
+                               output_file = "~/Documents/aquasat_v2/docs/sdd_update.html"),
+             packages = c("kableExtra", "tidyverse", "lubridate",
+                          "tm", "stringr", "dplyr", "pdftools"),
+             format = "feather"),
   
-  tar_render(
-    name = sdd_update,
-    path = "src/sdd_update.Rmd",
-    # Pass along the target into the knitting environment
-    # execute_params = list(p_codes = p_codes, raw_sdd = raw_sdd),
-    packages = c("kableExtra", "tidyverse", "lubridate",
-                 "tm", "stringr", "dplyr", "pdftools")),
+  tar_target(silica_update,
+             render_and_return(input_var = list(raw_silica = raw_silica,
+                                                p_codes = p_codes),
+                               input_file = "~/Documents/aquasat_v2/src/silica_update.Rmd", 
+                               output_file = "~/Documents/aquasat_v2/docs/silica_update.html"),
+             packages = c("kableExtra", "tidyverse", "lubridate",
+                          "forcats", "rvest", "scales", "ggthemes"),
+             format = "feather"),
   
-  # This one runs forever and returns this message:
-  # Deno has panicked. This is a bug in Deno.
-  tar_render(
-    name = silica_update,
-    path = "src/silica_update.Rmd",
-    # execute_params = list(p_codes = p_codes, raw_silica = raw_silica),
-    packages = c("kableExtra", "tidyverse", "lubridate",
-                 "forcats", "rvest", "scales", "ggthemes")),
-  
-  # This one runs forever and returns this message:
-  # Deno has panicked. This is a bug in Deno.
-  tar_render(
-    name = true_color_update,
-    path = "src/true_color_update.Rmd",
-    # execute_params = list(p_codes = p_codes, raw_true_color = raw_true_color),
-    packages = c("kableExtra", "tidyverse", "lubridate",
-                 "tm", "stringr")
-  )
+  tar_target(true_color_update,
+             render_and_return(input_var = list(raw_true_color = raw_true_color,
+                                                p_codes = p_codes),
+                               input_file = "~/Documents/aquasat_v2/src/true_color_update.Rmd", 
+                               output_file = "~/Documents/aquasat_v2/docs/true_color_update.html"),
+             packages = c("kableExtra", "tidyverse", "lubridate",
+                          "tm", "stringr"),
+             format = "feather")
   
 )

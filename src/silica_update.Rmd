@@ -15,8 +15,8 @@ execute:
 ---
 
 ```{r, echo=FALSE}
-tar_load(p_codes)
-tar_load(raw_silica)
+raw_silica <- input_var$raw_silica
+p_codes <- input_var$p_codes
 ```
 
 ## Aggregating
@@ -390,6 +390,10 @@ approx_added <- mdls_added %>%
   mutate(aquasat_value=ifelse(index %in% approx$index, approx_value, aquasat_value)) %>%
   
   mutate(aquasat_comments=ifelse(index %in% approx$index, "Approximate", aquasat_comments))
+```
+
+```{r echo=FALSE}
+return_value <- approx_added
 ```
 
 END

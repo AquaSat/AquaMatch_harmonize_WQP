@@ -16,9 +16,8 @@ execute:
 
 
 ```{r, echo=FALSE}
-
-tar_load(raw_true_color)
-tar_load(p_codes)
+raw_true_color <- input_var$raw_true_color
+p_codes <- input_var$p_codes
 ```
 
 ### ~ ~ ~ An example WQP exploratory workflow ~ ~ ~ 
@@ -562,7 +561,10 @@ ggplot(Vals_cleaned_classification)+
        y="Observation Count")
 ```
 
-
+```{r echo=FALSE}
+# Not certain that this is the final product?
+return_value <- vals_cleaned
+```
 
 
 

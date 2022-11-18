@@ -50,6 +50,15 @@ list(
     format = "feather"
   ),
   
+  # TSS: MRB downloaded from the AquaSat figshare
+  tar_file_read(
+    name = raw_tss,
+    command = "data/raw_tss.feather",
+    read = read_feather(path = !!.x),
+    packages = c("feather"),
+    format = "feather"
+  ),
+  
   
   # Parameter cleaning ------------------------------------------------------
   
@@ -115,6 +124,37 @@ list(
                                output_file = "~/Documents/aquasat_v2/docs/true_color_update.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "tm", "stringr"),
-             format = "feather")
+             format = "feather"),
+  
+  tar_target(tss_update,
+             render_and_return(input_var = list(raw_tss = raw_tss,
+                                                p_codes = p_codes),
+                               input_file = "~/Documents/aquasat_v2/src/tss_update.Rmd",
+                               output_file = "~/Documents/aquasat_v2/docs/tss_update.html"),
+             packages = c("kableExtra", "tidyverse", "pander"),
+             format = "feather",
+             # Isn't being tracked correctly, I think because the rendering is
+             # nested within a function. So, for now always run...
+             cue = tar_cue("always"))
   
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -29,7 +29,7 @@ render_and_return <- function(input_var, input_file, output_file) {
   # Knit the Rmd:
   rmarkdown::render(input = input_file, output_file = output_file,
                     quiet = TRUE)
-
+  
   # Variable to be returned. Assigned in the report:
   return_value
 }
@@ -59,5 +59,21 @@ analytical_kable <- function(data){
     kable(., "html", caption = "All analytical methods and their count") %>%
     kable_styling() %>%
     scroll_box(width = "600px", height = "400px")
+  
+}
+
+# Function for making a nice table that gets a summary of nonsensical units
+# and the number of observations with that analytical method.
+# (Adapted from AquaSat)
+unit_disharmony <- function(data, lookup){
+  
+  data %>%
+    anti_join(x = ., y = lookup, by = "units") %>%
+    group_by(units) %>%
+    summarize(count = n())  %>%
+    kable(.,"html", caption = "The following measurements
+          were dropped because the units do not make sense") %>%
+    kable_styling() %>%
+    scroll_box(width = "500px", height = "400px")
   
 }

@@ -106,6 +106,11 @@ ggplot(tss_depth, aes(x = harmonized_depth)) +
   scale_x_log10(limits = c(0.01, 10^3), breaks = c(.1, 1, 10, 100)) 
 ```
 
+## TSS Unit Harmonization
+
+### TSS disharmony
+
+#### TSS particle size fractionation
 
 ```{r, fig.width=5}
 # Select only units for %
@@ -131,6 +136,54 @@ sand.harmonized  <- tss_perc %>%
          harmonized_unit = "%")
 ```
 
+#### TSS dropping bad units
+
+```{r}
+# Make a tss lookup table
+tss_lookup <- tibble(units = c("mg/l", "g/l", "ug/l", "ppm"),
+                     conversion = c(1, 1000, 1 / 1000, 1))
+
+
+unit_disharmony(raw_tss, tss_lookup)
+
+
+
+```
+
+### TSS harmony in mg/l
+
+```{r tss harmony}
+# Join to the lookup table and harmonize units
+
+tss_tis_harmonized <- raw_tss %>%
+  inner_join(tss_lookup, by = "units") %>%
+  mutate(harmonized_parameter = "tss",
+         harmonized_value = value * conversion,
+         harmonized_unit = "mg/l") %>%
+  # Change harmonized parameter to tis for parameter "fixed suspended solids"
+  mutate(harmonized_parameter = ifelse(parameter == "Fixed suspended solids", "tis", harmonized_parameter))
+
+rm(tss, tss_depth, tss_filtered, tss_lookup, tss_p, nonsensical_tss_methods, depth_lookup)
+gc()
+```
+
+## TSS SSC empirical check
+```{r}
+names(tss_tis_harmonized)
+
+ssc_tss <- tss_tis_harmonized %>%
+  filter(parameter %in% c("Total suspended solids",
+                          "Suspended Sediment Concentration (SSC)")) %>%
+  select(date, date_time, SiteID, parameter, harmonized_value) %>%
+  distinct(date_time, SiteID, .keep_all = T) %>%
+  spread(key = parameter, value = harmonized_value) %>% 
+  rename(tss = `Total suspended solids`,
+         ssc = `Suspended Sediment Concentration (SSC)`) 
+
+ssc_tss %>%
+  filter(!is.na(ssc)) %>%
+  summary(.)
+```
 
 
 

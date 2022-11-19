@@ -106,7 +106,10 @@ list(
                                output_file = "~/Documents/aquasat_v2/docs/sdd_update.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "tm", "stringr", "dplyr", "pdftools"),
-             format = "feather"),
+             format = "feather",
+             # Isn't being tracked correctly, I think because the rendering is
+             # nested within a function. So, for now always run...
+             cue = tar_cue("always")),
   
   tar_target(silica_update,
              render_and_return(input_var = list(raw_silica = raw_silica,
@@ -115,7 +118,10 @@ list(
                                output_file = "~/Documents/aquasat_v2/docs/silica_update.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "forcats", "rvest", "scales", "ggthemes"),
-             format = "feather"),
+             format = "feather",
+             # Isn't being tracked correctly, I think because the rendering is
+             # nested within a function. So, for now always run...
+             cue = tar_cue("always")),
   
   tar_target(true_color_update,
              render_and_return(input_var = list(raw_true_color = raw_true_color,
@@ -124,7 +130,10 @@ list(
                                output_file = "~/Documents/aquasat_v2/docs/true_color_update.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "tm", "stringr"),
-             format = "feather"),
+             format = "feather",
+             # Isn't being tracked correctly, I think because the rendering is
+             # nested within a function. So, for now always run...
+             cue = tar_cue("always")),
   
   tar_target(tss_update,
              render_and_return(input_var = list(raw_tss = raw_tss,

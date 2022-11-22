@@ -37,6 +37,7 @@ dummyBands = ee.Image(-99).rename('Null_CS')\
 def addDummy(i):
     return i.addBands(dummyBands)
 
+#TODO this should all be Collection 2! Need to Updated DSWE first though.
 l8 = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR')
 l7 = ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')\
     .map(addDummy)
@@ -45,6 +46,7 @@ l5 = ee.ImageCollection('LANDSAT/LT05/C01/T1_SR')\
 
 #Standardize band names between the various collections and aggregate 
 #them into one image collection
+#TODO Add panchromatic band
 bn8 = ['B1','B2','B3', 'B4', 'B5','B6','B7', 'B10','B11','pixel_qa']
 bn57 = ['Null_CS', 'B1', 'B2', 'B3', 'B4', 'B5', 'B7', 'B6','Null_TIR2', 'pixel_qa']
 bns = ['Aerosol','Blue', 'Green', 'Red', 'Nir', 'Swir1', 'Swir2', 'TIR1','TIR2','pixel_qa']
@@ -59,9 +61,11 @@ ls = ee.ImageCollection(ls5.merge(ls7).merge(ls8))\
 
 deepest_point_assets = ee.data.listAssets({'parent': 'projects/earthengine-legacy/assets/users/sntopp/NHD/DeepestPoint'})['assets']
 ## For testing on just a couple spots
-deepest_point_assets = deepest_point_assets[0:2]
+#deepest_point_assets = deepest_point_assets[0:2]
 
 for i in deepest_point_assets:
+    ## Could potentially swap this and do it by state first. Might make front end filtering
+    ## Easier
     state_id = i['id'].split('/')[-1].split('_')[-1]
     state = states.filter(ee.Filter.eq('STUSPS',state_id)).first()
 

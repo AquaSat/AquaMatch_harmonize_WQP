@@ -30,7 +30,6 @@ states = ee.FeatureCollection("TIGER/2018/States")
 wrs = ee.FeatureCollection('users/sntopp/wrs2_asc_desc')\
     .filterMetadata('MODE', 'equals', 'D')
     
-#%%
 dummyBands = ee.Image(-99).rename('Null_CS')\
     .addBands(ee.Image(-99).rename('Null_TIR2'))
 
@@ -75,7 +74,7 @@ for i in deepest_point_assets:
         .filterMetadata('distance', "greater_than", 60)
 
     ##For testing on tiny portion of lakes
-    deepest_points_state=deepest_points_state.randomColumn().filterMetadata('random','less_than',.05)
+    ##deepest_points_state=deepest_points_state.randomColumn().filterMetadata('random','less_than',.05)
 
     ### Pull tiles
     wrs_state = wrs.filterBounds(state.geometry())

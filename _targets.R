@@ -19,9 +19,164 @@ tar_source("src/functions.R")
 # The list of targets/steps
 list(
   
+  # WQP config --------------------------------------------------------------
+  
+  # Things that used to be YAMLs, and which probably should be again in the future
+  # For right now I'm putting them as targets so I can conceptualize the workflow
+  # components more easily
+  
+  tar_target(wq_dates,
+             list(
+               startDate = "1984-01-01",
+               endDate = "2019-05-01"
+             )),
+  
+  tar_target(wqp_codes,
+             list(
+               
+               # List subitem 1
+               # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
+               characteristicName = list(
+                 
+                 tss = c(
+                   "Total suspended solids",
+                   "Suspended sediment concentration (SSC)",
+                   "Suspended Sediment Concentration (SSC)",
+                   "Total Suspended Particulate Matter",
+                   "Fixed suspended solids"
+                 ),
+                 
+                 chlorophyll = c(
+                   "Chlorophyll",
+                   "Chlorophyll A",
+                   "Chlorophyll a",
+                   "Chlorophyll a (probe relative fluorescence)",
+                   "Chlorophyll a (probe)",
+                   "Chlorophyll a - Periphyton (attached)",
+                   "Chlorophyll a - Phytoplankton (suspended)",
+                   "Chlorophyll a, corrected for pheophytin",
+                   "Chlorophyll a, free of pheophytin",
+                   "Chlorophyll a, uncorrected for pheophytin",
+                   "Chlorophyll b",
+                   "Chlorophyll c",
+                   "Chlorophyll/Pheophytin ratio"
+                 ),
+                 
+                 secchi = c(
+                   "Depth, Secchi disk depth",
+                   "Depth, Secchi disk depth (choice list)",
+                   "Secchi Reading Condition (choice list)",
+                   "Secchi depth",
+                   "Water transparency, Secchi disc"
+                 ),
+                 
+                 cdom = c(
+                   "Colored dissolved organic matter (CDOM)"
+                 ),
+                 
+                 doc = c(
+                   "Organic carbon",
+                   "Total carbon",
+                   "Hydrophilic fraction of organic carbon",
+                   "Non-purgeable Organic Carbon (NPOC)"
+                 )
+                 
+               ),
+               
+               # List subitem 2
+               # https://www.waterqualitydata.us/Codes/sampleMedia?mimeType=xml
+               sampleMedia = c(
+                 "Water",
+                 "water"
+               ),
+               
+               # List subitem 3
+               # https://www.waterqualitydata.us/Codes/siteType?mimeType=xml
+               siteType = c(
+                 "Lake, Reservoir, Impoundment",
+                 "Stream",
+                 "Estuary",
+                 "Facility"
+               )
+             )),
+  
+  tar_target(target_pull_size,
+             1000000000),
+  
+  tar_target(wqp_states,
+             c(
+               "Alabama",
+               "Alaska",
+               "Arizona",
+               "Arkansas",
+               "California",
+               "Colorado",
+               "Connecticut",
+               "Delaware",
+               "District of Columbia",
+               "Florida",
+               "Georgia",
+               "Hawaii",
+               "Idaho",
+               "Illinois",
+               "Indiana",
+               "Iowa",
+               "Kansas",
+               "Kentucky",
+               "Louisiana",
+               "Maine",
+               "Maryland",
+               "Massachusetts",
+               "Michigan",
+               "Minnesota",
+               "Mississippi",
+               "Missouri",
+               "Montana",
+               "Nebraska",
+               "Nevada",
+               "New Hampshire",
+               "New Jersey",
+               "New Mexico",
+               "New York",
+               "North Carolina",
+               "North Dakota",
+               "Ohio",
+               "Oklahoma",
+               "Oregon",
+               "Pennsylvania",
+               "Rhode Island",
+               "South Carolina",
+               "South Dakota",
+               "Tennessee",
+               "Texas",
+               "Utah",
+               "Vermont",
+               "Virginia",
+               "Washington",
+               "West Virginia",
+               "Wisconsin",
+               "Wyoming"
+             )),
+  
+  
+  
+  # WQP inventory -----------------------------------------------------------
+  
+  # Get state FIPS codes for use with WQP
+  tar_target(state_codes,
+             get_wqp_state_codes(),
+             packages = c("tidyverse", "dataRetrieval")),
+  
+  tar_target(wqp_inventory,
+             inventory_wqp(#ind_file, 
+               wqp_state_codes = state_codes, 
+               wqp_states = wqp_states,
+               wqp_codes = wqp_codes),
+             packages = c("tidyverse", "dataRetrieval")),
+  
   # Input file tracking -----------------------------------------------------
   
-  # Parameter datasets
+  # Parameter datasets (pre-downloaded)
   
   # Color
   tar_file_read(

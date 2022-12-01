@@ -14,153 +14,181 @@ tar_option_set(
 )
 
 # Run the R scripts with custom functions:
-tar_source("src/functions.R")
+tar_source(files = c(
+  "1_inventory.R",
+  "src/functions.R"))
 
 # The list of targets/steps
-list(
+mrb_targets <- list(
   
   # WQP config --------------------------------------------------------------
   
-  # Things that used to be YAMLs, and which probably should be again in the future
-  # For right now I'm putting them as targets so I can conceptualize the workflow
-  # components more easily
+  # Things that often used to be YAMLs, and which probably should be again in 
+  # the future. For right now I'm putting them as targets so I can conceptualize
+  # the workflow components more easily
   
+  # Date range of interest
   tar_target(wq_dates,
              list(
-               startDate = "1984-01-01",
-               endDate = "2019-05-01"
+               start_date = "1984-01-01",
+               end_date = "2019-05-01"
              )),
   
-  tar_target(wqp_codes,
-             list(
-               
-               # List subitem 1
-               # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
-               characteristicName = list(
-                 
-                 tss = c(
-                   "Total suspended solids",
-                   "Suspended sediment concentration (SSC)",
-                   "Suspended Sediment Concentration (SSC)",
-                   "Total Suspended Particulate Matter",
-                   "Fixed suspended solids"
-                 ),
-                 
-                 chlorophyll = c(
-                   "Chlorophyll",
-                   "Chlorophyll A",
-                   "Chlorophyll a",
-                   "Chlorophyll a (probe relative fluorescence)",
-                   "Chlorophyll a (probe)",
-                   "Chlorophyll a - Periphyton (attached)",
-                   "Chlorophyll a - Phytoplankton (suspended)",
-                   "Chlorophyll a, corrected for pheophytin",
-                   "Chlorophyll a, free of pheophytin",
-                   "Chlorophyll a, uncorrected for pheophytin",
-                   "Chlorophyll b",
-                   "Chlorophyll c",
-                   "Chlorophyll/Pheophytin ratio"
-                 ),
-                 
-                 secchi = c(
-                   "Depth, Secchi disk depth",
-                   "Depth, Secchi disk depth (choice list)",
-                   "Secchi Reading Condition (choice list)",
-                   "Secchi depth",
-                   "Water transparency, Secchi disc"
-                 ),
-                 
-                 cdom = c(
-                   "Colored dissolved organic matter (CDOM)"
-                 ),
-                 
-                 doc = c(
-                   "Organic carbon",
-                   "Total carbon",
-                   "Hydrophilic fraction of organic carbon",
-                   "Non-purgeable Organic Carbon (NPOC)"
-                 )
-                 
-               ),
-               
-               # List subitem 2
-               # https://www.waterqualitydata.us/Codes/sampleMedia?mimeType=xml
-               sampleMedia = c(
-                 "Water",
-                 "water"
-               ),
-               
-               # List subitem 3
-               # https://www.waterqualitydata.us/Codes/siteType?mimeType=xml
-               siteType = c(
-                 "Lake, Reservoir, Impoundment",
-                 "Stream",
-                 "Estuary",
-                 "Facility"
-               )
-             )),
+  # Define which parameter groups (and CharacteristicNames) to return from WQP. 
+  # Different options for parameter groups are represented in the first level of 
+  # 1_inventory/cfg/wqp_codes.yml. This yml file is meant to provide a starting 
+  # place for an analysis and does not represent a definitive list of characteristic 
+  # names. Which characteristic names to include for any given parameter group may 
+  # change depending on the user or application, so the yml file can be edited to 
+  # omit characteristic names or include others, to change top-level parameter names,
+  # or to customize parameter groupings. 
+  tar_target(param_groups_select,
+             c("tss")),
   
-  tar_target(target_pull_size,
-             1000000000),
   
-  tar_target(wqp_states,
-             c(
-               "Alabama",
-               "Alaska",
-               "Arizona",
-               "Arkansas",
-               "California",
-               "Colorado",
-               "Connecticut",
-               "Delaware",
-               "District of Columbia",
-               "Florida",
-               "Georgia",
-               "Hawaii",
-               "Idaho",
-               "Illinois",
-               "Indiana",
-               "Iowa",
-               "Kansas",
-               "Kentucky",
-               "Louisiana",
-               "Maine",
-               "Maryland",
-               "Massachusetts",
-               "Michigan",
-               "Minnesota",
-               "Mississippi",
-               "Missouri",
-               "Montana",
-               "Nebraska",
-               "Nevada",
-               "New Hampshire",
-               "New Jersey",
-               "New Mexico",
-               "New York",
-               "North Carolina",
-               "North Dakota",
-               "Ohio",
-               "Oklahoma",
-               "Oregon",
-               "Pennsylvania",
-               "Rhode Island",
-               "South Carolina",
-               "South Dakota",
-               "Tennessee",
-               "Texas",
-               "Utah",
-               "Vermont",
-               "Virginia",
-               "Washington",
-               "West Virginia",
-               "Wisconsin",
-               "Wyoming"
-             )),
+  # tar_target(wqp_codes,
+  #            list(
+  #              
+  #              # List subitem 1
+  #              # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
+  #              characteristicName = list(
+  #                
+  #                tss = c(
+  #                  "Total suspended solids",
+  #                  "Suspended sediment concentration (SSC)",
+  #                  "Suspended Sediment Concentration (SSC)",
+  #                  "Total Suspended Particulate Matter",
+  #                  "Fixed suspended solids"
+  #                ),
+  #                
+  #                chlorophyll = c(
+  #                  "Chlorophyll",
+  #                  "Chlorophyll A",
+  #                  "Chlorophyll a",
+  #                  "Chlorophyll a (probe relative fluorescence)",
+  #                  "Chlorophyll a (probe)",
+  #                  "Chlorophyll a - Periphyton (attached)",
+  #                  "Chlorophyll a - Phytoplankton (suspended)",
+  #                  "Chlorophyll a, corrected for pheophytin",
+  #                  "Chlorophyll a, free of pheophytin",
+  #                  "Chlorophyll a, uncorrected for pheophytin",
+  #                  "Chlorophyll b",
+  #                  "Chlorophyll c",
+  #                  "Chlorophyll/Pheophytin ratio"
+  #                ),
+  #                
+  #                secchi = c(
+  #                  "Depth, Secchi disk depth",
+  #                  "Depth, Secchi disk depth (choice list)",
+  #                  "Secchi Reading Condition (choice list)",
+  #                  "Secchi depth",
+  #                  "Water transparency, Secchi disc"
+  #                ),
+  #                
+  #                cdom = c(
+  #                  "Colored dissolved organic matter (CDOM)"
+  #                ),
+  #                
+  #                doc = c(
+  #                  "Organic carbon",
+  #                  "Total carbon",
+  #                  "Hydrophilic fraction of organic carbon",
+  #                  "Non-purgeable Organic Carbon (NPOC)"
+  #                )
+  #                
+  #              ),
+  #              
+  #              # List subitem 2
+  #              # https://www.waterqualitydata.us/Codes/sampleMedia?mimeType=xml
+  #              sampleMedia = c(
+  #                "Water",
+  #                "water"
+  #              ),
+  #              
+  #              # List subitem 3
+  #              # https://www.waterqualitydata.us/Codes/siteType?mimeType=xml
+  #              siteType = c(
+  #                "Lake, Reservoir, Impoundment",
+  #                "Stream",
+  #                "Estuary",
+  #                "Facility"
+  #              )
+  #            )),
+  
+  # tar_target(target_pull_size,
+  #            1000000000),
+  # 
+  # tar_target(wqp_states,
+  #            c(
+  #              "Alabama",
+  #              "Alaska",
+  #              "Arizona",
+  #              "Arkansas",
+  #              "California",
+  #              "Colorado",
+  #              "Connecticut",
+  #              "Delaware",
+  #              "District of Columbia",
+  #              "Florida",
+  #              "Georgia",
+  #              "Hawaii",
+  #              "Idaho",
+  #              "Illinois",
+  #              "Indiana",
+  #              "Iowa",
+  #              "Kansas",
+  #              "Kentucky",
+  #              "Louisiana",
+  #              "Maine",
+  #              "Maryland",
+  #              "Massachusetts",
+  #              "Michigan",
+  #              "Minnesota",
+  #              "Mississippi",
+  #              "Missouri",
+  #              "Montana",
+  #              "Nebraska",
+  #              "Nevada",
+  #              "New Hampshire",
+  #              "New Jersey",
+  #              "New Mexico",
+  #              "New York",
+  #              "North Carolina",
+  #              "North Dakota",
+  #              "Ohio",
+  #              "Oklahoma",
+  #              "Oregon",
+  #              "Pennsylvania",
+  #              "Rhode Island",
+  #              "South Carolina",
+  #              "South Dakota",
+  #              "Tennessee",
+  #              "Texas",
+  #              "Utah",
+  #              "Vermont",
+  #              "Virginia",
+  #              "Washington",
+  #              "West Virginia",
+  #              "Wisconsin",
+  #              "Wyoming"
+  #            )),
   
   
   
   # WQP inventory -----------------------------------------------------------
+  
+  # Specify arguments to WQP queries
+  # see https://www.waterqualitydata.us/webservices_documentation for more information 
+  tar_target(wqp_args,
+             list(sampleMedia = c("Water","water"),
+                  siteType = c("Lake, Reservoir, Impoundment",
+                               "Stream",
+                               "Estuary",
+                               "Facility"),
+                  # Return sites with at least one data record
+                  minresults = 1, 
+                  startDateLo = wq_dates$start_date,
+                  startDateHi = wq_dates$end_date)),
   
   # Get state FIPS codes for use with WQP
   tar_target(state_codes,
@@ -303,7 +331,8 @@ list(
   
 )
 
-
+# Full targets list
+c(p1_targets_list, mrb_targets)
 
 
 

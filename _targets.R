@@ -16,6 +16,8 @@ tar_option_set(
 # Run the R scripts with custom functions:
 tar_source(files = c(
   "1_inventory.R",
+  "2_download.R",
+  "3_harmonize.R",
   "src/functions.R"))
 
 # The list of targets/steps
@@ -43,136 +45,9 @@ mrb_targets <- list(
   # omit characteristic names or include others, to change top-level parameter names,
   # or to customize parameter groupings. 
   tar_target(param_groups_select,
-             c("tss")),
-  
-  
-  # tar_target(wqp_codes,
-  #            list(
-  #              
-  #              # List subitem 1
-  #              # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
-  #              characteristicName = list(
-  #                
-  #                tss = c(
-  #                  "Total suspended solids",
-  #                  "Suspended sediment concentration (SSC)",
-  #                  "Suspended Sediment Concentration (SSC)",
-  #                  "Total Suspended Particulate Matter",
-  #                  "Fixed suspended solids"
-  #                ),
-  #                
-  #                chlorophyll = c(
-  #                  "Chlorophyll",
-  #                  "Chlorophyll A",
-  #                  "Chlorophyll a",
-  #                  "Chlorophyll a (probe relative fluorescence)",
-  #                  "Chlorophyll a (probe)",
-  #                  "Chlorophyll a - Periphyton (attached)",
-  #                  "Chlorophyll a - Phytoplankton (suspended)",
-  #                  "Chlorophyll a, corrected for pheophytin",
-  #                  "Chlorophyll a, free of pheophytin",
-  #                  "Chlorophyll a, uncorrected for pheophytin",
-  #                  "Chlorophyll b",
-  #                  "Chlorophyll c",
-  #                  "Chlorophyll/Pheophytin ratio"
-  #                ),
-  #                
-  #                secchi = c(
-  #                  "Depth, Secchi disk depth",
-  #                  "Depth, Secchi disk depth (choice list)",
-  #                  "Secchi Reading Condition (choice list)",
-  #                  "Secchi depth",
-  #                  "Water transparency, Secchi disc"
-  #                ),
-  #                
-  #                cdom = c(
-  #                  "Colored dissolved organic matter (CDOM)"
-  #                ),
-  #                
-  #                doc = c(
-  #                  "Organic carbon",
-  #                  "Total carbon",
-  #                  "Hydrophilic fraction of organic carbon",
-  #                  "Non-purgeable Organic Carbon (NPOC)"
-  #                )
-  #                
-  #              ),
-  #              
-  #              # List subitem 2
-  #              # https://www.waterqualitydata.us/Codes/sampleMedia?mimeType=xml
-  #              sampleMedia = c(
-  #                "Water",
-  #                "water"
-  #              ),
-  #              
-  #              # List subitem 3
-  #              # https://www.waterqualitydata.us/Codes/siteType?mimeType=xml
-  #              siteType = c(
-  #                "Lake, Reservoir, Impoundment",
-  #                "Stream",
-  #                "Estuary",
-  #                "Facility"
-  #              )
-  #            )),
-  
-  # tar_target(target_pull_size,
-  #            1000000000),
-  # 
-  # tar_target(wqp_states,
-  #            c(
-  #              "Alabama",
-  #              "Alaska",
-  #              "Arizona",
-  #              "Arkansas",
-  #              "California",
-  #              "Colorado",
-  #              "Connecticut",
-  #              "Delaware",
-  #              "District of Columbia",
-  #              "Florida",
-  #              "Georgia",
-  #              "Hawaii",
-  #              "Idaho",
-  #              "Illinois",
-  #              "Indiana",
-  #              "Iowa",
-  #              "Kansas",
-  #              "Kentucky",
-  #              "Louisiana",
-  #              "Maine",
-  #              "Maryland",
-  #              "Massachusetts",
-  #              "Michigan",
-  #              "Minnesota",
-  #              "Mississippi",
-  #              "Missouri",
-  #              "Montana",
-  #              "Nebraska",
-  #              "Nevada",
-  #              "New Hampshire",
-  #              "New Jersey",
-  #              "New Mexico",
-  #              "New York",
-  #              "North Carolina",
-  #              "North Dakota",
-  #              "Ohio",
-  #              "Oklahoma",
-  #              "Oregon",
-  #              "Pennsylvania",
-  #              "Rhode Island",
-  #              "South Carolina",
-  #              "South Dakota",
-  #              "Tennessee",
-  #              "Texas",
-  #              "Utah",
-  #              "Vermont",
-  #              "Virginia",
-  #              "Washington",
-  #              "West Virginia",
-  #              "Wisconsin",
-  #              "Wyoming"
-  #            )),
-  
+             c("chlorophyll", "secchi", "cdom", "doc", "silica", "true_color", 
+               "tss")# c("tss", "secchi")
+  ),
   
   
   # WQP inventory -----------------------------------------------------------
@@ -195,12 +70,14 @@ mrb_targets <- list(
              get_wqp_state_codes(),
              packages = c("tidyverse", "dataRetrieval")),
   
-  tar_target(wqp_inventory,
-             inventory_wqp(#ind_file, 
-               wqp_state_codes = state_codes, 
-               wqp_states = wqp_states,
-               wqp_codes = wqp_codes),
-             packages = c("tidyverse", "dataRetrieval")),
+  
+  # Work with pulled WQP data -----------------------------------------------
+  
+  # How many rows per parameter?
+  tar_target(param_counts,
+             p3_wqp_data_aoi_clean_grp %>%
+               count(parameter)),
+  
   
   # Input file tracking -----------------------------------------------------
   
@@ -252,87 +129,116 @@ mrb_targets <- list(
     packages = c("tidyverse", "rvest", "janitor")
   ),
   
-  # # For some reason this runs forever, or not at all, depending on how I call it
-  # tar_quarto(
-  #   name = sdd_update,
-  #   path = "src/sdd_update.qmd",
-  #   # Pass along the target into the knitting environment
-  #   execute_params = list(p_codes = p_codes, raw_sdd = raw_sdd),
-  #   packages = c("kableExtra", "tidyverse", "lubridate",
-  #                "tm", "stringr", "dplyr", "pdftools")),
+  # # Quarto isn't working, so use Rmds for now. Each of these renders an Rmd and
+  # # returns a cleaned dataset back to the pipeline
+  # tar_target(sdd_update,
+  #            render_and_return(input_var = list(raw_sdd = raw_sdd,
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/sdd_update.Rmd", 
+  #                              output_file = "~/Documents/aquasat_v2/docs/sdd_update.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "tm", "stringr", "dplyr", "pdftools"),
+  #            format = "feather",
+  #            # Isn't being tracked correctly, I think because the rendering is
+  #            # nested within a function. So, for now always run...
+  #            cue = tar_cue("always")),
   # 
-  # # This one runs forever and returns this message:
-  # # Deno has panicked. This is a bug in Deno.
-  # tar_quarto(
-  #   name = silica_update,
-  #   path = "src/silica_update.qmd",
-  #   execute_params = list(p_codes = p_codes, raw_silica = raw_silica),
-  #   packages = c("kableExtra", "tidyverse", "lubridate",
-  #                "forcats", "rvest", "scales", "ggthemes")),
+  # tar_target(silica_update,
+  #            render_and_return(input_var = list(raw_silica = raw_silica,
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/silica_update.Rmd", 
+  #                              output_file = "~/Documents/aquasat_v2/docs/silica_update.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "forcats", "rvest", "scales", "ggthemes"),
+  #            format = "feather",
+  #            # Isn't being tracked correctly, I think because the rendering is
+  #            # nested within a function. So, for now always run...
+  #            cue = tar_cue("always")),
   # 
-  # # This one runs forever and returns this message:
-  # # Deno has panicked. This is a bug in Deno.
-  # tar_quarto(
-  #   name = true_color_update,
-  #   path = "src/true_color_update.qmd",
-  #   execute_params = list(p_codes = p_codes, raw_true_color = raw_true_color),
-  #   packages = c("kableExtra", "tidyverse", "lubridate",
-  #                "tm", "stringr")
-  # ),
+  # tar_target(true_color_update,
+  #            render_and_return(input_var = list(raw_true_color = raw_true_color,
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/true_color_update.Rmd", 
+  #                              output_file = "~/Documents/aquasat_v2/docs/true_color_update.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "tm", "stringr"),
+  #            format = "feather",
+  #            # Isn't being tracked correctly, I think because the rendering is
+  #            # nested within a function. So, for now always run...
+  #            cue = tar_cue("always")),
+  # 
+  # tar_target(tss_update,
+  #            render_and_return(input_var = list(raw_tss = raw_tss,
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/tss_update.Rmd",
+  #                              output_file = "~/Documents/aquasat_v2/docs/tss_update.html"),
+  #            packages = c("kableExtra", "tidyverse", "pander"),
+  #            format = "feather",
+  #            # Isn't being tracked correctly, I think because the rendering is
+  #            # nested within a function. So, for now always run...
+  #            cue = tar_cue("always")),
+  # 
   
-  # Quarto isn't working, so use Rmds for now. Each of these renders an Rmd and
-  # returns a cleaned dataset back to the pipeline
-  tar_target(sdd_update,
-             render_and_return(input_var = list(raw_sdd = raw_sdd,
-                                                p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/sdd_update.Rmd", 
-                               output_file = "~/Documents/aquasat_v2/docs/sdd_update.html"),
-             packages = c("kableExtra", "tidyverse", "lubridate",
-                          "tm", "stringr", "dplyr", "pdftools"),
-             format = "feather",
-             # Isn't being tracked correctly, I think because the rendering is
-             # nested within a function. So, for now always run...
-             cue = tar_cue("always")),
+  # Parameter cleaning but with USGS WQP inputs -----------------------------
   
-  tar_target(silica_update,
-             render_and_return(input_var = list(raw_silica = raw_silica,
+  # Same process as above, just using inputs that were pulled by this pipeline
+  # as opposed to those provided by KW
+  
+  # The input data
+  tar_target(wqp_data_aoi_formatted_filtered,
+             p3_wqp_data_aoi_formatted %>%
+               left_join(x = .,
+                         y = p1_char_names_crosswalk,
+                         by = c("CharacteristicName" = "char_name"))),
+  
+  tar_target(silica_update_usgs,
+             render_and_return(input_var = list(raw_silica = wqp_data_aoi_formatted_filtered %>%
+                                                  filter(parameter == "silica"),
                                                 p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/silica_update.Rmd", 
-                               output_file = "~/Documents/aquasat_v2/docs/silica_update.html"),
+                               input_file = "~/Documents/aquasat_v2/src/silica_update_usgs.Rmd", 
+                               output_file = "~/Documents/aquasat_v2/docs/silica_update_usgs.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "forcats", "rvest", "scales", "ggthemes"),
              format = "feather",
-             # Isn't being tracked correctly, I think because the rendering is
-             # nested within a function. So, for now always run...
              cue = tar_cue("always")),
   
-  tar_target(true_color_update,
-             render_and_return(input_var = list(raw_true_color = raw_true_color,
+  tar_target(sdd_update_usgs,
+             render_and_return(input_var = list(raw_sdd = wqp_data_aoi_formatted_filtered %>%
+                                                  filter(parameter == "secchi"),
                                                 p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/true_color_update.Rmd", 
-                               output_file = "~/Documents/aquasat_v2/docs/true_color_update.html"),
+                               input_file = "~/Documents/aquasat_v2/src/sdd_update_usgs.Rmd",
+                               output_file = "~/Documents/aquasat_v2/docs/sdd_update_usgs.html"),
+             packages = c("kableExtra", "tidyverse", "lubridate",
+                          "tm", "stringr", "dplyr", "pdftools"),
+             format = "feather",
+             cue = tar_cue("always")),
+  
+  tar_target(true_color_update_usgs,
+             render_and_return(input_var = list(raw_true_color = wqp_data_aoi_formatted_filtered %>%
+                                                  filter(parameter == "true_color"),
+                                                p_codes = p_codes),
+                               input_file = "~/Documents/aquasat_v2/src/true_color_update_usgs.Rmd",
+                               output_file = "~/Documents/aquasat_v2/docs/true_color_update_usgs.html"),
              packages = c("kableExtra", "tidyverse", "lubridate",
                           "tm", "stringr"),
              format = "feather",
-             # Isn't being tracked correctly, I think because the rendering is
-             # nested within a function. So, for now always run...
              cue = tar_cue("always")),
   
-  tar_target(tss_update,
-             render_and_return(input_var = list(raw_tss = raw_tss,
+  tar_target(tss_update_usgs,
+             render_and_return(input_var = list(raw_tss = wqp_data_aoi_formatted_filtered %>%
+                                                  filter(parameter == "tss"),
                                                 p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/tss_update.Rmd",
-                               output_file = "~/Documents/aquasat_v2/docs/tss_update.html"),
+                               input_file = "~/Documents/aquasat_v2/src/tss_update_usgs.Rmd",
+                               output_file = "~/Documents/aquasat_v2/docs/tss_update_usgs.html"),
              packages = c("kableExtra", "tidyverse", "pander"),
              format = "feather",
-             # Isn't being tracked correctly, I think because the rendering is
-             # nested within a function. So, for now always run...
              cue = tar_cue("always"))
+  
   
 )
 
 # Full targets list
-c(p1_targets_list, mrb_targets)
+c(p1_targets_list, p2_targets_list, p3_targets_list, mrb_targets)
 
 
 

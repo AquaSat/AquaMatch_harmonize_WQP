@@ -1,13 +1,7 @@
 # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
 # characteristicName:
 
-  tss:
-    - 'Total suspended solids'
-    - 'Suspended sediment concentration (SSC)'
-    - 'Suspended Sediment Concentration (SSC)'
-    - 'Total Suspended Particulate Matter'
-    - 'Fixed suspended solids'
-    
+
 
     
   chlorophyll:
@@ -40,3 +34,20 @@
     - 'Total carbon'
     - 'Hydrophilic fraction of organic carbon'
     - 'Non-purgeable Organic Carbon (NPOC)'
+    
+  silica:
+    - "Silica"
+    - "Silicon as SiO2"
+  
+  true_color:
+    - "Color"
+    - "Apparent color"
+    - "True color"
+  
+  tss:
+    - 'Total suspended solids'
+    - 'Suspended sediment concentration (SSC)'
+    - 'Suspended Sediment Concentration (SSC)'
+    - 'Total Suspended Particulate Matter'
+    - 'Fixed suspended solids'
+    

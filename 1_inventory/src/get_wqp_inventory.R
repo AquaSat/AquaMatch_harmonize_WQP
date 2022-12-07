@@ -182,7 +182,7 @@ transform_site_locations <- function(sites, crs_out = "WGS84"){
 subset_inventory <- function(wqp_inventory, aoi_sf, buffer_dist_m = 0){
   
   # Harmonize different coordinate reference systems used across sites
-  queried_sites_transformed <- transform_site_locations(wqp_inventory, crs_out= "WGS84") 
+  queried_sites_transformed <- transform_site_locations(wqp_inventory, crs_out = "WGS84") 
   queried_sites_transformed_sf <- sf::st_as_sf(queried_sites_transformed, 
                                                coords = c("lon","lat"), crs = 4326) 
   

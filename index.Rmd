@@ -1,0 +1,7 @@
+---
+author: "ROSSyndicate"
+date: "`r Sys.Date()`"
+output:
+  bookdown::gitbook: default
+documentclass: book
+---

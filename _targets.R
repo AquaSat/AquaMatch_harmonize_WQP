@@ -232,7 +232,13 @@ mrb_targets <- list(
                                output_file = "~/Documents/aquasat_v2/docs/tss_update_usgs.html"),
              packages = c("kableExtra", "tidyverse", "pander"),
              format = "feather",
-             cue = tar_cue("always"))
+             cue = tar_cue("always")),
+  
+  # https://github.com/robitalec/targets-parameterized-bookdown/blob/main/_targets.R
+  tar_target(
+    book,
+    render_with_deps(index = "index.Rmd")
+  )
   
   
 )

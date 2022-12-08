@@ -176,3 +176,8 @@ unit_disharmony <- function(data, lookup){
     scroll_box(width = "500px", height = "400px")
   
 }
+
+# Bookdown render, but with explicitly defined dependencies
+render_with_deps <- function(index) {
+  bookdown::render_book(input = index)
+}

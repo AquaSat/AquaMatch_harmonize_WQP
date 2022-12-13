@@ -177,7 +177,7 @@ mrb_targets <- list(
   #            # Isn't being tracked correctly, I think because the rendering is
   #            # nested within a function. So, for now always run...
   #            cue = tar_cue("always")),
-  # 
+  
   
   # Parameter cleaning but with USGS WQP inputs -----------------------------
   
@@ -191,55 +191,93 @@ mrb_targets <- list(
                          y = p1_char_names_crosswalk,
                          by = c("CharacteristicName" = "char_name"))),
   
-  tar_target(silica_update_usgs,
-             render_and_return(input_var = list(raw_silica = wqp_data_aoi_formatted_filtered %>%
-                                                  filter(parameter == "silica"),
-                                                p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/silica_update_usgs.Rmd", 
-                               output_file = "~/Documents/aquasat_v2/docs/silica_update_usgs.html"),
-             packages = c("kableExtra", "tidyverse", "lubridate",
-                          "forcats", "rvest", "scales", "ggthemes"),
-             format = "feather",
-             cue = tar_cue("always")),
+  # For some reason the plots in this target don't work if you don't have
+  # forcats loaded when using tar_read()
+  tar_target(harmonized_silica,
+             harmonize_silica(raw_silica = wqp_data_aoi_formatted_filtered %>%
+                                filter(parameter == "silica"),
+                              p_codes = p_codes),
+             packages = c("tidyverse", "lubridate", "forcats", "scales",
+                          "ggthemes")),
   
-  tar_target(sdd_update_usgs,
-             render_and_return(input_var = list(raw_sdd = wqp_data_aoi_formatted_filtered %>%
-                                                  filter(parameter == "secchi"),
-                                                p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/sdd_update_usgs.Rmd",
-                               output_file = "~/Documents/aquasat_v2/docs/sdd_update_usgs.html"),
-             packages = c("kableExtra", "tidyverse", "lubridate",
-                          "tm", "stringr", "dplyr", "pdftools"),
-             format = "feather",
-             cue = tar_cue("always")),
-  
-  tar_target(true_color_update_usgs,
-             render_and_return(input_var = list(raw_true_color = wqp_data_aoi_formatted_filtered %>%
-                                                  filter(parameter == "true_color"),
-                                                p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/true_color_update_usgs.Rmd",
-                               output_file = "~/Documents/aquasat_v2/docs/true_color_update_usgs.html"),
-             packages = c("kableExtra", "tidyverse", "lubridate",
-                          "tm", "stringr"),
-             format = "feather",
-             cue = tar_cue("always")),
-  
-  tar_target(tss_update_usgs,
-             render_and_return(input_var = list(raw_tss = wqp_data_aoi_formatted_filtered %>%
-                                                  filter(parameter == "tss"),
-                                                p_codes = p_codes),
-                               input_file = "~/Documents/aquasat_v2/src/tss_update_usgs.Rmd",
-                               output_file = "~/Documents/aquasat_v2/docs/tss_update_usgs.html"),
-             packages = c("kableExtra", "tidyverse", "pander"),
-             format = "feather",
-             cue = tar_cue("always")),
-  
-  # https://github.com/robitalec/targets-parameterized-bookdown/blob/main/_targets.R
-  tar_target(
-    book,
-    render_with_deps(index = "index.Rmd")
+  tar_render(silica_report,
+             path = "src/silica_update_usgs_placeholder.Rmd",
+             packages = c("tidyverse", "lubridate", "forcats"),
+             # In the future reports like this could be paramaterized instead
+             # of using tar_read()/_load() calls inside the Rmd because
+             # this makes it more readable when updating the pipeline
+             # params = list(harmonized_silica = harmonized_silica,
+             #               p_codes = p_codes,
+             #               raw_silica = wqp_data_aoi_formatted_filtered %>%
+             #                 filter(parameter == "silica"))
   )
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  # tar_target(silica_update_usgs,
+  #            render_and_return(input_var = list(raw_silica = wqp_data_aoi_formatted_filtered %>%
+  #                                                 filter(parameter == "silica"),
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/silica_update_usgs.Rmd", 
+  #                              output_file = "~/Documents/aquasat_v2/docs/silica_update_usgs.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "forcats", "rvest", "scales", "ggthemes"),
+  #            format = "feather",
+  #            cue = tar_cue("always")),
+  # 
+  # tar_target(sdd_update_usgs,
+  #            render_and_return(input_var = list(raw_sdd = wqp_data_aoi_formatted_filtered %>%
+  #                                                 filter(parameter == "secchi"),
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/sdd_update_usgs.Rmd",
+  #                              output_file = "~/Documents/aquasat_v2/docs/sdd_update_usgs.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "tm", "stringr", "dplyr", "pdftools"),
+  #            format = "feather",
+  #            cue = tar_cue("always")),
+  # 
+  # tar_target(true_color_update_usgs,
+  #            render_and_return(input_var = list(raw_true_color = wqp_data_aoi_formatted_filtered %>%
+  #                                                 filter(parameter == "true_color"),
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/true_color_update_usgs.Rmd",
+  #                              output_file = "~/Documents/aquasat_v2/docs/true_color_update_usgs.html"),
+  #            packages = c("kableExtra", "tidyverse", "lubridate",
+  #                         "tm", "stringr"),
+  #            format = "feather",
+  #            cue = tar_cue("always")),
+  # 
+  # tar_target(tss_update_usgs,
+  #            render_and_return(input_var = list(raw_tss = wqp_data_aoi_formatted_filtered %>%
+  #                                                 filter(parameter == "tss"),
+  #                                               p_codes = p_codes),
+  #                              input_file = "~/Documents/aquasat_v2/src/tss_update_usgs.Rmd",
+  #                              output_file = "~/Documents/aquasat_v2/docs/tss_update_usgs.html"),
+  #            packages = c("kableExtra", "tidyverse", "pander"),
+  #            format = "feather",
+  #            cue = tar_cue("always")),
+  # 
+  # https://github.com/robitalec/targets-parameterized-bookdown/blob/main/_targets.R
+  # tar_target(
+  #   book,
+  #   render_with_deps(index = "index.Rmd")
+  # )
+  # 
   
 )
 

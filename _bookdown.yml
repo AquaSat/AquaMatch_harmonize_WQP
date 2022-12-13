@@ -1,2 +1,0 @@
-output_dir: "_book"
-rmd_files: ["index.Rmd", "chapters/sdd_update_usgs.html", "chapters/silica_update_usgs.html", "chapters/true_color_update_usgs.html", "chapters/tss_update_usgs.html"]

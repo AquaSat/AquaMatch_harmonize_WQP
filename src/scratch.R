@@ -1,23 +1,25 @@
 library(targets)
+library(tarchetypes)
 
 library(tidyverse)
-library(kableExtra)
+# library(kableExtra)
 library(lubridate)
-library(forcats)
-library(rvest)
-library(scales)
-library(ggthemes)
+library(stringr)
+# library(rvest)
+# library(scales)
+# library(ggthemes)
 
-raw_silica <- tar_read(wqp_data_aoi_formatted_filtered) %>%
-  filter(parameter == "silica")
+tar_load(raw_true_color)
+# raw_true_color <- tar_read(wqp_data_aoi_formatted_filtered) %>%
+#   filter(parameter == "true_color")
+
 tar_load(p_codes)
 
-# harmonize_silica <- function(raw_silica){
+# harmonize_true_color <- function(raw_true_color, p_codes){
 
-# Aggregating -------------------------------------------------------------
-
-raw_silica <- raw_silica %>%
-  # Keep and rename columns of interest
+# First step is to read in the data and make it workable, we'll then filter
+# the data to 1984 and beyond
+raw_true_color <- raw_true_color %>% 
   dplyr::select(date = ActivityStartDate,
                 parameter = CharacteristicName,
                 parm_cd = USGSPCode,
@@ -40,438 +42,353 @@ raw_silica <- raw_silica %>%
                 field_comments = ActivityCommentText,
                 lab_comments = ResultLaboratoryCommentText,
                 result_comments = ResultCommentText) %>%
-  # Add in codes from WQP  
-  left_join(x = ., y = p_codes, by = "parm_cd") %>%
+  left_join(p_codes, by = 'parm_cd') %>%
   mutate(year = year(date),
          units = trimws(units)) %>%
-  filter(year >= 1984,
-         media %in% c("Water", "water"),
-         type %in% c("Surface Water", "Water", "Estuary", "Ocean Water", 
-                     "Mixing Zone") |
-           is.na(type)) %>%
-  rowid_to_column(., var = "index")
+  filter(year >= 1984) %>%
+  rowid_to_column(., "index")
 
 
-# Data lumping ------------------------------------------------------------
+# Initial data cleaning Steps ---------------------------------------------
 
-# Flagging by noted analytical method
-classified_methods <- raw_silica %>%
-  mutate(method_status = case_when(
-    # Silica-specific:
-    grepl(pattern = "4500-SiO2 C|4500 SiO2-C|4500 Si-C|4500 Si C|
-          4500C|4500 C|4500-SiC|4500-SI02 C|4500 SIO2 C|
-          4500-SIO2C", 
-          x = analytical_method,
-          ignore.case = T) ~ "Molybdosilicate Method",
-    
-    grepl("4500-SiO2 D|4500 SiO2-D|4500 Si-D|4500 Si D|
-          4500D|4500 D|4500-SiD", 
-          analytical_method, 
-          ignore.case = T) ~ "Heteropoly Blue Method",
-    
-    grepl("370.1", 
-          analytical_method,
-          ignore.case = T) ~ "EPA Method 370.1",
-    
-    grepl("4500-SiO2 E|4500 SiO2-E|4500 Si-E|4500 Si E|4500E|
-          4500 E|4500-SiE|Technicon Industrial Method 105-71|
-          4500 SIO2 E", 
-          analytical_method,
-          ignore.case = T) ~ "Automated Method for Molybdate-Reactive Silica",
-    
-    grepl("4500-SiO2 F|4500 SiO2-F|4500 Si-F|4500 Si F|4500F|
-          4500 F|4500-SiF|4500 SIO2 F", 
-          analytical_method,
-          ignore.case = T) ~ "Flow Injection Analysis for Molybdate-Reactive Silicate",
-    
-    grepl("366",
-          analytical_method,
-          ignore.case = T) ~ "EPA Method 366.0",
-    
-    # Inorganic/Metals general (many of these  do not list Si specifically, 
-    # though SM section 4500 lists them as appropriate methods):
-    grepl("3111 D|3111-D|Nitrous Oxide|FLAA",
-          analytical_method,
-          ignore.case = T) ~ "Direct Nitrous Oxide-Acetylene Flame Method",
-    
-    grepl("3120|200.7|6010|Plasma Emission Spectrosc|ICP-AES|ICP AES|
-          ICP-OES|ICP-OES|ICP OES|ICP/OES|Inductively Coupled Plasma AES|
-          Atomic Emission Spec|Optical Emission Spec|Atomic Emission Spectrometry", # is this real though 
-          analytical_method,
-          ignore.case = T) ~ "ICP-AES",
-    
-    grepl("3113|Atomic Absorption|GFAA|graphite furnace", 
-          analytical_method,
-          ignore.case = T) ~ "Electrothermal Atomic Absorption Spectrometric Method",
-    
-    grepl("3125|200.8|ICP/MS|ICP MS|ICP-MS|plasma/mass spec",
-          analytical_method,
-          ignore.case = T) ~ "ICP/MS",
-    
-    # General ICP
-    grepl("Silica in Water by ICP| ICP, EPA method|ICP Package",
-          analytical_method,
-          ignore.case = T) ~ "Just ICP"))
+# First off, let's focus our data set to "water" samples (as done in original
+# AquaSat). Then we can remove any samples from our data set that failed, or 
+# don't have enough lab metadata to make assumptions about the values presented.
+# (In the future, these `grepl` functions can be based on the word matrices we
+# just produced upstream!)
 
-# Further narrowing methods classifications into coarser groups
-narrowed_methods <- classified_methods %>% 
-  mutate(
-    # A candidate for case_when:
-    grouped = ifelse(test = method_status %in% 
-                       c("Molybdosilicate Method",
-                         "Heteropoly Blue Method",
-                         "EPA Method 370.1",
-                         "EPA Method 366.0",
-                         "Automated Method for Molybdate-Reactive Silica",
-                         "Flow Injection Analysis for Molybdate-Reactive Silicate") |
-                       grepl("colorimetr|molybd|colorimeter",
-                             analytical_method,
-                             ignore.case = T),
-                     yes = "Colorimetry",
-                     no = ifelse(test = is.na(method_status) |
-                                   method_status == "Ambiguous",
-                                 yes = "Ambiguous",
-                                 no = method_status)),
-    grouped = ifelse(method_status %in% c("ICP-AES",
-                                          "Just ICP",
-                                          "ICP/MS"),
-                     "ICP",
-                     grouped),
-    aquasat_fraction = case_when(
-      fraction %in% c("Dissolved", "Filtered, lab", "Filterable") ~ "Dissolved",
-      fraction %in% c("Total", "Total Recovrble", "Total Recoverable",
-                      "Recoverable", "Unfiltered") ~ "Total",
-      fraction %in% c("Fixed") ~ "Fixed",
-      fraction %in% c("Non-Filterable (Particle)") ~ "Particle",
-      is.na(fraction) | fraction %in% c(" ", "Field") ~ "Ambiguous"))
 
-rm(classified_methods, p_codes)
+
+true_color_no_data_samples <- raw_true_color %>%
+  filter(is.na(value)&is.na(units)&is.na(lab_comments)&is.na(result_comments)) #identify samples that have no meaningful data related to an NA value
+
+true_color_fails_removed <- raw_true_color %>%
+  filter(media == "Water",
+         status %in% c('Accepted','Final','Historical','Validated'),
+         # No failure-related field comments, slightly different list of words than
+         # lab and result list (not including things that could be used to describe
+         # field conditions like "warm", "ice", etc.)
+         !grepl(pattern = paste0(c("fail", "suspect", "error", "beyond accept", "interference", 
+                                   "questionable", "outside of accept", "problem", "contaminat", 
+                                   "improper", "violation", "invalid", "unable", "no test", "cancelled", 
+                                   "instrument down", "no result", "time exceed", "not accept", "QC EXCEEDED"),
+                                 collapse = "|"),
+                x = field_comments,
+                ignore.case = T) | is.na(field_comments), 
+         # No failure-related lab, should we remove controls comments
+         !grepl(paste0(c("fail", "suspect", "error", "beyond accept", "interference",
+                         "questionable", "outside of accept", "problem", "contaminat",
+                         "improper", "warm", "violation", "invalid", "unable", "no test",
+                         "cancelled", "instrument down", "no result", "time exceed",
+                         "not accept", "QC EXCEEDED", "not ice", "ice melt", "PAST HOLDING TIME",
+                         "beyond", "exceeded", "failed", "exceededs"),
+                       collapse = "|"),
+                lab_comments,
+                ignore.case = T) | is.na(lab_comments),
+         # No failure-related result comments
+         !grepl(paste0(c("fail", "suspect", "error", "beyond accept", "interference",
+                         "questionable", "outside of accept", "problem", "contaminat",
+                         "improper", "warm", "violation", "invalid", "unable", "no test",
+                         "cancelled", "instrument down", "no result", "time exceed",
+                         "not accept", "QC EXCEEDED", "not ice", "ice melt",
+                         "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
+                       collapse = "|"),
+                result_comments,
+                ignore.case = T) | is.na(result_comments),
+         # No failure-related values
+         !grepl(paste0(c("fail", "suspect", "error", "beyond accept", "interference",
+                         "questionable", "outside of accept", "problem", "contaminat",
+                         "improper", "warm", "violation", "invalid", "unable", "no test",
+                         "cancelled", "instrument down", "no result", "time exceed",
+                         "not accept", "QC EXCEEDED", "not ice", "ice melt", "PAST HOLDING TIME"),
+                       collapse = "|"),
+                value,
+                ignore.case = T) | is.na(value),
+         !index %in% true_color_no_data_samples$index)
+
+# Message about types of data kept:
+print(paste('We kept',
+            round(x = nrow(true_color_fails_removed) /
+                    nrow(raw_true_color) * 100,
+                  digits = 2),
+            '% of samples, because the method used did not make sense. These methods are:'))
+
+rm(pcodes, true_color_no_data_samples) 
 gc()
 
+# Next we begin filtering the results to exclude qualitative results 
+# this is because there are various color specifications (such as green,
+# yellow, brown, etc.) that although give an estimation of apparent color do
+# not provide a relevant scale which is comparable to the other
+# apparent/ true color scales. 
 
-# Methods -----------------------------------------------------------------
+# Remove the qualitative results from the dataset
+true_color_fails_removed$value <- gsub(pattern = "[a-zA-Z]",
+                                       replacement = "",
+                                       x = true_color_fails_removed$value)
 
-# Silica can be analyzed in a myriad of ways; in the water quality portal,
-# silica had `r n_distinct(narrowed_methods$analytical_method)` unique analytic
-# methods listed for a total of `r nrow(narrowed_methods)` samples. However, many
-# of these analytic methods can be grouped together into just a few actual
-# methodologies that are realistic for silica:
-# -   Colorimetry: this represents samples that reference the molybdosilicate
-#       method (SM 4500 C), the heteropoly blue method (SM 4500 D), the automated
-#       method for molybdate-reactive silica (SM 4500 E), flow injection analysis for
-#       molybdate-reactive silica (SM 4500 F), gas segmented continuous flow
-#       colorimetric analysis (EPA 366.0), spectrophotometric detection of dissolved 
-#       silica (EPA 370.1), "colorimetry", or "molybdate".
-# -   ICP: this represents samples that reference ICP/MS (SM 3125,
-#       EPA Method 200.8, or "ICP MS"), ICP-AES (SM 3120 , EPA Methods 200.7
-#       and 6010, "ICP AES", or "ICP OES"), or just "ICP".
-# -   Direct Nitrous Oxide-Acetylene Flame Method: this represents samples
-#       that reference SM 3111 D , "Nitrous Oxide", or "FLAA"
-# -   Electrothermal Atomic Absorption Spectrometric Method: this represents
-#       samples that reference SM 3113, "GFAA", or "graphite furnace".
-# -   All others, which I'm calling **ambiguous**
+# Create a dataframe from values to identify special characters and see if
+# they're worth keeping
+testsamples <- true_color_fails_removed %>% 
+  count(value) 
 
-# Plot of record count by method type
-horiz_bar_rec_by_methods <- narrowed_methods %>%
-  group_by(grouped) %>%
-  summarize(count = n()) %>%
-  arrange(count) %>%
-  ggplot()+
-  geom_col(aes(x = fct_reorder(grouped,count), y = count, fill = grouped)) +
-  geom_text(aes(label = count, y = count / 2, x = fct_reorder(grouped, count), 
-                color = grouped),
-            position = position_dodge(0.5),
-            vjust = 0) +
-  ylab("Count") +
-  xlab("") +
-  coord_flip() +
-  theme_bw() +
-  scale_fill_manual(values = c("#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#0072B2")) + 
-  scale_color_manual(values = c("black", "black", "black", "black", "black", "black")) + 
-  scale_y_continuous(labels = comma)+
-  theme(legend.position = "none",
-        text = element_text(size = 20))
+# No failure-related values
+true_color_vals_filtered <- true_color_fails_removed %>%
+  filter(!grepl("*<|#|>| |-|,|/",
+                value,
+                ignore.case = F) | is.na(value))
 
+# Rerun to make sure special characters were removed, still having a problem
+# removing asterisk without removing valied values
+testsamples <- true_color_vals_filtered %>% 
+  count(value)
 
-# It is clear that colorimetric methods are the most common across grouped
-# methods (at `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-#            filter(grouped=="Colorimetry") %>% summarize(perc=(n()/total)*100) %>%
-#            distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>%
-#            paste()`%).
+# write_feather(true_color_vals_filtered,"../data/true_color_vals_filtered.feather")
 # 
-# However, colorimetry encompasses several different types of analytic 
-# methods that are defined by either the EPA or SM; there are also a large
-# amount that do not clearly define which colorimetric method was used 
-# (i.e., ambiguous but some form of colorimetry):
+# gc()
 
-# Summary dataset for piechart
-pie_plot_data <- narrowed_methods %>%
-  filter(grouped == "Colorimetry") %>%
-  group_by(method_status) %>%
-  summarize(count = n()) %>%
-  ungroup() %>%
-  mutate(method_status = ifelse(is.na(method_status),
-                                "Ambiguous Colorimetry",
-                                method_status),
-         method_status = factor(x = method_status,
-                                levels = method_status),
-         prop = count / sum(count),
-         ypos = cumsum(prop) - 0.5 * prop,
-         legend = paste0(method_status, " (", percent(prop), ")"))
+# The result of dropping all values that are qualitative and not quantitative is
+print(paste('We kept',
+            round(nrow(true_color_vals_filtered) /
+                    nrow(true_color_fails_removed) * 100,
+                  2),
+            '% of samples, because the values were qualitative and not quantitative.'))
 
-colorimetry_pie <- ggplot(data = pie_plot_data,
-                          aes(x = "", y = count, fill = legend)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar("y", start = 0) +
-  scale_fill_manual(values = c("#009E73", "#E69F00", "#56B4E9", "#CC79A7",
-                               "#0072B2", "#F0E442", "#D55E00")) +
-  guides(fill = guide_legend(title = "Colorimetry Techniques")) +
-  theme_void() + # remove background, grid, numeric label
-  theme(text = element_text(size = 20))
+# Since we kept the majority of the data, exclusion of qualitative data should
+# not be impactful for the rest of the dataset.
 
-# The ICP method is the second most common method for silica analysis,
-# representing `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-#   filter(grouped=="ICP") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% 
-#   ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all silica samples.
-# 
-pie <- narrowed_methods %>%
-  filter(grouped == "ICP") %>%
-  group_by(method_status) %>%
-  summarize(count = n()) %>%
-  ungroup() #%>%
-#mutate(method_status=ifelse(is.na(method_status), "Ambiguous Colorimetry", method_status))
-pie <- pie %>% mutate(method_status = factor(x = method_status, levels = method_status)) %>% 
-  mutate(prop = count / sum(pie$count)) %>%  
-  mutate(ypos = cumsum(prop) - 0.5 * prop) %>%
-  mutate(legend = paste0(method_status, " (", percent(prop), ")"))
+# There are three parameter classifications when there should be two
+# Apparent/True Color, the third "Color" classification needs to be further
+# explore so for now we'll split the data into three dataframes. 
 
-ggplot(data = pie, aes(x = "", y = count, fill = legend)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  coord_polar("y", start = 0) +
-  scale_fill_manual(values = c("#009E73", "#E69F00", "#56B4E9", "#CC79A7",
-                               "#0072B2", "#F0E442", "#D55E00")) +
-  guides(fill = guide_legend(title = "ICP Techniques")) +
-  theme_void() + # remove background, grid, numeric label
-  theme(text = element_text(size = 20))
+true_color_apparent <- true_color_vals_filtered %>% 
+  filter(parameter == "Apparent color") 
 
-# The third most prevalent aggregated method encompasses samples whose 
-# methodologies were too vague to determine how they were analyzed.
-# `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-#   filter(grouped=="Ambiguous") %>% summarize(perc=(n()/total)*100) %>%
-#   distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>%
-#   paste()`% of all samples are considered ambiguous. Below is a table
-# of all methodologies that we considered ambiguous:
+true_color_color <- true_color_vals_filtered %>% 
+  filter(parameter == "Color") 
 
-narrowed_methods %>%
-  filter(grouped == "Ambiguous") %>%
-  group_by(analytical_method) %>%
-  summarize(count = dplyr::n()) %>%
-  arrange(desc(count)) %>%
-  #mutate(grouped=ifelse(is.na(grouped),"Not captured by aggreagting mechanism",grouped)) %>%
-  kable(., "html", caption = "Ambiguous Methods") %>%
-  kable_styling(position = "center") %>%
-  scroll_box(width = "800px", height = "500px")
+true_color_true <- true_color_vals_filtered %>% 
+  filter(parameter == "True color")
+
+parameter_count <- true_color_vals_filtered %>% 
+  count(parameter) %>% 
+  mutate(paramer_percentage = n / sum(n) * 100)
+
+# The good news is that the true color measurments are the significant portion
+# of the data, with apparent color also being the other significant variable
+# that we know how to deal with, while color is only a small fraction of the data
+parameter_barplot <- ggplot(true_color_vals_filtered) +
+  geom_bar(aes(parameter, fill = parameter)) +
+  theme_classic() +
+  labs(x = "Parameter Variable",
+       y = "Parameter Count")
+
+# Next we will analyze the analytical and sample methods to see how the samples
+# are being analyzed and processed
+apparent_methods <- true_color_apparent %>% 
+  count(analytical_method)
+
+color_methods <- true_color_color %>% 
+  count(analytical_method)
+
+true_color_methods <- true_color_true %>% 
+  count(analytical_method)
+
+# First we will see how the unique analytical methods are being analyzed.
+# Unfortunately it seems like a little over a third of the data is being lost
+# due to no analytical method being present.
+true_color_unique_methods <- true_color_vals_filtered %>% 
+  count(analytical_method)%>% 
+  mutate(samp_perc = n / sum(n) * 100)
+
+true_color_sample_methods <- true_color_vals_filtered %>% 
+  count(sample_method) %>% 
+  mutate(samp_perc = n / sum(n) * 100)
+
+# Now we create a classification groups based on analytical methods to sort
+# samples into (visual, spectrophotogrametry, photogrametry)
+
+visual_methods <- tibble(group = c("visual"),
+                         analytical_method = c("2120 B ~ Color in Water by Visual Comparison",
+                                               "Color - Visual Comparison Method",
+                                               "Color in Water by Visual Comparison",
+                                               "STANDARD METHODS 2120B COLOR BY VISUAL",
+                                               "2320 B ~ Alkalinity by Gran Titration"))
+
+specphoto_methods <- tibble(group = c("Spectrophotometry"),
+                            analytical_method = c("2120 C ~ Color in Water by Spectrophotometry",
+                                                  "Color - Spectrophotometric Single Wavelength Method",
+                                                  "Color by Spectrophotometric Analysis",
+                                                  "Color in Water by Spectrophotometry Modified",
+                                                  "Color in Water by Spectrophotometry"))
+
+photo_methods <- tibble(group = c("Photometry"),
+                        analytical_method = c("2120 E ~ Color in Water Using the ADMI Method",
+                                              "Color by Calculating ADMI Values",
+                                              "Color, wf, visual comparison",
+                                              "Color by Calculating ADMI Values"))
+
+ambiguous_methods<-tibble(group = c("Ambiguous"),
+                          analytical_method = c("10-308-00-1 A ~ Determination of Color in Water",
+                                                "Analytical procedure not specified",
+                                                "Color",
+                                                "COLOR",
+                                                "Color - Pt/Co units",
+                                                "COLOR (PLATINUM-COBALT UNITS)",
+                                                "COLOR 345 C",
+                                                "COLOR 345 F .45",
+                                                "COLOR 440 F .22",
+                                                "Color Analysis Using Platinum/Cobalt",
+                                                "COLOR IN WATERS",
+                                                "Color, APHA Platinum-Cobalt",
+                                                "Color, True",
+                                                "DEP-SOP-NU-094",
+                                                "EPA110.2",
+                                                "Estero Bay Aquatic Preserve tributary sampling",
+                                                "Field measurement/observation, generic method",
+                                                "Field Office procedures",
+                                                "FIIR - NPHL",
+                                                "Laboratory Procedures for Water Quality Chemical Analysis",
+                                                "LAKE COUNTY QUALITY SYSTEMS MANUAL",
+                                                "Lake Trafford",
+                                                "LEGACY",
+                                                "Legacy STORET migration; analytical procedure not specified",
+                                                "Measurement of Water Color",
+                                                "N/A Calculation",
+                                                "Other of Unknown Procedure",
+                                                "Other or Unknown Procedure",
+                                                "SM182120B",
+                                                "SM2120C",
+                                                "Standard Methods for the Examination of Water and Wastewater",
+                                                "To be updated",
+                                                "USEPA Methods for Chemical Analysis or Water and Wastewater; EPA 600/4-79-020",
+                                                NA,
+                                                "Color (EPA)",
+                                                "Field - Color",
+                                                "ANALYSIS OF COLOR IN WATERS - MODIFIED LACHAT METHOD 10-308-00-1-A",
+                                                "Apparent color (EPA110.2 /DODEC)",
+                                                "Apparent color (StdMeth /DODEC)",
+                                                "Apparent Color, Hach Color Wheel Method",
+                                                "Color in the Field by Unknown Limnology Color Chart",
+                                                "Color, APHA Platinum-Cobalt",
+                                                "COLOR,APPARENT(UNFILTERED SAMPLE) PLAT-COB UNITS",
+                                                "DEP Field Analytical Procedures",
+                                                "General Listing of Field and Lab Analytical Procedures for Manatee County",
+                                                "HACH KIT",
+                                                "I1250",
+                                                "LAKE COUNTY QUALITY SYSTEMS MANUAL",
+                                                "LaMotte Smart 2 Colorimeter",
+                                                "LEGACY",
+                                                "Legacy STORET migration; analytical procedure not specified",
+                                                "Other of Unknown Procedure",
+                                                "QA Plan #900456"))
+
+# Combine methods lists
+methods_stacked <- rbind(visual_methods, specphoto_methods, photo_methods, ambiguous_methods)
+
+# Now join the new method classifications and we will drop the datat with no
+# analytical methods since we can not be sure how the data is being analyzed
+# to sort into the classifcations for inslusion in the final aquasat dataset.
+
+true_color_method_groups <- left_join(x = true_color_vals_filtered,
+                                      y = methods_stacked,
+                                      by = "analytical_method")
+
+# Check to make sure observations all have group vals
+true_color_goup_NA <- true_color_method_groups %>% 
+  filter(is.na(group))
+
+# Drop the ambiguous methods since we want to keep high quality data, will have
+# to check to make sure that we do want to drop these vals
+true_color_ambiguous_methods_dropped <- true_color_method_groups %>% 
+  filter(!group == "Ambiguous")
+
+# Message about ambiguous records
+print(paste('We kept',
+            round(nrow(true_color_ambiguous_methods_dropped) /
+                    nrow(true_color_vals_filtered) * 100,
+                  2),
+            '% of samples, because the method could not be classified into an apparent/true color standard:'))
+
+rm(true_color_vals_filtered, true_color_apparent, true_color_color, true_color_true)
+gc()
+
+# Now we rerun and filter out nonsensical methods like filtered methods for
+# apparent color that can't exist because apparent color is nonfiltered while
+# checking to make sure we dropped everything else
+apparent_methods_check <- true_color_ambigous_methods_dropped %>% 
+  filter(parameter == "Apparent color") %>% 
+  count(analytical_method) %>% 
+  mutate(percent = n / sum(n) * 100)
+
+color_methods_check <- true_color_ambigous_methods_dropped %>% 
+  filter(parameter == "Color") %>% 
+  count(analytical_method)%>% 
+  mutate(percent = n / sum(n) * 100)
+
+true_color_methods_check <- true_color_ambigous_methods_dropped %>% 
+  filter(parameter == "True color") %>% 
+  count(analytical_method) %>% 
+  mutate(percent = n / sum(n) * 100)
+
+apparent_methods_plot <- ggplot(apparent_methods_check) +
+  geom_col(aes(x = analytical_method, y = percent)) +
+  theme_classic()+
+  labs(x = "Analytical method",
+       y = "Percent of data",
+       title = "Apparent Color") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+
+color_methods_plot <- ggplot(color_methods_check) +
+  geom_col(aes(x = analytical_method, y = percent)) +
+  theme_classic() +
+  labs(x = "Analytical method",
+       y = "Percent of data",
+       title = "Color") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+
+true_color_methods_plot <- ggplot(true_color_methods_check) +
+  geom_col(aes(x = analytical_method, y = percent)) +
+  theme_classic() +
+  labs(x = "Analytical method",
+       y = "Percent of data",
+       title = "True Color") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6))
+
+# The next step is to drop methods that can not occur with specific parameter
+# classification i.e apparent color can only be measured using visual methods
+# because all other standard require the sample to be filtered before measuring
+# and therefore making it apparent color. Luckily the Color parameter
+# classification comes with the USGS P-code so we can be sure that these are
+# actually True color measurements (00080,	Physical	Color, water, filtered,
+# platinum cobalt units	Agree, Dissolved, Color, PCU)
+
+# Should we change these Apparent Color to True Color or not since we cant be
+# 100% sure what they logged here?
 
 
-# Sample Fractions --------------------------------------------------------
-
-# When looking at these different grouped methodologies coupled with their 
-# fractionation we find that most samples were analyzed for the dissolved
-# fraction of silica. In fact, only the heteropoly blue method (a colorimetric
-# technique) had more samples that analyzed the total fraction of silica.
-
-narrowed_methods %>%
-  filter(grouped %in% c("ICP", "Colorimetry", "Ambiguous")) %>%
-  mutate(method_status = ifelse(is.na(method_status),
-                                "Ambiguous", method_status)) %>%
-  group_by(grouped, method_status, aquasat_fraction) %>%
-  summarize(count = n()) %>%
-  ggplot(aes(x = method_status, y = count, fill = aquasat_fraction)) +
-  geom_bar(stat = "identity", width = 1, color = "white") +
-  theme_bw() +
-  theme(text = element_text(size = 15)) +
-  coord_flip() +
-  ylab("Grouped Methodologies") +
-  xlab("") +
-  scale_fill_manual(values = c("#CC79A7", "#0072B2", "#F0E442", "#D55E00", "#009E73")) +
-  guides(fill = guide_legend(title = "Sample Fraction")) +
-  facet_wrap(~grouped) +
-  scale_y_continuous(labels = comma)
 
 
-# How to tier silica ------------------------------------------------------
-
-# There is no clear way of tiering silica based on fraction if we want all
-# tiers to be looking at the exact same thing. Instead, I suggest we only look
-# at samples that are analyzing the dissolved fraction. The dissolved fraction
-# makes up `r narrowed_methods %>% mutate(total=n()) %>% group_by(aquasat_fraction) %>% 
-#   filter(aquasat_fraction=="Dissolved") %>% summarize(perc=(n()/total)*100) %>% 
-#   distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% 
-# of all silica samples in the Water Quality Portal, a clear sign that the majority
-# of people monitoring silica are looking at the dissolved fraction. With this in 
-# mind, I suggest tiering silica as follows:
-#   1.  **Restrictive.** ICP (all versions). Dissolved fraction. Only water
-# samples with an accepted value that is reasonable with logical units.
-#   2.  **Narrowed.** ICP and colorimetry (all versions). Dissolved fraction.
-#      Only water samples with an accepted value that is reasonable with logical units.
-#   3.  **Inclusive.** ICP and colorimetry (all versions), and all other
-#     *non-ambiguous* methods. Dissolved fraction. Only water samples with an
-#      accepted value that is reasonable with logical units. Currently no samples
-#      fall within this tier.
-#   4.  **Ambiguous (and therefore removed)**. Ambiguous methods. Dissolved 
-#      fraction. Only water samples with an accepted value that is reasonable with 
-#      logical units.
-
-# Without any additional steps other than harmonizing units and removing NA
-# values (*I haven't looked at whether values are reasonable*), this is how that data looks:
-
-# Identify samples that have no meaningful data related to an NA value
-no_data_samples <- narrowed_methods %>%
-  filter(is.na(value) & is.na(units) & is.na(lab_comments) & is.na(result_comments)) 
-
-# Remove samples that have no values and no lab/result metadata
-silica_empties_removed <- narrowed_methods %>%
-  filter(status %in% c("Accepted", "Final", "Historical", "Validated")) %>%
-  filter(!index %in% no_data_samples$index)
-
-vals_cleaned <- silica_empties_removed %>%
-  mutate(numeric_value = as.numeric(value)) %>%
-  filter(!is.na(numeric_value)) # need to work on this
-
-# unit_disharmony <- function(d,lookup){
-#   d %>%
-#     anti_join(silica_lookup,by="units") %>%
-#     group_by(units) %>%
-#     summarize(count=n())  %>%
-#     kable(.,"html",caption="The following measurements
-#           were dropped because the units do not make sense") %>%
-#     kable_styling() %>%
-#     scroll_box(width="500px",height="400px")
-# }
-
-# Set up a lookup table so that final units are all in ug/L. 
-silica_lookup <- tibble(units = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L",
-                                  "mg/m3", "ppb", "mg/cm3", "ug/ml", "mg/ml",
-                                  "ppt", "umol/L"),
-                        conversion = c(1000, 1000, 1000, 1, 1, 1, 1,
-                                       1000000, 1000, 1000000, 0.000001,
-                                       60.080000))
-
-#unit_disharmony(vals_cleaned,silica_lookup)
-
-silica_harmonized <- vals_cleaned %>%
-  inner_join(silica_lookup,by="units") %>%
-  mutate(harmonized_value=(numeric_value*conversion)/1000,
-         harmonized_unit="mg/L")
-
-silica_tiered <- silica_harmonized %>%
-  filter(aquasat_fraction=="Dissolved") %>%
-  mutate(tiers=case_when(grouped=="ICP" ~ "Restrictive",
-                         #grouped=="ICP/MS" ~ "Restrictive",
-                         grouped=="Colorimetry" ~ "Narrowed",
-                         grouped %in% c("Direct Nitrous Oxide-Acetylene Flame Method") ~ "Inclusive",
-                         grouped=="Ambiguous" ~ "Dropped from Aquasat"))
 
 
-# meanscores <- attributes(silica_tiered$grouped)$harmonized_value
-# 
-# meandf <- data.frame(
-#   variable = rep(names(meanscores), 4),
-#   value    = rep(unname(meanscores), 6),
-#   cluster  = rep(1:6, each=14)
-#   )
-
-ggplot(data=silica_tiered) +
-  geom_histogram(aes(x=(harmonized_value), fill=tiers), bins=100) +
-  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
-  facet_wrap(~tiers, scales="fixed") +
-  xlab("Silica mg/L") +
-  theme_bw() +
-  theme(legend.position = "none",
-        text = element_text(size = 20))
 
 
-# Remaining questions -----------------------------------------------------
 
-# 1.  Is this tiering appropriate? Does not take into account **differences
-# in which method is better for a specific range of values**. **I'm also
-# lumping all ICP methods (ICP-MS, ICP-AES, ICP, etc.) together.**
-# -   This approach to tiering tosses out what could be perfectly good
-# data (e.g. high-quality "total" silica). Perhaps not an issue for silica,
-# but this could be a pretty subjective way to tier other metals when we get to them?
-# 2.  **How to handle non-detects/BDLs.** In the upstream workflow I am
-# removing all samples with non-numeric values. However, many samples
-# have information within the value field that could be used to determine
-# samples that were below the detection limit:
 
-silica_empties_removed %>%
-  mutate(numeric_value=as.numeric(value)) %>%
-  filter(is.na(numeric_value)) %>%
-  distinct(value,.keep_all = T) %>%
-  filter(!is.na(value)) %>%
-  arrange(desc(value)) %>%
-  select(value) %>%
-  kable(.,"html",caption="Text Inputted in Value Field") %>%
-  kable_styling() %>%
-  scroll_box(width="900px",height="400px")
 
-# There are also a lot of samples that are shown to be UNDER some value
-# (i.e. \< 2.6). For these, I've played around with changing their value
-# to a random number between 0 and half of the listed value, though this
-# definitely makes some pretty large/maybe inappropriate assumptions about
-# what these values actually mean! I've flagged these in the \`aquasat_comments\` 
-# field as being \*Approximated, EPA MDL method\*.
+return(
+  list(
+    true_color_vals_filtered = true_color_vals_filtered,
+    parameter_count = parameter_count,
+    parameter_barplot = parameter_barplot,
+    true_color_unique_methods = true_color_unique_methods,
+    true_color_sample_methods = true_color_sample_methods,
+    apparent_methods_plot = apparent_methods_plot,
+    color_methods_plot = color_methods_plot,
+    true_color_methods_plot = true_color_methods_plot
+  )
+)
 
-mdl <- silica_empties_removed %>%
-  select(index,value) %>%
-  filter(grepl("0|1|2|3|4|5|6|7|8|9",value) & grepl("<", value))
-
-mdl$num_value <- as.numeric(str_replace_all(mdl$value, c("\\<"="", "\\*" = "")))
-
-mdl <- mdl %>%
-  mutate(zero = 0,
-         half = num_value/2)
-
-mdl$epa_mdl <- with(mdl,runif(nrow(mdl),zero,half))
-
-mdl <- select(mdl,index,epa_mdl)
-
-# replace value field with these new values
-mdls_added <- silica_empties_removed %>%
-  left_join(mdl,by="index") %>%
-  mutate(aquasat_value=ifelse(index %in% mdl$index, epa_mdl, value),
-         aquasat_comments = ifelse(index %in% mdl$index, "Approximated, EPA LDL method", NA))
-
-# I've also played around with identifying samples that had a numeric character
-# with an asterisk, but also provide information in the lab/result comments that
-# suggest that they were approximated. Here I'm not dropping these samples, 
-# but instead am just flagging them as approximated in our \`aquasat_comments\`
-
-approx <- mdls_added %>%
-  filter(!index %in% mdl$index) %>% # remove the samples that we've already approximated using the EPA method
-  mutate(num_value = as.numeric(value)) %>%
-  filter(is.na(num_value) & 
-           grepl("0|1|2|3|4|5|6|7|8|9", value) &
-           (grepl("result approx|RESULT IS APPROX", lab_comments, ignore.case=T)|
-              grepl("result approx|RESULT IS APPROX", result_comments, ignore.case=T ))) #select samples that are non numeric but have a number listed as well as comments related to approximation
-
-approx$approx_value <- as.numeric(str_replace_all(approx$value, c("\\*" = "")))
-approx <- select(approx,index,approx_value)
-
-# replace value field with these new values
-
-approx_added <- mdls_added %>%
-  
-  left_join(approx,by="index") %>%
-  
-  mutate(aquasat_value=ifelse(index %in% approx$index, approx_value, aquasat_value)) %>%
-  
-  mutate(aquasat_comments=ifelse(index %in% approx$index, "Approximate", aquasat_comments))
 
 
 # }
-
-
-
-

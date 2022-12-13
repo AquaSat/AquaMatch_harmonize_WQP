@@ -17,6 +17,7 @@ execute:
 ```{r, echo=FALSE}
 raw_silica <- input_var$raw_silica
 p_codes <- input_var$p_codes
+harmonized_silica <- input$harmonized_silica
 ```
 
 ## Aggregating

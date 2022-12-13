@@ -15,11 +15,6 @@ execute:
   cache: true
 ---
 
-```{r, echo=FALSE}
-raw_sdd <- input_var$raw_sdd
-p_codes <- input_var$p_codes
-```
-
 ## First step is to read in the data and make it workable, we'll then filter the data to 1984 and beyond
 
 ```{r}
@@ -52,7 +47,56 @@ raw_sdd <- raw_sdd %>%
   mutate(year = year(date),
          units = trimws(units)) %>%
   filter(year >= 1984) %>%
+  filter(media%in%c("Water","water")) %>%
+  filter(type%in%c('Surface Water','Water','Estuary','Ocean Water','Mixing Zone')|is.na(type)) %>%
   rowid_to_column(.,"index")
+
+
+# Get an idea of how many analytical methods exist:
+raw_sdd %>%
+  count(analytical_method) %>%
+  arrange(desc(n))
+
+# Add a new column describing the methods groups
+# <Insert grouping methods here>
+
+# Now count the fraction column: 
+raw_sdd %>%
+  count(fraction) %>%
+  arrange(desc(n))
+
+# Create a column to lump things that do/don't make sense for the fraction column
+filtered_sdd <- raw_sdd %>%
+  mutate(aquasat_fraction = if_else(
+    condition = fraction %in% c(NA, "Total", " ", "None", "Unfiltered", "Field"),
+    true = "Makes sense",
+    false = "Nonsensical"))
+
+# Now count the sample_method column: 
+raw_sdd %>%
+  count(sample_method) %>%
+  arrange(desc(n))
+
+# Add a new column describing the sample_method group:
+# <Insert grouping methods here>
+
+# Now count the units column: 
+raw_sdd %>%
+  count(units) %>%
+  arrange(desc(n))
+
+# Add a new column describing the units group:
+# <Insert grouping methods here>
+
+# Next check the value column for units
+# Use that to backfill missing units?
+# See how practical this is
+# e.g.:
+raw_sdd$value[raw_sdd$value %>%
+    grepl(pattern = "[a-zA-Z] ")] %>%
+    unique()
+
+
 
 ```
 
@@ -200,11 +244,11 @@ write.csv(sorted_matrix, "C:/Users/ddomi/Documents/Code/Aquasat/Aquasat_Processi
 First off, let's focus our data set to "water" samples (as done in original AquaSat). Then we can remove any samples from our data set that failed, or don't have enough lab metadata to make assumptions about the values presented. (In the future, these `grepl` functions can be based on the word matrices we just produced upstream!)
 
 ```{r}
-trucolor_no_data_samples <- raw_sdd %>%
+sdd_no_data_samples <- raw_sdd %>%
   # Identify samples that have no meaningful data related to an NA value
   filter(is.na(value) & is.na(units) & is.na(lab_comments) & is.na(result_comments))
 
-trucolor_fails_removed <- raw_sdd %>%
+sdd_fails_removed <- raw_sdd %>%
   filter(media == "Water",
          status %in% c('Accepted', 'Final', 'Historical', 'Validated'),
          # No failure-related field comments, slightly different list of words
@@ -263,7 +307,7 @@ trucolor_fails_removed <- raw_sdd %>%
            ignore.case = T
          ) | is.na(value),
          # Remove samples that have no values and no lab/result metadata
-         !index %in% trucolor_no_data_samples$index)
+         !index %in% sdd_no_data_samples$index)
 ```
 
 ### The result of dropping the data based on various words in the lab, field, result comments
@@ -272,7 +316,7 @@ trucolor_fails_removed <- raw_sdd %>%
 print(
   paste(
     'We kept',
-    round(nrow(trucolor_fails_removed) / nrow(raw_sdd) * 100, 2),
+    round(nrow(sdd_fails_removed) / nrow(raw_sdd) * 100, 2),
     '% of samples, because the method used did not make sense. These methods are:'
   )
 )
@@ -280,13 +324,38 @@ print(
 
 ```{r, echo=FALSE, message=FALSE}
 
-rm(p_codes,trucolor_no_data_samples, raw_sdd) 
+rm(p_codes,sdd_no_data_samples, raw_sdd) 
 ```
 
 ## Lastly we filter by non-sensical units only keeping those that make sense which are Platinum Cobalt Units and ADMI for the 2120E standard
 
-Around this point I (MRB) start to be confused by whether this script is finished or a combination of multiple parameters, not just Secchi
 
-```{r echo=FALSE}
-return_value <- trucolor_fails_removed
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

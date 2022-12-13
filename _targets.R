@@ -200,9 +200,15 @@ mrb_targets <- list(
              packages = c("tidyverse", "lubridate", "forcats", "scales",
                           "ggthemes")),
   
+  tar_target(harmonized_true_color,
+             harmonize_true_color(raw_true_color = wqp_data_aoi_formatted_filtered %>%
+                                    filter(parameter == "true_color"),
+                                  p_codes = p_codes),
+             packages = c("tidyverse", "lubridate")),
+  
   tar_render(silica_report,
              path = "src/silica_update_usgs_placeholder.Rmd",
-             packages = c("tidyverse", "lubridate", "forcats"),
+             packages = c("tidyverse", "lubridate", "forcats")#,
              # In the future reports like this could be paramaterized instead
              # of using tar_read()/_load() calls inside the Rmd because
              # this makes it more readable when updating the pipeline
@@ -210,7 +216,11 @@ mrb_targets <- list(
              #               p_codes = p_codes,
              #               raw_silica = wqp_data_aoi_formatted_filtered %>%
              #                 filter(parameter == "silica"))
-  )
+  ),
+  
+  tar_render(true_color_report,
+             path = "src/true_color_update_usgs_placeholder.Rmd",
+             packages = c("tidyverse", "lubridate", "forcats", "kableExtra"))
   
   
   

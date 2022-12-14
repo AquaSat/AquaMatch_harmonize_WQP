@@ -129,7 +129,7 @@ tss_perc %>%
   scroll_box(width = "600px", height = "400px")
 
 # Keep only the sand fraction data (~50% of the data)
-sand.harmonized  <- tss_perc %>%
+sand.harmonized <- tss_perc %>%
   filter(particle_size %in%  c("< 0.0625 mm","sands")) %>%
   mutate(conversion = NA,
          harmonized_parameter = "p.sand",

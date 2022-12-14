@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|d035bc312a82a4c2|||||||||||||||
+.Random.seed|object|d53340361dd04143|||||||||||||||
 add_download_groups|function|8ade871c9ad1006a|||||||||||||||
 analytical_kable|function|99b535e1b201b721|||||||||||||||
 book|stem||751a3f93863fcc03|4a33e4240200ff39|-1172694532||t19333.9134528965s||0|rds|local|vector|||106.379|You have 5 Rmd input files but only 1 firstlevel headings. Did you forget firstlevel headings in certain Rmd files. cannot open file nextwebeginfilteringtheresultstoexcludequalitativeresultsthisisbecausetherearevariouscolorspecificationssuchasgreenyellowbrownetc.thataltoughgiveanestimationofapparentcolordonotprovidearelevantscalewhichiscomparabletotheotherapparenttruecolorscales..html File name too long|cannot open the connection
@@ -20,11 +20,13 @@ get_p_codes|function|e00dc695b6cc4f39|||||||||||||||
 get_wqp_state_codes|function|ee85de9a5079b4cd|||||||||||||||
 harmonize_silica|function|5df3b15a68b2749c|||||||||||||||
 harmonize_true_color|function|c98ab6a3652e6829|||||||||||||||
+harmonize_tss|function|295a2f971f293ec7|||||||||||||||
 harmonized_silica|stem|58174d160256e029|f141653a53670a53|410ee303b80e306c|-695827815||t19338.8489605602s|b20877f7334406db|228723020|rds|local|vector|||38.828||
 harmonized_true_color|stem|d8b1346e29c4e6f9|e775f049415bc155|adb99f8e674534e1|705854762||t19339.8941564665s|4e9c4395db386932|126532655|rds|local|vector|||24.178||
+harmonized_tss|stem|1166156cd7e69ab2|bc3d54fcc0b76067|a615ee2fd12c1a29|-239553435||t19340.0466791853s|037c8a2b4d470d48|829018924|rds|local|vector|||44.767|NAs introduced by coercion|
 identify_bad_ids|function|3b165a4ef8a466df|||||||||||||||
 inventory_wqp|function|60808f0253c95a6c|||||||||||||||
-mrb_targets|object|5777bdd3c6ea4f0c|||||||||||||||
+mrb_targets|object|ea68223245b052be|||||||||||||||
 p_codes|stem|b6c63f06c06d66b5|96661ce76ba61cab|a099a5bdc6a8cfa7|-953467852||t19331.8901933751s|cf241268dbedbe9e|464289|rds|local|vector|||20.172||
 p1_char_names|stem|e3412bf7462d989b|59f318a8b0ee8573|2466f86a3a3168ae|1837658322||t19327.9962766865s|e41131ab9ce81034|488|rds|local|vector||p1_char_names_ec5921d9*p1_char_names_588a4787*p1_char_names_3ce27702*p1_char_names_95fe2781*p1_char_names_194c01b5*p1_char_names_ac1f57d4*p1_char_names_c8520ead*p1_char_names_1c762bb1*p1_char_names_a2b5476c*p1_char_names_68cac44a*p1_char_names_18c13a45*p1_char_names_d0bc51fa*p1_char_names_16ddfe86*p1_char_names_19ceb535*p1_char_names_ae7efd4c*p1_char_names_5ecc9ed1*p1_char_names_a60f1053*p1_char_names_0a3b7932*p1_char_names_ab938c4f*p1_char_names_775c86e3*p1_char_names_13a0a843*p1_char_names_f239cc08*p1_char_names_9c523b1f*p1_char_names_8b3a27e5*p1_char_names_c459565c*p1_char_names_62b0fa26*p1_char_names_376e336c*p1_char_names_83a3ec8b*p1_char_names_2cd303f6*p1_char_names_87af09ea*p1_char_names_c3400664*p1_char_names_a3b1fa64*p1_char_names_1ee8076b|0.934||
 p1_char_names_crosswalk|stem|c43fa1d4e4b22c67|928bb7215b3f0493|377bf85ba88533e6|1377509317||t19327.9962658279s|5a04a2bfcda35a41|611|rds|local|vector|||0.002||
@@ -18955,6 +18957,7 @@ summarize_wqp_records|function|ba097646cab3bf98|||||||||||||||
 transform_site_locations|function|a9b6eb3f5017e06e|||||||||||||||
 true_color_report|stem|76d636afcc42e75f|66b0378342f98d38|fa09295ac8461cb8|1411395022|src/true_color_update_usgs_placeholder.html*src/true_color_update_usgs_placeholder.Rmd|t19339.8950033391s|c626d98b3af3a240|1186709|file|local|vector|||73.166||
 true_color_update_usgs|stem|6cda0df8f0883c3a|a86c28d91b84ebe9|1bb82848b50d87c9|110068024||t19332.7009529062s|ffa6dcb6bb430f58|27691154|feather|local|vector|||27.305||
+tss_report|stem|1c4d142981712830|a4a8c2a490a0b6ce|e582582ea598be6f|-789354975|src/tss_update_usgs_placeholder.html*src/tss_update_usgs_placeholder.Rmd|t19340.0519070693s|9ddbb404ce164ada|727445|file|local|vector|||451.393||
 tss_update_usgs|stem|f1edd6402f913d99|6895bf9100346162|1bb82848b50d87c9|291972387||t19332.7006347384s|8675d5efc20b50c6|634|feather|local|vector|||66.008||
 unit_disharmony|function|69fa380e91333c2d|||||||||||||||
 unit_kable|function|094e46a8e1b7427f|||||||||||||||

@@ -192,24 +192,20 @@ remove_duplicates <- function(wqp_data, duplicate_definition){
 }
 
 
+# Function to harmonize the silica data drawn from WQP, prepare it for use further
+# down the pipeline, and provide summarized outputs for use in an Rmd/Qmd to
+# illustrate the process
 harmonize_silica <- function(raw_silica,
                              p_codes,
-                             commenttext_missing = c('analysis lost', 'not analyzed', 
-                                                     'not recorded', 'not collected', 
-                                                     'no measurement taken'),
-                             duplicate_definition = c('OrganizationIdentifier',
-                                                      'MonitoringLocationIdentifier',
-                                                      'ActivityStartDate', 
-                                                      'ActivityStartTime.Time',
-                                                      'CharacteristicName', 
-                                                      'ResultSampleFractionText')){
+                             commenttext_missing,
+                             duplicate_definition){
   
   # Aggregating -------------------------------------------------------------
   
   raw_silica <- raw_silica %>%
     # Keep and rename columns of interest
     rename(date = ActivityStartDate,
-           parameter = CharacteristicName,
+           orig_parameter = CharacteristicName,
            parm_cd = USGSPCode,
            units = ResultMeasure.MeasureUnitCode,
            SiteID = MonitoringLocationIdentifier,
@@ -341,11 +337,9 @@ harmonize_silica <- function(raw_silica,
   
   # Methods -----------------------------------------------------------------
   
-  # Silica can be analyzed in myriad ways; in the water quality portal,
-  # silica had `r n_distinct(narrowed_methods$analytical_method)` unique analytic
-  # methods listed for a total of `r nrow(narrowed_methods)` samples. However, many
-  # of these analytic methods can be grouped together into just a few actual
-  # methodologies that are realistic for silica:
+  # Silica can be analyzed in myriad ways. However, many of these analytic
+  # methods can be grouped together into just a few actual methodologies
+  # that are realistic for silica:
   # -   Colorimetry: this represents samples that reference the molybdosilicate
   #       method (SM 4500 C), the heteropoly blue method (SM 4500 D), the automated
   #       method for molybdate-reactive silica (SM 4500 E), flow injection analysis for
@@ -384,12 +378,7 @@ harmonize_silica <- function(raw_silica,
   
   
   # It is clear that colorimetric methods are the most common across grouped
-  # methods (at `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-  #            filter(grouped=="Colorimetry") %>% summarize(perc=(n()/total)*100) %>%
-  #            distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>%
-  #            paste()`%).
-  # 
-  # However, colorimetry encompasses several different types of analytic 
+  # methods. However, colorimetry encompasses several different types of analytic 
   # methods that are defined by either the EPA or SM; there are also a large
   # amount that do not clearly define which colorimetric method was used 
   # (i.e., ambiguous but some form of colorimetry):
@@ -419,11 +408,7 @@ harmonize_silica <- function(raw_silica,
     theme_void() + # remove background, grid, numeric label
     theme(text = element_text(size = 20))
   
-  # The ICP method is the second most common method for silica analysis,
-  # representing `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-  #   filter(grouped=="ICP") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% 
-  #   ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all silica samples.
-  
+  # The ICP method is the second most common method for silica analysis
   icp_pie_plot_data <- narrowed_methods %>%
     filter(grouped == "ICP") %>%
     group_by(method_status) %>%
@@ -445,13 +430,8 @@ harmonize_silica <- function(raw_silica,
     theme(text = element_text(size = 20))
   
   # The third most prevalent aggregated method encompasses samples whose 
-  # methodologies were too vague to determine how they were analyzed.
-  # `r narrowed_methods %>% mutate(total=n()) %>% group_by(grouped) %>%
-  #   filter(grouped=="Ambiguous") %>% summarize(perc=(n()/total)*100) %>%
-  #   distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>%
-  #   paste()`% of all samples are considered ambiguous. Below is a table
-  # of all methodologies that we considered ambiguous:
-  
+  # methodologies were too vague to determine how they were analyzed. Below
+  # is a table of all methodologies that we considered ambiguous:
   ambiguous_summary <- narrowed_methods %>%
     filter(grouped == "Ambiguous") %>%
     group_by(analytical_method) %>%
@@ -489,12 +469,7 @@ harmonize_silica <- function(raw_silica,
   
   # There is no clear way of tiering silica based on fraction if we want all
   # tiers to be looking at the exact same thing. Instead, I suggest we only look
-  # at samples that are analyzing the dissolved fraction. The dissolved fraction
-  # makes up `r narrowed_methods %>% mutate(total=n()) %>% group_by(aquasat_fraction) %>% 
-  #   filter(aquasat_fraction=="Dissolved") %>% summarize(perc=(n()/total)*100) %>% 
-  #   distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% 
-  # of all silica samples in the Water Quality Portal, a clear sign that the majority
-  # of people monitoring silica are looking at the dissolved fraction. With this in 
+  # at samples that are analyzing the dissolved fraction. With this in 
   # mind, I suggest tiering silica as follows:
   #   1.  **Restrictive.** ICP (all versions). Dissolved fraction. Only water
   # samples with an accepted value that is reasonable with logical units.
@@ -508,9 +483,6 @@ harmonize_silica <- function(raw_silica,
   #      fraction. Only water samples with an accepted value that is reasonable with 
   #      logical units.
   
-  # Without any additional steps other than harmonizing units and removing NA
-  # values (*I haven't looked at whether values are reasonable*), this is how that data looks:
-  
   # Clean data and assign flags
   
   # Flag and remove duplicates:
@@ -518,48 +490,40 @@ harmonize_silica <- function(raw_silica,
     flag_duplicates(., duplicate_definition) %>%
     remove_duplicates(., duplicate_definition)
   
-  message(sprintf(paste0("Removed %s duplicated records."), 
-                  nrow(narrowed_methods) - nrow(no_duplicate_samples)))
+  # Remove samples that have duplicates and no values + no lab/result metadata
+  silica_empties_removed <- no_duplicate_samples %>%
+    flag_missing_results(., commenttext_missing) %>%
+    filter(!flag_missing_result,
+           status %in% c("Accepted", "Final", "Historical", "Validated"),
+           !(is.na(value) &
+               is.na(units) &
+               is.na(lab_comments) &
+               is.na(result_comments))) 
   
-  # Remove samples that have no meaningful data related to an NA value and
-  # duplicates
-  no_data_samples <- narrowed_methods %>%
-    # Flag true missing results
-    flag_missing_results(., commenttext_missing)
+  silica_numeric_added <- silica_empties_removed %>%
+    mutate(numeric_value = as.numeric(value)) #%>%
+  # This would drop NDs:
+  # filter(!is.na(numeric_value))
   
+  # Make sure no numeric data is being lost (Necessary? I'm not sure if
+  # there's an actual risk of this situation based on how R handles data types,
+  # but I wanted to check for myself and am leaving it in for now):
+  check_conversion <- silica_numeric_added %>%
+    select(numeric_value, value) %>%
+    mutate(numeric_check = if_else(
+      # value entry containing numbers where numbers weren't kept?:
+      condition = is.na(numeric_value) & grepl(x = value, pattern = "[0-9]"),
+      true = "May contain numeric data",
+      false = NA_character_)) %>%
+    filter(!is.na(numeric_check))
   
+  if(nrow(check_conversion) > 0){
+    warning("Some numeric data may have been lost during numeric conversion of values!")
+  }
   
+  rm(check_conversion)
+  gc()
   
-  %>%
-    
-    
-    
-    filter(is.na(value) &
-             is.na(units) &
-             is.na(lab_comments) &
-             is.na(result_comments),
-           
-    ) 
-  
-  # Remove samples that have no values and no lab/result metadata
-  silica_empties_removed <- narrowed_methods %>%
-    filter(status %in% c("Accepted", "Final", "Historical", "Validated"),
-           !index %in% no_data_samples$index)
-  
-  vals_cleaned <- silica_empties_removed %>%
-    mutate(numeric_value = as.numeric(value)) %>%
-    filter(!is.na(numeric_value)) # need to work on this
-  
-  # unit_disharmony <- function(d,lookup){
-  #   d %>%
-  #     anti_join(silica_lookup,by="units") %>%
-  #     group_by(units) %>%
-  #     summarize(count=n())  %>%
-  #     kable(.,"html",caption="The following measurements
-  #           were dropped because the units do not make sense") %>%
-  #     kable_styling() %>%
-  #     scroll_box(width="500px",height="400px")
-  # }
   
   # Set up a lookup table so that final units are all in ug/L. 
   silica_lookup <- tibble(units = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L",
@@ -569,34 +533,26 @@ harmonize_silica <- function(raw_silica,
                                          1000000, 1000, 1000000, 0.000001,
                                          60.080000))
   
-  #unit_disharmony(vals_cleaned,silica_lookup)
-  
-  silica_harmonized <- vals_cleaned %>%
+  # Add unit conversion
+  silica_harmonized <- silica_numeric_added %>%
     inner_join(x = .,
                y = silica_lookup,
                by = "units") %>%
     mutate(harmonized_value = (numeric_value * conversion) / 1000,
            harmonized_unit = "mg/L")
   
+  # Tier based on methods group
   silica_tiered <- silica_harmonized %>%
     filter(aquasat_fraction == "Dissolved") %>%
     mutate(tiers = case_when(grouped == "ICP" ~ "Restrictive",
                              #grouped=="ICP/MS" ~ "Restrictive",
                              grouped == "Colorimetry" ~ "Narrowed",
-                             grouped %in% c("Direct Nitrous Oxide-Acetylene Flame Method") ~ "Inclusive",
+                             grouped == "Direct Nitrous Oxide-Acetylene Flame Method" ~ "Inclusive",
                              grouped == "Ambiguous" ~ "Dropped from Aquasat"))
   
-  
-  # meanscores <- attributes(silica_tiered$grouped)$harmonized_value
-  # 
-  # meandf <- data.frame(
-  #   variable = rep(names(meanscores), 4),
-  #   value    = rep(unname(meanscores), 6),
-  #   cluster  = rep(1:6, each=14)
-  #   )
-  
+  # Histogram of records by silica tier
   silica_tier_hist <- ggplot(data = silica_tiered) +
-    geom_histogram(aes(x = (harmonized_value), fill = tiers), bins = 100) +
+    geom_histogram(aes(x = harmonized_value, fill = tiers), bins = 100) +
     scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
                   labels = trans_format("log10", math_format(10^.x))) +
     facet_wrap(~tiers, scales = "fixed") +
@@ -605,97 +561,24 @@ harmonize_silica <- function(raw_silica,
     theme(legend.position = "none",
           text = element_text(size = 20))
   
-  
-  # Remaining questions -----------------------------------------------------
-  
-  # 1.  Is this tiering appropriate? Does not take into account **differences
-  # in which method is better for a specific range of values**. **I'm also
-  # lumping all ICP methods (ICP-MS, ICP-AES, ICP, etc.) together.**
-  # -   This approach to tiering tosses out what could be perfectly good
-  # data (e.g. high-quality "total" silica). Perhaps not an issue for silica,
-  # but this could be a pretty subjective way to tier other metals when we get to them?
-  # 2.  **How to handle non-detects/BDLs.** In the upstream workflow I am
-  # removing all samples with non-numeric values. However, many samples
-  # have information within the value field that could be used to determine
-  # samples that were below the detection limit:
-  
-  silica_nonnumeric_summary <- silica_empties_removed %>%
-    mutate(numeric_value = as.numeric(value)) %>%
-    filter(is.na(numeric_value)) %>%
-    distinct(value, .keep_all = T) %>%
-    filter(!is.na(value)) %>%
-    arrange(desc(value)) %>%
-    select(value)
-  
-  # There are also a lot of samples that are shown to be UNDER some value
-  # (i.e. \< 2.6). For these, I've played around with changing their value
-  # to a random number between 0 and half of the listed value, though this
-  # definitely makes some pretty large/maybe inappropriate assumptions about
-  # what these values actually mean! I've flagged these in the \`aquasat_comments\` 
-  # field as being \*Approximated, EPA MDL method\*. 
-  
-  mdl <- silica_empties_removed %>%
-    select(index, value) %>%
-    filter(grepl("0|1|2|3|4|5|6|7|8|9", value) & grepl("<", value))
-  
-  mdl$num_value <- as.numeric(str_replace_all(string = mdl$value,
-                                              pattern = c("\\<" = "",
-                                                          "\\*" = "")))
-  
-  mdl <- mdl %>%
-    mutate(zero = 0,
-           half = num_value / 2)
-  
-  mdl$epa_mdl <- with(mdl, runif(nrow(mdl), zero, half))
-  
-  mdl <- select(mdl, index, epa_mdl)
-  
-  # Replace value field with these new values
-  mdls_added <- silica_empties_removed %>%
-    left_join(x = .,
-              y = mdl,
-              by = "index") %>%
-    mutate(aquasat_value = ifelse(index %in% mdl$index, epa_mdl, value),
-           aquasat_comments = ifelse(index %in% mdl$index, "Approximated, EPA LDL method", NA))
-  
-  # I've also played around with identifying samples that had a numeric character
-  # with an asterisk, but also provide information in the lab/result comments that
-  # suggest that they were approximated. Here I'm not dropping these samples, 
-  # but instead am just flagging them as approximated in our \`aquasat_comments\`
-  
-  approx <- mdls_added %>%
-    filter(!index %in% mdl$index) %>% # remove the samples that we've already approximated using the EPA method
-    mutate(num_value = as.numeric(value)) %>%
-    filter(is.na(num_value) & 
-             grepl("0|1|2|3|4|5|6|7|8|9", value) &
-             (grepl("result approx|RESULT IS APPROX", lab_comments, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX", result_comments, ignore.case = T))) #select samples that are non numeric but have a number listed as well as comments related to approximation
-  
-  approx$approx_value <- as.numeric(str_replace_all(string = approx$value,
-                                                    pattern = c("\\*" = "")))
-  approx <- select(approx, index, approx_value)
-  
-  # Replace value field with these new values
-  approx_added <- mdls_added %>%
-    left_join(x = .,
-              y = approx,
-              by = "index") %>%
-    mutate(aquasat_value = ifelse(index %in% approx$index, approx_value, aquasat_value),
-           aquasat_comments = ifelse(index %in% approx$index, "Approximate", aquasat_comments))
+  # MRB Notes:
+  # - Any mdl cleaning needs to be re-added to this function once refined
+  # - Need to incorporate fail checking, e.g. the grepl chains in the secchi script
+  # - Check for and clean up redundancy between USGS filtering out of missing data
+  #   and that which we've implemented
   
   return(
     list(
-      approx_added = approx_added,
       horiz_bar_rec_by_methods = horiz_bar_rec_by_methods,
       colorimetry_pie_plot = colorimetry_pie_plot,
       icp_pie_plot = icp_pie_plot,
       ambiguous_summary = ambiguous_summary,
       horiz_bar_rec_grouped_frac = horiz_bar_rec_grouped_frac,
       silica_tiered = silica_tiered,
-      silica_tier_hist = silica_tier_hist,
-      silica_nonnumeric_summary = silica_nonnumeric_summary
+      silica_tier_hist = silica_tier_hist
     )
   )
+  
 }
 
 

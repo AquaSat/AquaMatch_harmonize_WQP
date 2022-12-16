@@ -1,4 +1,4 @@
-# A function to repare a data frame that maps state names to the FIPS codes
+# A function to repair a data frame that maps state names to the FIPS codes
 # used by WQP
 get_wqp_state_codes <- function() {
   
@@ -12,90 +12,6 @@ get_wqp_state_codes <- function() {
   return(states_df)
   
 }
-
-# A function to acquire a data frame of site x constituent information, with
-# counts of observations per site-constituent combination and all the site
-# metadata that looks useful
-# inventory_wqp <- function(ind_file, wqp_state_codes, wqp_states, wqp_codes) {
-#   
-#   # Convert states list to FIPS list
-#   state_codes <- wqp_state_codes %>%
-#     filter(name %in% wqp_states) %>%
-#     pull(value)
-#   
-#   # Identify available constituent sets
-#   constituents <- names(wqp_codes$characteristicName)
-#   
-#   # Prepare the args to whatWQPdata. All arguments will be the same every time
-#   # except characteristicName, which we'll loop through to get separate counts
-#   # for each
-#   wqp_args <- list(
-#     statecode = state_codes,
-#     siteType = wqp_codes$siteType,
-#     # To be updated each time through loop:
-#     characteristicName = NA,
-#     sampleMedia = wqp_codes$sampleMedia
-#     # We'd include dates, but they get ignored by the service behind whatWQPdata
-#   )
-#   
-#   # Loop over the constituents, getting rows for each
-#   sample_time <- system.time({
-#     samples <- bind_rows(lapply(constituents, function(constituent) {
-#       
-#       message(Sys.time(), ": getting inventory for ", constituent)
-#       
-#       wqp_args$characteristicName <- wqp_codes$characteristicName[[constituent]]
-#       
-#       tryCatch({
-#         wqp_wdat <- do.call(whatWQPdata, wqp_args)
-#         mutate(wqp_wdat, constituent=constituent)
-#       }, error = function(e) {
-#         # Keep going IFF the only error was that there weren't any matching sites
-#         if(grepl("arguments imply differing number of rows", e$message)) {
-#           NULL
-#         } else {
-#           stop(e)
-#         }
-#       })
-#     }))
-#   })
-#   message(sprintf("sample inventory complete, required %0.0f seconds", sample_time[["elapsed"]]))
-#   
-#   # Get additional site information
-#   message(Sys.time(), ": getting additional site data")
-#   
-#   site_time <- system.time({
-#     
-#     wqp_site_args <- wqp_args[names(wqp_args) != "characteristicName"]
-#     sites <- do.call(whatWQPsites, wqp_site_args)
-#     
-#   })
-#   message(sprintf("site inventory complete, required %0.0f seconds", site_time[["elapsed"]]))
-#   
-#   # merge constituent info with site info
-#   wqp_info <- left_join(
-#     x = samples %>%
-#       select(Constituent = constituent, MonitoringLocationIdentifier, resultCount,
-#              MonitoringLocationName, MonitoringLocationTypeName,
-#              ResolvedMonitoringLocationTypeName),
-#     y = sites %>%
-#       select(MonitoringLocationIdentifier, LatitudeMeasure, LongitudeMeasure,
-#              HorizontalCoordinateReferenceSystemDatumName, HUCEightDigitCode,
-#              CountryCode, StateCode, CountyCode, OrganizationFormalName) %>%
-#       # Replace lat/lon numeric flags with NAs
-#       mutate(LatitudeMeasure = ifelse(LatitudeMeasure < 10, NA, LatitudeMeasure),
-#              LongitudeMeasure = ifelse(LongitudeMeasure > -10, NA, LongitudeMeasure)),
-#     by = "MonitoringLocationIdentifier")
-#   
-#   # Write the data file and the indicator file
-#   # data_file <- as_data_file(ind_file)
-#   # feather::write_feather(wqp_info, path=data_file)
-#   # sc_indicate(ind_file, data_file=data_file)
-#   # invisible()
-#   
-#   return(wqp_info)
-# }
-
 
 # A function to pull the parameter codes from the USGS website and save them
 # as a table for use in the cleaning process
@@ -117,20 +33,6 @@ get_p_codes <- function(){
                              pad = "0"))
   
   return(p_codes)
-}
-
-# A function that allows you to knit an Rmd and also return a value from that
-# Rmd back to the pipeline. Based on:
-# https://stackoverflow.com/questions/58315771/can-rmarkdown-return-a-value-to-a-target
-# Targets does not allow this otherwise:
-# https://github.com/ropensci/tarchetypes/discussions/125
-render_and_return <- function(input_var, input_file, output_file) {
-  # Knit the Rmd:
-  rmarkdown::render(input = input_file, output_file = output_file,
-                    quiet = TRUE)
-  
-  # Variable to be returned. Assigned in the report:
-  return_value
 }
 
 # Function for making a nice table that gets a summary of units and the number 
@@ -177,40 +79,157 @@ unit_disharmony <- function(data, lookup){
   
 }
 
-# Bookdown render, but with explicitly defined dependencies
-render_with_deps <- function(index) {
-  bookdown::render_book(input = index)
+
+# From USGS WQP pipeline:
+
+#' @title Flag missing results
+#' 
+#' @description 
+#' Function to flag true missing results, i.e. when the result measure value 
+#' and detection limit value are both NA, when "not reported" is found in the
+#' column "ResultDetectionConditionText", or when any of the strings from
+#' `commenttext_missing` are found in the column "ResultCommentText".
+#' 
+#' @param wqp_data data frame containing the data downloaded from the WQP, 
+#' where each row represents a data record. Must contain the columns
+#' "DetectionQuantitationLimitMeasure.MeasureValue", "ResultMeasureValue", 
+#' "ResultDetectionConditionText", and "ResultCommentText".
+#' @param commenttext_missing character string(s) indicating which strings from
+#' the WQP column "ResultCommentText" correspond with missing result values.
+#' 
+#' @returns
+#' Returns a data frame containing data downloaded from the Water Quality Portal,
+#' where each row represents a data record. New columns appended to the original
+#' data frame include flags for missing results. 
+#' 
+flag_missing_results <- function(wqp_data, commenttext_missing){
+  
+  wqp_data_out <- wqp_data %>%
+    mutate(flag_missing_result = 
+             ( is.na(value) & is.na(DetectionQuantitationLimitMeasure.MeasureValue) ) |
+             grepl("not reported", ResultDetectionConditionText, ignore.case = TRUE) |
+             grepl(paste(commenttext_missing, collapse = "|"), result_comments, ignore.case = TRUE)
+    )
+  
+  return(wqp_data_out)
+  
+}
+
+# From USGS WQP pipeline:
+
+#' @title Flag duplicated records
+#' 
+#' @description 
+#' Function to flag duplicated rows based on a user-supplied definition
+#' of a duplicate record. 
+#' 
+#' @param wqp_data data frame containing the data downloaded from the WQP, 
+#' where each row represents a data record.
+#' @param duplicate_definition character string(s) indicating which columns are
+#' used to identify a duplicate record. Duplicate records are defined as those 
+#' that share the same value for each column within `duplicate_definition`.
+#'
+#' @returns 
+#' Returns a data frame containing data downloaded from the Water Quality Portal,
+#' where each row represents a data record. New columns appended to the original
+#' data frame include flags for duplicated records. 
+#' 
+flag_duplicates <- function(wqp_data, duplicate_definition){
+  
+  # Flag duplicate records using the `duplicate_definition`
+  wqp_data_out <- wqp_data %>%
+    group_by(across(all_of(duplicate_definition))) %>% 
+    # arrange all rows to maintain consistency in row order across users/machines
+    arrange(across(c(all_of(duplicate_definition), everything()))) %>%
+    mutate(n_duplicated = n(),
+           flag_duplicated_row = n_duplicated > 1) %>% 
+    ungroup() %>%
+    select(-n_duplicated)
+  
+  return(wqp_data_out)
+  
+}
+
+# From USGS WQP pipeline:
+
+#' @title Remove duplicated records
+#' 
+#' @description
+#' Function to append additional flags to sets of duplicate rows that are then 
+#' used to drop duplicates from the dataset. Currently, we randomly retain the 
+#' first record in a set of duplicated rows and drop all others.
+#' 
+#' @param wqp_data data frame containing the data downloaded from the WQP, 
+#' where each row represents a data record.
+#' @param duplicate_definition character string(s) indicating which columns are
+#' used to identify a duplicate record. Duplicate records are defined as those 
+#' that share the same value for each column within `duplicate_definition`.
+#' 
+#' @returns 
+#' Returns a data frame containing data downloaded from the Water Portal in which
+#' duplicated rows have been removed. 
+#' 
+remove_duplicates <- function(wqp_data, duplicate_definition){
+  
+  wqp_data_out <- wqp_data %>%
+    group_by(across(all_of(duplicate_definition))) %>% 
+    # arrange all rows to maintain consistency in row order across users/machines;
+    # the rows should be ordered the same way across machines so that when we 
+    # "randomly" select the first duplicated row below, the output is consistent
+    # for all users.
+    arrange(across(c(all_of(duplicate_definition), everything()))) %>%
+    # To help resolve duplicates, randomly select the first record
+    # from each duplicated set and flag all others for exclusion.
+    mutate(n_duplicated = n(),
+           dup_number = seq(n_duplicated),
+           flag_duplicate_drop_random = n_duplicated > 1 & dup_number != 1) %>%
+    filter(flag_duplicate_drop_random == FALSE) %>%
+    ungroup() %>%
+    select(-c(n_duplicated, dup_number, flag_duplicate_drop_random))
+  
+  return(wqp_data_out)
+  
 }
 
 
-harmonize_silica <- function(raw_silica, p_codes){
+harmonize_silica <- function(raw_silica,
+                             p_codes,
+                             commenttext_missing = c('analysis lost', 'not analyzed', 
+                                                     'not recorded', 'not collected', 
+                                                     'no measurement taken'),
+                             duplicate_definition = c('OrganizationIdentifier',
+                                                      'MonitoringLocationIdentifier',
+                                                      'ActivityStartDate', 
+                                                      'ActivityStartTime.Time',
+                                                      'CharacteristicName', 
+                                                      'ResultSampleFractionText')){
   
   # Aggregating -------------------------------------------------------------
   
   raw_silica <- raw_silica %>%
     # Keep and rename columns of interest
-    dplyr::select(date = ActivityStartDate,
-                  parameter = CharacteristicName,
-                  parm_cd = USGSPCode,
-                  units = ResultMeasure.MeasureUnitCode,
-                  SiteID = MonitoringLocationIdentifier,
-                  org = OrganizationFormalName,
-                  org_id = OrganizationIdentifier,
-                  time = ActivityStartTime.Time,
-                  value = ResultMeasureValue,
-                  sample_method = SampleCollectionMethod.MethodName,
-                  analytical_method = ResultAnalyticalMethod.MethodName,
-                  particle_size = ResultParticleSizeBasisText,
-                  date_time = ActivityStartDateTime,
-                  media = ActivityMediaName,
-                  type = ActivityMediaSubdivisionName,
-                  sample_depth = ActivityDepthHeightMeasure.MeasureValue,
-                  sample_depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
-                  fraction = ResultSampleFractionText,
-                  status = ResultStatusIdentifier,
-                  field_comments = ActivityCommentText,
-                  lab_comments = ResultLaboratoryCommentText,
-                  result_comments = ResultCommentText) %>%
+    rename(date = ActivityStartDate,
+           parameter = CharacteristicName,
+           parm_cd = USGSPCode,
+           units = ResultMeasure.MeasureUnitCode,
+           SiteID = MonitoringLocationIdentifier,
+           org = OrganizationFormalName,
+           org_id = OrganizationIdentifier,
+           time = ActivityStartTime.Time,
+           value = ResultMeasureValue,
+           sample_method = SampleCollectionMethod.MethodName,
+           analytical_method = ResultAnalyticalMethod.MethodName,
+           particle_size = ResultParticleSizeBasisText,
+           date_time = ActivityStartDateTime,
+           media = ActivityMediaName,
+           type = ActivityMediaSubdivisionName,
+           sample_depth = ActivityDepthHeightMeasure.MeasureValue,
+           sample_depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
+           fraction = ResultSampleFractionText,
+           status = ResultStatusIdentifier,
+           field_comments = ActivityCommentText,
+           lab_comments = ResultLaboratoryCommentText,
+           result_comments = ResultCommentText) %>%
     # Add in codes from WQP  
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     mutate(year = year(date),
@@ -322,7 +341,7 @@ harmonize_silica <- function(raw_silica, p_codes){
   
   # Methods -----------------------------------------------------------------
   
-  # Silica can be analyzed in a myriad of ways; in the water quality portal,
+  # Silica can be analyzed in myriad ways; in the water quality portal,
   # silica had `r n_distinct(narrowed_methods$analytical_method)` unique analytic
   # methods listed for a total of `r nrow(narrowed_methods)` samples. However, many
   # of these analytic methods can be grouped together into just a few actual
@@ -492,9 +511,35 @@ harmonize_silica <- function(raw_silica, p_codes){
   # Without any additional steps other than harmonizing units and removing NA
   # values (*I haven't looked at whether values are reasonable*), this is how that data looks:
   
-  # Identify samples that have no meaningful data related to an NA value
+  # Clean data and assign flags
+  
+  # Flag and remove duplicates:
+  no_duplicate_samples <- narrowed_methods %>%
+    flag_duplicates(., duplicate_definition) %>%
+    remove_duplicates(., duplicate_definition)
+  
+  message(sprintf(paste0("Removed %s duplicated records."), 
+                  nrow(narrowed_methods) - nrow(no_duplicate_samples)))
+  
+  # Remove samples that have no meaningful data related to an NA value and
+  # duplicates
   no_data_samples <- narrowed_methods %>%
-    filter(is.na(value) & is.na(units) & is.na(lab_comments) & is.na(result_comments)) 
+    # Flag true missing results
+    flag_missing_results(., commenttext_missing)
+  
+  
+  
+  
+  %>%
+    
+    
+    
+    filter(is.na(value) &
+             is.na(units) &
+             is.na(lab_comments) &
+             is.na(result_comments),
+           
+    ) 
   
   # Remove samples that have no values and no lab/result metadata
   silica_empties_removed <- narrowed_methods %>%

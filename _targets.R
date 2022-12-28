@@ -46,7 +46,8 @@ mrb_targets <- list(
   # or to customize parameter groupings. 
   tar_target(param_groups_select,
              c("chlorophyll", "secchi", "cdom", "doc", "silica", "true_color", 
-               "tss")# c("tss", "secchi")
+               "tss")
+             # c("tss", "secchi")
   ),
   
   
@@ -74,9 +75,14 @@ mrb_targets <- list(
   # Work with pulled WQP data -----------------------------------------------
   
   # How many rows per parameter?
-  tar_target(param_counts,
-             p3_wqp_data_aoi_clean_grp %>%
-               count(parameter)),
+  # tar_target(param_counts,
+  #            p3_wqp_data_aoi_clean_grp %>%
+  #              count(parameter)),
+  
+  # Creates a match table with column names from WQP and shorter names to use
+  # in renaming them
+  tar_target(wqp_col_match,
+             create_match_table()),
   
   
   # Input file tracking -----------------------------------------------------
@@ -156,20 +162,23 @@ mrb_targets <- list(
                                                        "date", 
                                                        "time",
                                                        "orig_parameter", 
-                                                       "fraction")),
+                                                       "fraction"),
+                              match_table = wqp_col_match),
              packages = c("tidyverse", "lubridate", "forcats", "scales",
                           "ggthemes")),
   
   tar_target(harmonized_true_color,
              harmonize_true_color(raw_true_color = wqp_data_aoi_formatted_filtered %>%
                                     filter(parameter == "true_color"),
-                                  p_codes = p_codes),
+                                  p_codes = p_codes,
+                                  match_table = wqp_col_match),
              packages = c("tidyverse", "lubridate")),
   
   tar_target(harmonized_tss,
              harmonize_tss(raw_tss = wqp_data_aoi_formatted_filtered %>%
                              filter(parameter == "tss"),
-                           p_codes = p_codes),
+                           p_codes = p_codes,
+                           match_table = wqp_col_match),
              packages = c("tidyverse", "lubridate", "pander")),
   
   tar_render(silica_report,

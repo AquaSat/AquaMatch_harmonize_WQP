@@ -35,6 +35,39 @@ get_p_codes <- function(){
   return(p_codes)
 }
 
+# A function that creates a table with shortened names for WQP columns alongside
+# their longer original counterparts
+create_match_table <- function(){
+  
+  match_table <- tribble(
+    ~short_name,          ~wqp_name, 
+    "date", "ActivityStartDate",
+    "orig_parameter", "CharacteristicName",
+    "parm_cd", "USGSPCode",
+    "units", "ResultMeasure.MeasureUnitCode",
+    "SiteID", "MonitoringLocationIdentifier",
+    "org", "OrganizationFormalName",
+    "org_id", "OrganizationIdentifier",
+    "time", "ActivityStartTime.Time",
+    "value", "ResultMeasureValue",
+    "sample_method", "SampleCollectionMethod.MethodName",
+    "analytical_method", "ResultAnalyticalMethod.MethodName",
+    "particle_size", "ResultParticleSizeBasisText",
+    "date_time", "ActivityStartDateTime",
+    "media", "ActivityMediaName",
+    "type", "ActivityMediaSubdivisionName",
+    "sample_depth", "ActivityDepthHeightMeasure.MeasureValue",
+    "sample_depth_unit", "ActivityDepthHeightMeasure.MeasureUnitCode",
+    "fraction", "ResultSampleFractionText",
+    "status", "ResultStatusIdentifier",
+    "field_comments", "ActivityCommentText",
+    "lab_comments", "ResultLaboratoryCommentText",
+    "result_comments", "ResultCommentText"
+  )
+  
+  return(match_table)
+}
+
 # Function for making a nice table that gets a summary of units and the number 
 # of observations with that unit code. (Adapted from AquaSat)
 unit_kable <- function(data){
@@ -198,34 +231,16 @@ remove_duplicates <- function(wqp_data, duplicate_definition){
 harmonize_silica <- function(raw_silica,
                              p_codes,
                              commenttext_missing,
-                             duplicate_definition){
+                             duplicate_definition,
+                             match_table){
   
   # Aggregating -------------------------------------------------------------
+  # From https://stackoverflow.com/questions/20987295/rename-multiple-columns-by-names
   
   raw_silica <- raw_silica %>%
     # Keep and rename columns of interest
-    rename(date = ActivityStartDate,
-           orig_parameter = CharacteristicName,
-           parm_cd = USGSPCode,
-           units = ResultMeasure.MeasureUnitCode,
-           SiteID = MonitoringLocationIdentifier,
-           org = OrganizationFormalName,
-           org_id = OrganizationIdentifier,
-           time = ActivityStartTime.Time,
-           value = ResultMeasureValue,
-           sample_method = SampleCollectionMethod.MethodName,
-           analytical_method = ResultAnalyticalMethod.MethodName,
-           particle_size = ResultParticleSizeBasisText,
-           date_time = ActivityStartDateTime,
-           media = ActivityMediaName,
-           type = ActivityMediaSubdivisionName,
-           sample_depth = ActivityDepthHeightMeasure.MeasureValue,
-           sample_depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
-           fraction = ResultSampleFractionText,
-           status = ResultStatusIdentifier,
-           field_comments = ActivityCommentText,
-           lab_comments = ResultLaboratoryCommentText,
-           result_comments = ResultCommentText) %>%
+    rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
+                .cols = match_table$wqp_name) %>%
     # Add in codes from WQP  
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     mutate(year = year(date),
@@ -403,8 +418,8 @@ harmonize_silica <- function(raw_silica,
     geom_bar(stat = "identity", width = 1, color = "white") +
     coord_polar("y", start = 0) +
     scale_fill_manual(values = c("#009E73", "#E69F00", "#56B4E9", "#CC79A7",
-                                 "#0072B2", "#F0E442", "#D55E00")) +
-    guides(fill = guide_legend(title = "Colorimetry Techniques")) +
+                                          "#0072B2", "#F0E442", "#D55E00")) +
+                                            guides(fill = guide_legend(title = "Colorimetry Techniques")) +
     theme_void() + # remove background, grid, numeric label
     theme(text = element_text(size = 20))
   
@@ -424,8 +439,8 @@ harmonize_silica <- function(raw_silica,
     geom_bar(stat = "identity", width = 1, color = "white") +
     coord_polar("y", start = 0) +
     scale_fill_manual(values = c("#009E73", "#E69F00", "#56B4E9", "#CC79A7",
-                                 "#0072B2", "#F0E442", "#D55E00")) +
-    guides(fill = guide_legend(title = "ICP Techniques")) +
+                                          "#0072B2", "#F0E442", "#D55E00")) +
+                                            guides(fill = guide_legend(title = "ICP Techniques")) +
     theme_void() + # remove background, grid, numeric label
     theme(text = element_text(size = 20))
   
@@ -582,33 +597,13 @@ harmonize_silica <- function(raw_silica,
 }
 
 
-harmonize_true_color <- function(raw_true_color, p_codes){
+harmonize_true_color <- function(raw_true_color, p_codes, match_table){
   
   # First step is to read in the data and make it workable, we'll then filter
   # the data to 1984 and beyond
   raw_true_color <- raw_true_color %>% 
-    dplyr::select(date = ActivityStartDate,
-                  parameter = CharacteristicName,
-                  parm_cd = USGSPCode,
-                  units = ResultMeasure.MeasureUnitCode,
-                  SiteID = MonitoringLocationIdentifier,
-                  org = OrganizationFormalName,
-                  org_id = OrganizationIdentifier,
-                  time = ActivityStartTime.Time,
-                  value = ResultMeasureValue,
-                  sample_method = SampleCollectionMethod.MethodName,
-                  analytical_method = ResultAnalyticalMethod.MethodName,
-                  particle_size = ResultParticleSizeBasisText,
-                  date_time = ActivityStartDateTime,
-                  media = ActivityMediaName,
-                  type = ActivityMediaSubdivisionName,
-                  sample_depth = ActivityDepthHeightMeasure.MeasureValue,
-                  sample_depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
-                  fraction = ResultSampleFractionText,
-                  status = ResultStatusIdentifier,
-                  field_comments = ActivityCommentText,
-                  lab_comments = ResultLaboratoryCommentText,
-                  result_comments = ResultCommentText) %>%
+    rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
+                .cols = match_table$wqp_name) %>%
     left_join(p_codes, by = 'parm_cd') %>%
     mutate(year = year(date),
            units = trimws(units)) %>%
@@ -1034,27 +1029,12 @@ harmonize_true_color <- function(raw_true_color, p_codes){
 }
 
 
-harmonize_tss <- function(raw_tss, p_codes){
+harmonize_tss <- function(raw_tss, p_codes, match_table){
   
   # Aggregating
   raw_tss <- raw_tss %>%
-    dplyr::select(date = ActivityStartDate,
-                  parameter = CharacteristicName,
-                  units = ResultMeasure.MeasureUnitCode,
-                  SiteID = MonitoringLocationIdentifier,
-                  org = OrganizationFormalName,
-                  org_id = OrganizationIdentifier,
-                  time = ActivityStartTime.Time,
-                  value = ResultMeasureValue,
-                  sample_method = SampleCollectionMethod.MethodName,
-                  analytical_method = ResultAnalyticalMethod.MethodName,
-                  particle_size = ResultParticleSizeBasisText,
-                  date_time = ActivityStartDateTime,
-                  media = ActivityMediaName,
-                  sample_depth = ActivityDepthHeightMeasure.MeasureValue,
-                  sample_depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
-                  fraction = ResultSampleFractionText,
-                  status = ResultStatusIdentifier) %>%
+    rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
+                .cols = match_table$wqp_name) %>%
     # Remove trailing white space in labels (Is this still necessary?)
     mutate(units = trimws(units)) %>%
     #Keep only samples that are water samples
@@ -1148,18 +1128,18 @@ harmonize_tss <- function(raw_tss, p_codes){
            harmonized_value = value * conversion,
            harmonized_unit = "mg/l") %>%
     # Change harmonized parameter to tis for parameter "fixed suspended solids"
-    mutate(harmonized_parameter = ifelse(parameter == "Fixed suspended solids", "tis", harmonized_parameter))
+    mutate(harmonized_parameter = ifelse(orig_parameter == "Fixed suspended solids", "tis", harmonized_parameter))
   
   # rm(tss, tss_depth, tss_filtered, tss_lookup, tss_p, nonsensical_tss_methods, depth_lookup)
   # gc()
   
   # TSS SSC empirical check
   ssc_tss <- tss_tis_harmonized %>%
-    filter(parameter %in% c("Total suspended solids",
+    filter(orig_parameter %in% c("Total suspended solids",
                             "Suspended Sediment Concentration (SSC)")) %>%
-    select(date, date_time, SiteID, parameter, harmonized_value) %>%
+    select(date, date_time, SiteID, parameter, orig_parameter, harmonized_value) %>%
     distinct(date_time, SiteID, .keep_all = T) %>%
-    pivot_wider(names_from = "parameter", values_from = "harmonized_value") %>% 
+    pivot_wider(names_from = "orig_parameter", values_from = "harmonized_value") %>% 
     rename(tss = `Total suspended solids`,
            ssc = `Suspended Sediment Concentration (SSC)`) 
   

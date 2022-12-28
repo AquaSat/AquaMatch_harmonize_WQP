@@ -1,0 +1,22 @@
+The following characteristics are already included in the WQP codes cfg file: 
+Chlorophyll
+Chlorophyll a
+Chlorophyll A
+Chlorophyll a, corrected for pheophytin
+Chlorophyll a, free of pheophytin
+Chlorophyll a - Periphyton (attached)
+Chlorophyll a - Phytoplankton (suspended)
+Chlorophyll a (probe)
+Chlorophyll a (probe relative fluorescence)
+Chlorophyll a, uncorrected for pheophytin
+Chlorophyll b
+Chlorophyll c
+Chlorophyll/Pheophytin ratio
+
+
+The following characteristics might be relevant to the selected parameter and are not included in the WQP codes cfg file: 
+Algae, green (phylum chlorophyta) density
+Biomass/chlorophyll ratio
+Chlorophyll a, collected/analyzed (YES/NO) (choice list)
+Chlorophyll a (probe) concentration, Cyanobacteria (bluegreen)
+Pheophytin/Chlorophyll ratio

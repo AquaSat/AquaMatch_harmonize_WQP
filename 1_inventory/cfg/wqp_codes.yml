@@ -27,13 +27,13 @@
     - "Water transparency, Secchi disc"
   
   cdom:
-    - 'Colored dissolved organic matter (CDOM)'
+    - "Colored dissolved organic matter (CDOM)"
     
   doc:
-    - 'Organic carbon'
-    - 'Total carbon'
-    - 'Hydrophilic fraction of organic carbon'
-    - 'Non-purgeable Organic Carbon (NPOC)'
+    - "Organic carbon"
+    - "Total carbon"
+    - "Hydrophilic fraction of organic carbon"
+    - "Non-purgeable Organic Carbon (NPOC)"
     
   silica:
     - "Silica"
@@ -45,9 +45,9 @@
     - "True color"
   
   tss:
-    - 'Total suspended solids'
-    - 'Suspended sediment concentration (SSC)'
-    - 'Suspended Sediment Concentration (SSC)'
-    - 'Total Suspended Particulate Matter'
-    - 'Fixed suspended solids'
+    - "Total suspended solids"
+    - "Suspended sediment concentration (SSC)"
+    - "Suspended Sediment Concentration (SSC)"
+    - "Total Suspended Particulate Matter"
+    - "Fixed suspended solids"
     

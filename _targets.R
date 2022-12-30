@@ -66,11 +66,6 @@ mrb_targets <- list(
                   startDateLo = wq_dates$start_date,
                   startDateHi = wq_dates$end_date)),
   
-  # Get state FIPS codes for use with WQP
-  tar_target(state_codes,
-             get_wqp_state_codes(),
-             packages = c("tidyverse", "dataRetrieval")),
-  
   
   # Work with pulled WQP data -----------------------------------------------
   
@@ -125,6 +120,10 @@ mrb_targets <- list(
     format = "feather"
   ),
   
+  # Secchi depth method matchup table
+  tar_file_read(name = sdd_method_matchup,
+                command = "data/sdd_method_matchup.csv",
+                read = read_csv(file = !!.x)),
   
   # Parameter cleaning ------------------------------------------------------
   
@@ -181,6 +180,14 @@ mrb_targets <- list(
                            match_table = wqp_col_match),
              packages = c("tidyverse", "lubridate", "pander")),
   
+  tar_target(harmonized_sdd,
+             harmonize_sdd(raw_sdd = wqp_data_aoi_formatted_filtered %>%
+                             filter(parameter == "secchi"),
+                           p_codes = p_codes,
+                           match_table = wqp_col_match,
+                           sdd_method_matchup = sdd_method_matchup),
+             packages = c("tidyverse", "lubridate")),
+  
   tar_render(silica_report,
              path = "src/silica_update_usgs_placeholder.Rmd",
              packages = c("tidyverse", "lubridate", "forcats")#,
@@ -199,8 +206,11 @@ mrb_targets <- list(
   
   tar_render(tss_report,
              path = "src/tss_update_usgs_placeholder.Rmd",
-             packages = c("tidyverse", "lubridate", "forcats", "kableExtra"))
+             packages = c("tidyverse", "lubridate", "forcats", "kableExtra")),
   
+  tar_render(sdd_report,
+             path = "src/sdd_update_usgs_placeholder.Rmd",
+             packages = c("tidyverse", "lubridate", "forcats", "kableExtra"))
   
 )
 

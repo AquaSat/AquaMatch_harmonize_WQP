@@ -1158,3 +1158,86 @@ harmonize_tss <- function(raw_tss, p_codes, match_table){
   )
   
 }
+
+
+harmonize_sdd <- function(raw_sdd, p_codes, match_table, sdd_method_matchup){
+  
+  # First step is to read in the data and make it workable, we'll then filter
+  # the data to 1984 and beyond
+  
+  raw_sdd <- raw_sdd %>%
+    rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
+                .cols = match_table$wqp_name) %>%
+    left_join(x = ., y = p_codes, by = "parm_cd") %>%
+    # Remove trailing white space in labels (Is this still necessary?)
+    mutate(year = year(date),
+           units = trimws(units)) %>%
+    filter(year >= 1984,
+           media %in% c("Water", "water"),
+           type %in% c("Surface Water", "Water", "Estuary", "Ocean Water",
+                       "Mixing Zone") | is.na(type)) %>%
+    # Add an index to control for cases where there's not enough identifying info
+    # to track a unique record
+    rowid_to_column(., "index")
+  
+  # Get an idea of how many analytical methods exist:
+  print(
+    paste0(
+      "Number of secchi analytical methods present: ",
+      length(unique(raw_sdd$analytical_method))
+    )
+  )
+  
+  # Add a new column describing the methods groups
+  grouped_sdd <- raw_sdd %>%
+    left_join(x = .,
+              y = sdd_method_matchup,
+              by = c("analytical_method"))
+  
+  sdd_method_groups_plot <- grouped_sdd %>%
+    count(method_grouping) %>%
+    ggplot() +
+    geom_bar(aes(x = method_grouping, y = n),
+             fill = "white",
+             color = "black",
+             stat = "identity") +
+    ylab("Record count") +
+    xlab("Method group") +
+    ggtitle("SDD aggregation counts") +
+    theme_bw()
+  
+  # Create a column to lump things that do/don't make sense for the fraction column
+  grouped_sdd <- grouped_sdd %>%
+    mutate(aquasat_fraction = if_else(
+      condition = fraction %in% c(NA, "Total", " ", "None", "Unfiltered", "Field"),
+      true = "Makes sense",
+      false = "Nonsensical"))
+  
+  sdd_fraction_groups_plot <- grouped_sdd %>%
+    count(aquasat_fraction) %>%
+    ggplot() +
+    geom_bar(aes(x = aquasat_fraction, y = n),
+             fill = "white",
+             color = "black",
+             stat = "identity") +
+    ylab("Record count") +
+    xlab("Fraction group") +
+    # ggtitle("SDD aggregation counts") +
+    theme_bw()
+
+  
+  return(
+    list(
+      harmonized_sdd = grouped_sdd,
+      sdd_method_groups_plot = sdd_method_groups_plot,
+      sdd_fraction_groups_plot = sdd_fraction_groups_plot
+    )
+  )
+}
+
+
+
+
+
+
+

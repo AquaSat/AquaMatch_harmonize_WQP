@@ -62,7 +62,8 @@ create_match_table <- function(){
     "status", "ResultStatusIdentifier",
     "field_comments", "ActivityCommentText",
     "lab_comments", "ResultLaboratoryCommentText",
-    "result_comments", "ResultCommentText"
+    "result_comments", "ResultCommentText",
+    "collection_equipment", "SampleCollectionEquipmentName"
   )
   
   return(match_table)

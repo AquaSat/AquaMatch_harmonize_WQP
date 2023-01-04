@@ -26,8 +26,10 @@
 #' Quality Portal, where each row represents a unique data record.
 #' 
 format_columns <- function(wqp_data, 
-                           vars_to_numeric = c('ResultMeasureValue',
-                                               'DetectionQuantitationLimitMeasure.MeasureValue'),
+                           vars_to_numeric = c(
+                             'ResultMeasureValue',
+                                               'DetectionQuantitationLimitMeasure.MeasureValue'
+                             ),
                            drop_vars = NULL){
   
   # Some vars should not be dropped because they are needed in downstream 

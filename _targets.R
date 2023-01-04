@@ -82,48 +82,58 @@ mrb_targets <- list(
   
   # Input file tracking -----------------------------------------------------
   
-  # Parameter datasets (pre-downloaded)
-  
-  # Color
-  tar_file_read(
-    name = raw_true_color,
-    command = "data/raw_color_202211.feather",
-    read = read_feather(path = !!.x),
-    packages = c("feather"),
-    format = "feather"
-  ),
-  
-  # Secchi
-  tar_file_read(
-    name = raw_sdd,
-    command = "data/raw_secchi_202211.feather",
-    read = read_feather(path = !!.x),
-    packages = c("feather"),
-    format = "feather"
-  ),
-  
-  # Silica
-  tar_file_read(
-    name = raw_silica,
-    command = "data/raw_silica_202211.feather",
-    read = read_feather(path = !!.x),
-    packages = c("feather"),
-    format = "feather"
-  ),
-  
-  # TSS: MRB downloaded from the AquaSat figshare
-  tar_file_read(
-    name = raw_tss,
-    command = "data/raw_tss.feather",
-    read = read_feather(path = !!.x),
-    packages = c("feather"),
-    format = "feather"
-  ),
+  # Parameter datasets (pre-downloaded for early phases of dev)
+  # # Color
+  # tar_file_read(
+  #   name = raw_true_color,
+  #   command = "data/raw_color_202211.feather",
+  #   read = read_feather(path = !!.x),
+  #   packages = c("feather"),
+  #   format = "feather"
+  # ),
+  # 
+  # # Secchi
+  # tar_file_read(
+  #   name = raw_sdd,
+  #   command = "data/raw_secchi_202211.feather",
+  #   read = read_feather(path = !!.x),
+  #   packages = c("feather"),
+  #   format = "feather"
+  # ),
+  # 
+  # # Silica
+  # tar_file_read(
+  #   name = raw_silica,
+  #   command = "data/raw_silica_202211.feather",
+  #   read = read_feather(path = !!.x),
+  #   packages = c("feather"),
+  #   format = "feather"
+  # ),
+  # 
+  # # TSS: MRB downloaded from the AquaSat figshare
+  # tar_file_read(
+  #   name = raw_tss,
+  #   command = "data/raw_tss.feather",
+  #   read = read_feather(path = !!.x),
+  #   packages = c("feather"),
+  #   format = "feather"
+  # ),
   
   # Secchi depth method matchup table
-  tar_file_read(name = sdd_method_matchup,
-                command = "data/sdd_method_matchup.csv",
+  tar_file_read(name = sdd_analytical_method_matchup,
+                command = "data/sdd_analytical_method_matchup.csv",
                 read = read_csv(file = !!.x)),
+  
+  # Secchi sample method matchup table
+  tar_file_read(name = sdd_sample_method_matchup,
+                command = "data/sdd_sample_method_matchup.csv",
+                read = read_csv(file = !!.x)),
+  
+  # Secchi equipment matchup table
+  tar_file_read(name = sdd_equipment_matchup,
+                command = "data/sdd_collection_equipment_matchup.csv",
+                read = read_csv(file = !!.x)),
+  
   
   # Parameter cleaning ------------------------------------------------------
   
@@ -184,8 +194,11 @@ mrb_targets <- list(
              harmonize_sdd(raw_sdd = wqp_data_aoi_formatted_filtered %>%
                              filter(parameter == "secchi"),
                            p_codes = p_codes,
+                           # Column renaming
                            match_table = wqp_col_match,
-                           sdd_method_matchup = sdd_method_matchup),
+                           sdd_analytical_method_matchup = sdd_analytical_method_matchup,
+                           sdd_sample_method_matchup = sdd_sample_method_matchup,
+                           sdd_equipment_matchup = sdd_equipment_matchup),
              packages = c("tidyverse", "lubridate")),
   
   tar_render(silica_report,

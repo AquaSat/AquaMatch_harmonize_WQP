@@ -1,9 +1,9 @@
 # Source the functions that will be used to build the targets in p3_targets_list
 source("3_harmonize/src/format_columns.R")
 source("3_harmonize/src/clean_wqp_data.R")
-source("3_harmonize/src/clean_conductivity_data.R")
-source("3_harmonize/src/clean_temperature_data.R")
-source("3_harmonize/src/summarize_wqp_records.R")
+# source("3_harmonize/src/clean_conductivity_data.R")
+# source("3_harmonize/src/clean_temperature_data.R")
+# source("3_harmonize/src/summarize_wqp_records.R")
 
 p3_targets_list <- list(
   

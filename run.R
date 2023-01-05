@@ -1,10 +1,16 @@
 #!/usr/bin/env Rscript
 
-# This is a helper script to run the pipeline.
-# Choose how to execute the pipeline below.
-# See https://books.ropensci.org/targets/hpc.html
-# to learn about your options.
+library(targets)
 
-targets::tar_make()
-# targets::tar_make_clustermq(workers = 2) # nolint
-# targets::tar_make_future(workers = 2) # nolint
+# This is a helper script to run the pipeline.
+{
+  tar_make()
+  
+  # Create a network diagram of the workflow, with a completion timestamp
+  temp_vis <- tar_visnetwork()
+  
+  temp_vis$x$main$text <- paste0("Last completed: ", Sys.time())
+  
+  htmltools::save_html(html = temp_vis,
+                       file = "docs/current_visnetwork.html")
+}

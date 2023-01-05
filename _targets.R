@@ -20,7 +20,7 @@ tar_source(files = c(
   "3_harmonize.R",
   "src/functions.R"))
 
-# The list of targets/steps
+# The list of targets/steps (these steps from MRB)
 mrb_targets <- list(
   
   # WQP config --------------------------------------------------------------
@@ -203,6 +203,7 @@ mrb_targets <- list(
   
   tar_render(silica_report,
              path = "src/silica_update_usgs_placeholder.Rmd",
+             output_file = "../docs/silica_update_usgs_placeholder.Rmd",
              packages = c("tidyverse", "lubridate", "forcats")#,
              # In the future reports like this could be paramaterized instead
              # of using tar_read()/_load() calls inside the Rmd because
@@ -215,14 +216,17 @@ mrb_targets <- list(
   
   tar_render(true_color_report,
              path = "src/true_color_update_usgs_placeholder.Rmd",
+             output_file = "../docs/true_color_update_usgs_placeholder.Rmd",
              packages = c("tidyverse", "lubridate", "forcats", "kableExtra")),
   
   tar_render(tss_report,
              path = "src/tss_update_usgs_placeholder.Rmd",
+             output_file = "../docs/tss_update_usgs_placeholder.Rmd",
              packages = c("tidyverse", "lubridate", "forcats", "kableExtra")),
   
   tar_render(sdd_report,
              path = "src/sdd_update_usgs_placeholder.Rmd",
+             output_file = "../docs/sdd_update_usgs_placeholder.Rmd",
              packages = c("tidyverse", "lubridate", "forcats", "kableExtra"))
   
 )

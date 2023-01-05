@@ -1,3 +1,5 @@
+# A script to work on the secchi harmonization progress outside of the main pipeline
+
 # targets::tar_make(c(wqp_data_aoi_formatted_filtered, wqp_col_match))
 
 

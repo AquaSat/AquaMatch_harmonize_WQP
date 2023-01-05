@@ -58,47 +58,47 @@ create_match_table <- function(){
 
 # Function for making a nice table that gets a summary of units and the number 
 # of observations with that unit code. (Adapted from AquaSat)
-# unit_kable <- function(data){
-#   
-#   data %>%
-#     group_by(units) %>%
-#     summarize(count = n()) %>%
-#     arrange(desc(count)) %>%
-#     kable(., "html", caption = "All  parameter and unit combinations") %>%
-#     kable_styling() %>%
-#     scroll_box(width = "500px", height = "400px")
-#   
-# }
+unit_kable <- function(data){
+
+  data %>%
+    group_by(units) %>%
+    summarize(count = n()) %>%
+    arrange(desc(count)) %>%
+    kable(., "html", caption = "All  parameter and unit combinations") %>%
+    kable_styling() %>%
+    scroll_box(width = "500px", height = "400px")
+
+}
 
 # Function for making a nice table that gets a summary of units and the number 
 # of observations with that analytical method. (Adapted from AquaSat)
-# analytical_kable <- function(data){
-#   
-#   data %>%
-#     group_by(analytical_method) %>%
-#     summarize(count = n()) %>% 
-#     arrange(desc(count)) %>%
-#     kable(., "html", caption = "All analytical methods and their count") %>%
-#     kable_styling() %>%
-#     scroll_box(width = "600px", height = "400px")
-#   
-# }
+analytical_kable <- function(data){
+
+  data %>%
+    group_by(analytical_method) %>%
+    summarize(count = n()) %>%
+    arrange(desc(count)) %>%
+    kable(., "html", caption = "All analytical methods and their count") %>%
+    kable_styling() %>%
+    scroll_box(width = "600px", height = "400px")
+
+}
 
 # Function for making a nice table that gets a summary of nonsensical units
 # and the number of observations with that analytical method.
 # (Adapted from AquaSat)
-# unit_disharmony <- function(data, lookup){
-#   
-#   data %>%
-#     anti_join(x = ., y = lookup, by = "units") %>%
-#     group_by(units) %>%
-#     summarize(count = n())  %>%
-#     kable(., "html", caption = "The following measurements
-#           were dropped because the units do not make sense") %>%
-#     kable_styling() %>%
-#     scroll_box(width = "500px", height = "400px")
-#   
-# }
+unit_disharmony <- function(data, lookup){
+
+  data %>%
+    anti_join(x = ., y = lookup, by = "units") %>%
+    group_by(units) %>%
+    summarize(count = n())  %>%
+    kable(., "html", caption = "The following measurements
+          were dropped because the units do not make sense") %>%
+    kable_styling() %>%
+    scroll_box(width = "500px", height = "400px")
+
+}
 
 
 # From USGS WQP pipeline:
@@ -1113,10 +1113,13 @@ harmonize_tss <- function(raw_tss, p_codes, match_table){
   tss_tis_harmonized <- raw_tss %>%
     inner_join(tss_lookup, by = "units") %>%
     mutate(harmonized_parameter = "tss",
-           harmonized_value = value * conversion,
+           value_numeric = as.numeric(value),
+           harmonized_value = value_numeric * conversion,
            harmonized_unit = "mg/l") %>%
     # Change harmonized parameter to tis for parameter "fixed suspended solids"
-    mutate(harmonized_parameter = ifelse(orig_parameter == "Fixed suspended solids", "tis", harmonized_parameter))
+    mutate(harmonized_parameter = ifelse(orig_parameter == "Fixed suspended solids",
+                                         "tis",
+                                         harmonized_parameter))
   
   # rm(tss, tss_depth, tss_filtered, tss_lookup, tss_p, nonsensical_tss_methods, depth_lookup)
   # gc()
@@ -1124,7 +1127,7 @@ harmonize_tss <- function(raw_tss, p_codes, match_table){
   # TSS SSC empirical check
   ssc_tss <- tss_tis_harmonized %>%
     filter(orig_parameter %in% c("Total suspended solids",
-                            "Suspended Sediment Concentration (SSC)")) %>%
+                                 "Suspended Sediment Concentration (SSC)")) %>%
     select(date, date_time, SiteID, parameter, orig_parameter, harmonized_value) %>%
     distinct(date_time, SiteID, .keep_all = T) %>%
     pivot_wider(names_from = "orig_parameter", values_from = "harmonized_value") %>% 

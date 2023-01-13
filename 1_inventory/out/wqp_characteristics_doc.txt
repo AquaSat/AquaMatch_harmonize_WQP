@@ -1,0 +1,837 @@
+The following characteristics are already included in the WQP codes cfg file: 
+Colored dissolved organic matter (CDOM)
+Non-purgeable Organic Carbon (NPOC)
+
+
+The following characteristics might be relevant to the selected parameter and are not included in the WQP codes cfg file: 
+1,12-Dodecanediamine
+11-chloroeicosafluoro-3-oxaundecane-1-sulfonic acid
+1,1-Dichloroethane
+1,1-Dichloroethene
+1,1-Dichloroethene-d2
+1,1-Dichloroethylene
+1,1-Dichloropropane
+1,1-Dichloropropanone
+1,1-Dichloropropene
+1,2,3,4,5,6-Hexachlorocyclohexane
+1,2,3,4,6,7,8,9-Octachlorodibenzofuran
+1,2,3,4,6,7,8,9-Octachlorodibenzo-p-dioxin
+1,2-Benzenedicarboxamide, N2-[1,1-dimethyl-2-(methylsulfonyl)ethyl]-3-iodo-N1-[2-methyl-4-[1,2,2,2-tetrafluoro-1-(trifluoromethyl)ethyl]phenyl]-
+1,2-Benzenedicarboxylic acid, 4,4'-carbonylbis-, tricesium salt
+1,2-Dichlorobenzene-d4
+1,2-Dichloroethane
+1,2-Dichloroethane-d4
+1,2-Dichloroethylene
+1,2-Dichloronaphthalene
+1,2-Dichloropropane
+1,2-Dichloropropane-d6
+1,2-Dichloropropene
+1,2-Octanediol
+1-(3,4-dichlorophenyl)-3-methyl urea
+1,3,6-Trioxocane
+1,3-Dichlorobenzene
+1,3-Dichloropropane
+1,3-Dichloropropene
+1-3-Dicyclohexylurea
+1,4-Dichloro-2-butene
+1,4-Dichloro-2-butyne
+1,4-Dichlorobenzene-d4
+1,4-Dichloronaphthalene
+1,5-Dichloronaphthalene
+1-Cyclopentyl-4-n-octyldodecane
+1-Decanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heneicosafluoro-
+1-Decanesulfonic acid, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluoro-
+1-Heptanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,7-pentadecafluoro-
+1-Heptanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,7-pentadecafluoro-,sodium salt (1:1)
+1-Hexadecene
+1-Hexanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,6-tridecafluoro-, ion(1-)
+1H-Indol-4-ol
+1H-Indol-5-ol
+1H-Pyrazole-3-carboxamide, 5-amino-1-[2,6-dichloro-4-(trifluoromethyl)phenyl]-4-[(trifluoromethyl)sulfinyl]-
+1-Nonadecene
+1-Nonanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9-nonadecafluoro-
+1-Octanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,8-heptadecafluoro-, sodium salt (1:1)
+1-Octanesulfonic acid, 3,3,4,4,5,5,6,6,7,7,8,8,8-tridecafluoro-
+1-Octanol
+1-Pentanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,5-undecafluoro-
+1-Tailed Critical (H)
+1-Tailed Critical (W)
+1-Tetradecene
+2,2',3,3',4,4',5,5'-Octachlorobiphenyl
+2,2',3,3',4,4',5,6-Octachlorobiphenyl
+2,2',3,3',4,4',5,6'-Octachlorobiphenyl
+2,2',3,3',4,4',5,6-Octachorobiphenyl
+2,2',3,3',4,4',6,6'-Octachlorobiphenyl
+2,2',3,3',4,5,5',6-Octabromodiphenyl ether
+2,2',3,3',4,5,5',6-Octachlorobiphenyl
+2,2',3,3',4,5,5',6'-Octachlorobiphenyl
+2,2`,3,3`,4,5`,6,6`-Octabromodiphenyl ether
+2,2',3,3',4,5,6,6'-Octachlorobiphenyl
+2,2',3,3',4,5',6,6'-Octachlorobiphenyl
+2,2',3,3',5,5',6,6'-Octachlorobiphenyl
+2,2',3,3',5,5',6,6'-Octachlorobiphenyl-C13
+2,2',3,4,4',5,5',6-OCBDE
+2,2`,3,4,4`,5,5`,6-Octabromodiphenyl ether
+2,2',3,4,4',5,5',6-Octachlorobiphenyl
+2,2`,3,4,4`,5,6,6`-Octabromodiphenyl ether
+2,2',3,4,4',5,6,6'-Octachlorobiphenyl
+2,2,4,5,6,7,8,8-Octachloro-2,3,3a,4,7,7a-hexahydro-4,7-methano-1H-indene
+2,2'-Dichlorobiphenyl
+2,2-Dichloropropane
+2,3,3`,4,4`,5,5`,6-Octabromodiphenyl ether
+2,3,3',4,4',5,5',6-Octachlorobiphenyl
+2,3-Dichloroaniline
+2,3-Dichlorobiphenyl
+2,3'-Dichlorobiphenyl
+2,3-Dichloronaphthalene
+2,3-Dichlorophenol
+2,3-Dichloropropene
+2,4,5-T isooctyl ester
+2,4-Dichlorobiphenyl
+2,4'-Dichlorobiphenyl
+2,4-Dichlorophenol
+2,4-Dichlorophenol-d3
+2,4-Dichlorophenoxy-3,5,6-d3-acetic-d2 acid
+2,4-Dichlorophenylacetic acid
+2-(4-Octylphenoxy)ethanol
+2,5-Dichloroaniline
+2,5-Dichlorobiphenyl
+2,5-Dichlorophenol
+2,5-dimethyl-Undecane
+2,6,10-trimethyldodecane
+2,6,11-trimethyl-Dodecane
+2,6-Dichloro-4-methylphenol
+2,6-Dichlorobenzamide
+2,6-Dichlorobiphenyl
+2,6-Dichlorophenol
+2,6-dimethyloct-7-en-2-ol
+2,7,8-trimethyl-2-(4,8,12-trimethyltridecyl)chroma
+2-(Dimethylamino)-N-hydroxy-2-oxoethanimidothioic acid methyl ester
+2H,2H,3H,3H-Perfluorooctanoate
+2-Methyldecane
+2-Methyltetradecane
+2-(N-methylperfluoro-1-octanesulfonamido)-ethanol
+2-Octanone
+2-Phenyldecane
+2-Phenyldodecane
+2-Phenyltetradecane
+2-Phenyltridecane
+2-Phenylundecane
+3,3'-Dichlorobenzidine
+3,3'-Dichlorobiphenyl
+3,4-Dichloroaniline
+3,4-Dichlorobiphenyl
+3,4'-Dichlorobiphenyl
+3,4-Dichloroguaiacol
+3,4-Dichlorophenol
+3,4-Dichlorophenyl isocyanate
+3,4-Dichlorophenylurea
+3,5-Dichloroaniline
+3,5-Dichlorobenzoic acid
+3,5-Dichlorobiphenyl
+3,5-Dichlorophenol
+3-Chlorobicyclo[3.2.1]oct-2-ene
+3-Chloro-perfluorotridecanoic acid
+3-Ketocarbofuran
+3-Methyl decane
+3-Methylindole
+3-Phenlydecane
+3-Phenyldecane
+3-Phenyltetradecane
+3-Phenyltridecane
+3-Phenylundecane
+4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-Pentadecafluorodec-2-enoic acid
+4,4'-Dibromo-2,2',3,3',5,5',6,6'-octafluorobiphenyl
+4,4'-Dichlorobiphenyl
+4,5-Dichloro-2-nitroaniline
+4,6-Dichloroguaiacol
+4,6-Dichloro-o-cresol
+4,6-Dimethyldodecane
+4-Epianhydrochlortetracycline
+4-Epianhydrochlortetracycline (EACTC)
+4-Epianhydrotetracycline hydrochloride
+4-Phenyldecane
+4-Phenyldodecane
+4-Phenyltetradecane
+4-Phenyltridecane
+4-Phenylundecane
+5-Hydroxydicamba
+5-Hydroxyimidacloprid
+5-Phenyldecane
+5-Phenyldodecane
+5-Phenyltetradecane
+5-Phenyltridecane
+5-Phenylundecane
+6-Methyltridecane
+6-Phenyldodecane
+6-Phenyltetradecane
+6-Phenylundecane
+7-Phenyltetradecane
+7-Phenyltetradecane + 6-phenyltridecane mix
+9,10-Dichlorostearic Acid
+9-Chlorohexadecafluoro-3-oxanonane-1-sulfonic acid
+9-chlorohexadecafluoro-3-oxanone-1-sulfonic acid
+9-n-Dodecyl[tetradecahydroanthracene]
+Ablabesmyia mallochi
+Acetaldol
+Acetochlor
+Acetochlor-d11
+Acetochlor ESA
+Acetochlor OA
+Acetochlor sulfinylacetic acid
+Activities - Fish Stocking (choice list)
+Activities - Livestock Use (choice list)
+Activities - Odors (choice list)
+Afidopyropen
+Aldicarb
+Aldicarb sulfone
+Aldicarb sulfoxide
+Algae, substrate rock/bank cover (choice list)
+Alluaudomyia
+.alpha.-1,2,3,4,5,6-Hexachlorocyclohexane-D6 or alpha-HCH D6
+.alpha.-Endosulfan
+.alpha.-Hexachlorocyclohexane
+Aminocarb
+Aminocyclopyrachlor
+Amiocentrus
+Amobam oxidation products
+Anhydrochlortetracycline
+Anisocentropus
+Anisocentropus pyraloides
+anti-Dechlorane Plus
+Antocha
+Antocha saxicola
+Aquatic Plant Cover, substrate rock/bank cover (choice list)
+Aroclor 1016
+Aroclor 1016 mixt. with Aroclor 1221
+Aroclor 1016 mixt. with Aroclor 1242
+Aroclor 1221
+Aroclor 1232
+Aroclor 1242
+Aroclor 1242 mixt. with Aroclor 1248
+Aroclor 1242 mixt. with Aroclor 1248 and Aroclor 1254
+Aroclor 1242 mixt. with Aroclor 1254
+Aroclor 1242 mixt. with Aroclor 1254 and Aroclor 1260
+Aroclor 1242 mixt. with Aroclor 1260
+Aroclor 1248
+Aroclor 1248 mixt. with Aroclor 1254 and Aroclor 1260
+Aroclor 1248 mixt. with Aroclor 1260
+Aroclor 1252
+Aroclor 1254
+Aroclor 1254 mixt. with Aroclor 1260
+Aroclor 1260
+Aroclor 1262
+Aroclor 1268
+Aroclor 5460
+Aroclor (unspecified)
+Bacteria, iron reducing
+Bacteria, sulfate reducing
+Bacteria, Sulfate reducing
+Bendiocarb
+Bendiocarb phenol
+Benzene, 1,2(or 1,4)-dichloro-
+Benzene, (1-ethyldecyl)-
+Benzyldimethyldecylammonium chloride
+Benzyldimethyldodecyl ammonium
+Benzyldimethyldodecylammonium chloride
+Benzyldimethylhexadecyl ammonium
+Benzyldimethylhexadecylammonium chloride
+Benzyldimethyloctylammonium chloride
+Benzyldimethyltetradecyl ammonium
+Benzyldimethyltetradecylammonium chloride
+.beta.-Endosulfan
+.beta.-Hexachlorocyclohexane
+Bibiocephala
+Bicyclo[4.2.0]octa-1,3,5-triene
+Biochemical oxygen demand, non-standard conditions
+Biochemical oxygen demand, standard conditions
+Bis(hexachlorocyclopentadieno)cyclooctane
+Bis(hexachlorocyclopentadieno) cyclooctane
+Bromochloroacetic acid
+Bromochloroacetonitrile
+Bromochloroiodomethane
+Bromochloromethane
+Bromochloronitromethane
+Bromoconazole
+Bromodichloroacetonitrile
+Bromodichloronitromethane
+Bromodichloropropane
+Bromodiiodomethane
+Bromoxynil octanoate
+Bryophaenocladius
+Buprenorphine hydrochloride
+C12 Hydrocarbons
+C-13 Labeled Total Octahlorodibenzofuran
+C-13 Labeled Total Octahlorodibenzo-p-dioxin
+C1-Decalins
+C23-C32 Hydrocarbons
+C24-C36 Hydrocarbons
+C28 Hydrocarbons
+C2-Decalins
+C35 Hydrocarbons
+C3-Decalins
+C4-Decalins
+C5-C8 Aliphatic Hydrocarbons
+C5-C8 Aliphatic Hydrocarbons, Unadjusted
+C9-C10 Aromatic Hydrocarbons
+C9-C12 Aliphatic Hydrocarbons
+C9-C12 Aliphatic Hydrocarbons, Unadjusted
+Camptocladius
+Canopy Measure Center Down
+Carbadox
+Carbonaceous biochemical oxygen demand, non-standard conditions
+Carbonaceous biochemical oxygen demand, standard conditions
+Carbon Dioxide, fixed CO2
+Carcinogenic polycyclic aromatic hydrocarbons
+Cardiocladius
+Carisoprodol
+Chaetocladius
+Chlordecone
+Chlorine dose
+Chlorodiiodomethane
+Chydoridae
+cis-1,2-Dichloroethylene
+cis-1,3-Dichloropropene
+cis-1,4-Dichloro-2-butene
+cis-Decalin
+Cladopelma
+Cladophora, visual observation
+Cladotanytarsus
+Clinocera
+Clopidogrel carboxylic acid
+Cloud cover
+Cloud cover (choice list)
+Cocaethylene
+Cocaethylene-D3
+Cocaine
+Cocaine-D3
+Coliform/Streptococcus ratio, fecal
+Condition class, chemical (Conductivity/Salinity)
+Condition class (Dissolved oxygen (DO))
+Conductance
+Conductivity
+Coral Bleached Cover
+Coral Diseased Cover
+Crocidolite Asbestos
+Cryptochironomus
+Cryptochironomus blarina
+Cryptochironomus fulvus
+Cyclododecane, 1,2,5,6,9,10-hexabromo-
+Cyclohexyl isothiocyanate
+Cyclopropanecarboxylic acid, 3-(2,2-dichloroethenyl)-2,2-dimethyl-, methyl ester, (1R,3R)-rel-
+Cyproconazole
+Dead centric diatoms
+Decabromodiphenylethane
+Decabromodiphenyl ether
+Decabromodiphenyl ether***retired***use Decabromodiphenyl oxide
+Decabromodiphenyl oxide
+Decachlorobiphenyl
+Decafluorobiphenyl
+Decahydronaphthalene
+Decamethylcyclopentasiloxane
+Decane
+Decanoic acid, 2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-nonadecafluoro-
+Decanoic acid, 4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-pentadecafluoro-
+Decapoda
+Dechloroacetochlor
+Dechloroalachlor
+Dechlorodimethenamid
+Dechlorofipronil
+Dechlorometolachlor
+Decylbenzene
+Dehydroaripiprazole hydrochloride
+Deiodo flubendiamide
+.delta.-Hexachlorocyclohexane
+Demeclocycline
+Demicryptochironomus
+Desthio-prothioconazole
+Dibromochloroacetonitrile
+Dibromochloroethane
+Dibromochloronitromethane
+Dibromochloropropane
+Dibromodichloromethane
+Dibromoiodomethane
+Dibutyltin dichloride
+Dicamba
+Dicamba-methyl
+Dichlobenil
+Dichlofenthion
+Dichlone
+Dichloran
+Dichloroacetic acid
+Dichloroacetonitrile
+Dichlorobenzene
+Dichlorobiphenyl
+Dichlorobromomethane
+Dichlorodifluoromethane***retired***use CFC-12
+Dichloroethane
+Dichloroethylene
+Dichlorofenthion
+Dichloroiodomethane
+Dichloronaphthalene
+Dichloronitromethane
+Dichlorophenol
+Dichloropropane
+Dichloropropene
+Dichloroprop***retired***use Dichlorprop
+Dichlorotoluene
+Dichlorotrifluoroethane
+Dichlorprop
+Dichlorvos
+Diclofenac
+Diclofenac, 4-hydroxy
+Diclofop
+Diclofop methyl
+Dicofol
+Dicosmoecus
+Dicranota
+Dicrotophos
+Dictya
+Dicyclohexyl adipate
+Dicyclohexyl phthalate
+Dicyclopentadiene
+Diesel and residual range hydrocarbons
+Difenoconazole
+Difenoconazole-D4
+Dihydrocholesterol
+Dihydrocodeine
+Diisodecyl phthalate
+Diisooctyl phthalate
+Di-n-octyl phthalate
+Dioctyl adipate
+Diplocladius
+Dipropyl isocinchomeronate
+Dissolved microcystins plus nodularins
+Dissolved oxygen (DO)
+Dissolved Oxygen***retired***use Dissolved Oxygen (DO)
+Docosane
+Dodecamethylcyclohexasiloxane
+Dodecane
+Dodecylbenzene
+Dolichopodidae
+Dolophilodes
+Dominant Habitat Type
+Dominant Land Use (choice list)
+Dominant Wolman Pebble Size/Range
+Domoic acid
+Donepezil
+Dotriacontane
+Doxepin
+Doxorubicin
+Doxycycline
+Drawdown level
+Ecgonine methyl ester hydrochloride
+Eggs in Ovaries or Attached to Abdomen
+Endochironomus
+Endosulfan
+Endosulfan, alpha
+Endosulfan and Metabolites
+Endosulfan ether
+Endosulfan sulfate
+Endothall
+Enterococci
+Enterococcus
+Epoicocladius
+Eriocera
+Escherichia coli proportional contribution by livestock (%)
+Estuary or ocean water surface elevation
+Ethanimidothioic acid, N-hydroxy-, methyl ester
+Ethanone, 1-(2,4-dichlorophenyl)-
+Extractable fuel hydrocarbons (C13-C22 DRO)
+Famoxadone
+Fecal Streptococcus Group Bacteria
+Fenamidone
+Fluocinonide
+Fluoxetine hydrochloride
+Fluridone
+Flutianil OC 56574
+Flutianil OC 56635
+Formetanate hydrochloride
+Gadolinium
+.gama.-Hexachlorocyclohexane
+gamma-Chlordane***retired***use 2,2,4,5,6,7,8,8-Octachloro-2,3,3a,4,7,7a-hexahydro-4,7-methano-1H-indene
+.gamma.-Hexachlorocyclohexane
+Glycine-7-amido-4-methylcoumarin
+Glycine, N-[(1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,8-heptadecafluorooctyl)sulfonyl]-
+Glycine, N-ethyl-N-[(1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,8-heptadecafluorooctyl)sulfonyl]-
+Goeldichironomus
+Ground Coverage Bare (choice list)
+Ground Coverage Herbaceous (choice list)
+Ground Cover Standing Water (choice list)
+Halocladius
+Head Capsule Width
+Heptadecane
+Heterotrissocladius
+Hexabromocyclododecane
+Hexachlorocyclohexane
+Hexachlorocyclopentadiene
+Hexadecane
+Hexadecane, 2,6,11,15-tetramethyl-
+Hexazinone Transformation Product C
+Hexazinone Transformation Product D
+Hexazinone Transformation Product E
+Hirudo
+Human Influence: Docks/Boats (choice list)
+Hydrocarbons
+Hydrocarbons, C10-28
+Hydrocarbons, C>28-C40
+Hydrocarbons, Chlorinated (Unspecified Mix)
+Hydrocarbons, petroleum
+Hydrocarbons, total purgeable
+Hydrocarbons, volatile
+Hydrochlorothiazide
+Hydrocinnamic acid
+Hydrocodone
+Hydrocodone-d3
+Hydrocodone-D6
+Hydrocortisone
+Hydromorphone hydrochloride
+Hydroxyacetochlor
+Imidacloprid
+Imidacloprid desnitro
+Imidacloprid desnitro-olefin
+Imidacloprid desnitro-olefin hydrochloride
+Imidacloprid-olefin
+Imidacloprid-urea
+Indole
+Indoxacarb
+Inhibited biochemical oxygen demand
+Inundation Evidence: Sparesely vegetated concave surfaces (choice list)
+Iopamidol
+Isochlortetracycline
+Ketoconazole
+Labeled 1,2,3,4,5,6,7,8-Octachloronaphthalene
+Labeled Decabromodiphenyl Ether
+L-Alanine-7-amido-4-methylcoumarin
+Land Cover (choice list)
+L-Arginine-7-amido-4-methylcoumarin
+Lasalocid
+Lepidoptera
+Lepidostoma
+Leptoceridae
+Leptocerus
+Leptodora
+Lime (chemical), dolomitic
+Limnochironomus
+Littoral Substrate - Bottom Dominant
+L-Leucine 7-amido-4-methylcoumarin
+Macrohabitat Type - Constrained Channel
+Macrohabitat Type - Unconstrained Channel
+m-Dichlorobenzene
+Mesocyclops
+Methadone
+Methadone-d9
+Methamidophos
+Methiocarb
+Methiocarb sulfone
+Methiocarb sulfoxide
+Methocarbamol
+Methyl trans-3-(2,2-dichlorovinyl)-2,2-dimethylcyclopropane-1-carboxylate
+Metochlor ESA
+Metriocnemus
+Microcricotopus
+Microcystin
+Microcystin dLR
+Microcystin dRR
+Microcystin HilR
+Microcystin HiLR
+Microcystin HtyR
+Microcystin HtYR
+Microcystin LA
+Microcystin LF
+Microcystin LR
+Microcystin LR [DAsp3]
+Microcystin LR, Desmethyl
+Microcystin LR [Dha7]
+Microcystin LR [D-Leu1]
+Microcystin LW
+Microcystin LY
+Microcystin/nodularin genes mcyE/ndaF
+Microcystin RR
+Microcystin RR [DAsp3]
+Microcystins
+Microcystins and nodularins
+Microcystins/nodularin
+Microcystin WR
+Microcystin YR
+Microcystis
+Mikrocodides
+Minocycline
+Monochlorobiphenyl
+Monocrotaline
+Monocrotaline N-oxide
+Monocrotophos
+Mysidacea
+N-2-Ethylhexylbicycloheptenedicarboximide
+Nadolol
+Nanocladius
+Nanocladius distinctus
+Naphthalene, 2,7-dichloro-
+Naphthalene, decahydro-, trans-
+N-Ethyl-N-(2-hydroxyethyl)perfluorooctanesulfonamide
+N-Ethylperfluorooctane-1-sulfonamide
+N-ethyl perfluorooctanesulfonamidoacetic acid
+N-Ethyl perfluorooctane sulfonamido ethanol
+Nitrate-reducing bacteria
+Nitrocellulose
+Nitrogenous biochemical oxygen demand
+N-Methyl-2-pyrrolidone
+N-methylperfluoro-1-octanesulfonamide
+N-Methyl perfluorooctane sulfonamide
+N-methyl perfluorooctanesulfonamidoacetic acid
+N-Methylperfluorooctane sulfonamido ethanol
+N,N-Dimethyloctadecylamine
+N,N-Dimethyloctylamine
+Noctuidae
+Nonadecane
+Noncarcinogenic polycyclic aromatic hydrocarbons
+Non-viable seed count
+Nordoxepin
+NPS POLLUTION - Domestic Pets Present (Y/N) (choice list)
+NPS POLLUTION - Livestock Present (Y/N) (choice list)
+Number of pedicels per sample plant
+Ochrotrichia
+Octachlorobiphenyl
+Octachlorodibenzo-p-dioxin-C13
+Octachloronaphthalene
+Octachlorostyrene
+Octacosane
+octadecan-1-ol
+Octadecane
+Octadecane, 1-chloro-
+Octadecanoic acid, pentatriacontafluoro-
+Octamethylcyclotetrasiloxane
+Octanal
+Octane
+Octane, 1-chloro-
+Octanoic acid
+Octanoic acid, 2,2,3,3,4,4,5,5,6,6,7,7,8,8,8-pentadecafluoro-, ion(1-)
+Octasulfur
+Octatriacontane
+Octinoxate
+Octylphenol
+Octylphenol diethoxylate
+o-Dichlorobenzene
+Odontomesa
+Odor (adverse or offensive) (Y/N) (choice list)
+Odor, atmospheric
+Odor severity (choice list)
+Odor threshold number
+Odor type (choice list)
+Oleandomycin phosphate
+Oligochaeta
+Onocosmoecus
+Organochlorine pesticides
+Orthocladius
+Other Hydrologic Evidence: Frost-heave hummocks (choice list)
+Overhead Cover
+Oxidation reduction potential (ORP)
+Oxycodone-d3
+Parachaetocladius
+Parachironomus monochromus
+Paracladopelma
+Parametriocnemus
+Paratrichocladius
+Particulate microcystins/nodularin
+p-Dichlorobenzene
+Pedicia
+Pentadecane
+Pentadecane, 2,6,10-trimethyl-
+Pentadecanoic acid
+Pentazocine
+Perfluoro[1,2-13C2]decanoic acid
+Perfluoro[1,2-13C2]dodecanoic acid
+Perfluoro[1,2-13C2]hexadecanoic acid
+Perfluoro[1,2-13C2]tetradecanoic acid
+Perfluoro[1,2-13C2]undecanoic acid
+Perfluoro[1,2,3,4-13C4]octanoic acid
+Perfluoro[1,2,3,4,5,6,7-13C7]undecanoic acid
+Perfluoro-1-dodecanesulfonate
+Perfluorodecanesulfonate
+Perfluorodecanoate
+Perfluorodecanoic acid
+Perfluorododecanesulfonate
+Perfluorododecanesulfonic acid
+Perfluorododecanoate
+Perfluorododecanoic acid
+Perfluorohexadecanoic acid***retired***use Perfluoropalmitic acid
+Perfluorolauric acid***retired***use Perfluorododecanoic acid
+Perfluoromyristic acid***retired***use Perfluorotetradecanoic acid
+Perfluorooctanesulfonamide
+Perfluorooctanesulfonate
+Perfluorooctanesulfonate (PFOS)
+Perfluorooctane sulfonic acid
+Perfluorooctanesulfonic acid***retired***use Perfluorooctane sulfonic acid
+Perfluorooctanoic acid
+Perfluorotetradecanoate
+Perfluorotetradecanoic acid
+Perfluorotridecanoate
+Perfluorotridecanoic acid
+Perfluoroundecanoate
+Perfluoroundecanoic acid
+Periphyton productivity
+Petroleum hydrocarbons (C9-C44)
+Petroleum hydrocarbons, total extractable
+Phalacrocera
+Phenol, 4,5-dichloro-2-methoxy-
+Phosphamidon
+Phosphamidon-E
+Phycocyanin
+Phycocyanin (probe)
+Phycocyanin (probe relative fluorescence)
+Phycocyanins
+Phylocentropus
+Phytoplankton productivity
+Pindolol
+Piperidine, 1-(1-phenylcyclohexyl)-, hydrochloride
+p-Octylphenol
+Polycyclic aromatic hydrocarbons
+Polycyclic aromatic hydrocarbons as benzo[a]pyrene TEQ
+Polycyclic aromatic hydrocarbons, high molecular weight
+Polycyclic aromatic hydrocarbons, low molecular weight
+Pool Velocity
+Potassium 11-chloroeicosafluoro-3-oxaundecane-1-sulfonate
+Primary productivity
+Primidone
+Procambarus
+Prochloraz
+Procladius
+Procladius bellus
+Productivity, Bacterial Carbon Production
+Productivity, photosynthetic rate, carbon production
+Propamocarb
+Prothioconazole
+Psectrocladius
+Pseudochironomus
+Pseudochironomus articaudus
+Pseudochironomus fulviventris
+Pseudochironomus pseudoviridis
+Pseudodiamesa
+Pseudoephedrine-d3
+Pseudoephedrine/Ephedrine mix
+Pseudolimnophila
+Pseudomonas
+Pseudomonas aeruginosa
+Pseudostenophylax
+psi,psi-Carotene, 7,7,8,8,11,11,12,12,15,15-decahydro-
+Radon
+Radon-219
+Radon-222
+RBP2, Aquatic Vegetation, Dominant Type & Species (choice list)
+RBP2, Habitat type, bedrock (%)
+RBP2, Habitat Type, bedrock (%)
+RBP2, High G, Velocity/Depth Regime (choice list)
+RBP2, Instream features, surface velocity (at thalweg)
+RBP2, Riparian Vegetation, Dominant Species Present (choice list)
+RBP2, Sediment/Substrate, Odors (choice list)
+RBP2, Substrate, inorganic, bedrock
+RBP2, Water Quality, Water Odors (choice list)
+RBP2, Watershed, Local Erosion (choice list)
+RBP2, Watershed, Local NPS Pollution (choice list)
+RBP2, Watershed, Predominant Surrounding Landuse (choice list)
+RBP3, Riffle/Run, Velocity/ Depth Regimes (choice list)
+RBP Local Watershed Erosion (choice list)
+RBP Local Watershed NPS Pollution (choice list)
+RBP Predominant Surrounding Land Use (choice list)
+RBP Sediment Odors (choice list)
+RBP Stream Velocity
+RBP Substrate - Bedrock
+RBP Water Odors (choice list)
+Redoximorphic Features (%)
+Redoximorphic Features (choice list)
+Redoximorphic Features Color: Chroma
+Redoximorphic Features Color: Hue
+Redoximorphic Features Color: Value
+Reproduction
+Rheocricotopus
+Riparian - Docks or marinas (choice list)
+Riparian vegetation, dominant species present
+Rocky Substrate (choice list)
+Saturation Index Chalcedony
+Saturation Index Dolomite
+Scale Focus Radius (Fish)
+sec-Acetochlor oxanilic acid
+Sediment/ Substrate Odors (choice list)
+Selenocyanate
+S-Ethyl dipropylthiocarbamate
+Silvex isooctyl ester
+Simocephalus
+Simultaneously extracted metals/acid volatile sulfides (Metals ESB based on Final Chron. Value for AVS (fOC))
+Sludge, substrate rock/bank cover - severity (choice list)
+Sodium methyldithiocarbamate
+Sodium perfluoro-1-[1,2,3,4-18O2]octanesulfonate
+Sodium perfluorodecanesulfonate
+Soil Saturation Evidence: Hydrogen sulfide odor (choice list)
+Soil Saturation Evidence: Presence of reduced iron (choice list)
+Soil Saturation Evidence: Recent iron reduction in tilled soils (choice list)
+Solar irradiation, local
+Specific conductance
+Specific Conductance, Calculated/Measured Ratio
+Specific conductivity
+Specific conductivity***retired***use Specific conductance
+Specific drawdown capacity
+Staphylococcus
+Stenochironomus
+Stictochironomus
+Stream Bed Color (choice list)
+Stream velocity (choice list)
+Streptococcus
+Submerged Cover (%)
+Substrate-bedrock
+Substrate Dominant, Channel (choice list)
+Substrate Dominant, Transect (choice list)
+Substrate Subdominant, Transect (choice list)
+Symbiocladius
+syn-Dechlorane Plus
+Synorthocladius
+Tanaidacea
+Tebuthiuron Transformation Product 108
+Tetradecane
+Tetradecylbenzene
+Tetrahydrocannabinol
+Thiocyanate
+Thiocyanic acid
+Thiodicarb
+Toluene diisocyanate
+Total Dichloro Biphenyls
+Total microcystins plus nodularins
+Total Monochloro Biphenyls
+Total Octachloro Biphenyls
+Total Petroleum Hydrocarbon - Extended Range Organ
+Total Petroleum Hydrocarbons (C10-C40)
+Total Petroleum Hydrocarbons (C6-C32 TPH)
+Toxicity, sediment, Leptocheirus plumulosus, survival**retired**useBiologicalSample,SubjectTaxon,IntentToxicity
+Tramadol
+trans-1,2-Dichloroethene***retired***use trans-1,2-Dichloroethylene
+trans-1,2-Dichloroethylene
+trans-1,2-Dichloropropene
+trans-1,3-Dichloropropene
+trans-1,3-Dichloropropene-d4
+trans-1,4-Dichloro-2-butene
+Trazodone
+Trichocerca
+Trichocladius
+Triclocarban
+Tricyclo[3.3.1.13,7]decane
+Tridecane
+Triiodomethane
+Tris(1,3-dichloro-2-propyl)phosphate
+Trissocladius
+Tropocyclops
+Undecane
+Undecanoic acid, 2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,11-heneicosafluoro-
+Unnatural odor (choice list)
+Velocity-discharge
+Velocity - stream
+Viable seed count
+Water Odor (choice list)
+Watershed, predominant surrounding land use
+Weak, dissociable cyanide
+Wind Condition (choice list)
+Wind velocity
+Wood class (choice list)
+Wood creosote
+Woody Ground Coverage shrubs (choice list)
+Woody Ground Coverage Type (choice list)
+Xenochironomus
+Zidovudine

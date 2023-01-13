@@ -1,0 +1,48 @@
+---
+title: "Silica"
+author: "Katie Willi"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+#page-layout: full
+fig-width: 15
+execute:
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+### Placeholder report for silica harmonization
+
+```{r, echo = FALSE}
+# raw_silica <- input_var$raw_silica
+# p_codes <- input_var$p_codes
+# harmonized_silica <- input$harmonized_silica
+tar_load(harmonized_silica)
+```
+
+```{r, echo = FALSE}
+harmonized_silica$horiz_bar_rec_by_methods
+```
+
+```{r, echo = FALSE}
+harmonized_silica$colorimetry_pie_plot
+```
+
+```{r, echo = FALSE}
+harmonized_silica$icp_pie_plot
+```
+
+```{r, echo = FALSE}
+harmonized_silica$horiz_bar_rec_grouped_frac
+```
+
+```{r, echo = FALSE}
+harmonized_silica$silica_tier_hist
+```
+
+```{r, echo = FALSE}
+str(harmonized_silica$silica_tiered)
+```

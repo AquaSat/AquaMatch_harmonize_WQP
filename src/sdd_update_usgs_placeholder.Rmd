@@ -1,0 +1,28 @@
+---
+title: "SDD"
+author: ""
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+#page-layout: full
+fig-width: 15
+execute:
+  echo: true
+  warning: false
+  error: false
+  message: false
+---
+
+```{r, echo = FALSE}
+tar_load(harmonized_sdd)
+```
+
+```{r, echo = FALSE}
+harmonized_sdd$sdd_method_groups_plot
+```
+
+```{r, echo = FALSE}
+harmonized_sdd$sdd_fraction_groups_plot
+```
+

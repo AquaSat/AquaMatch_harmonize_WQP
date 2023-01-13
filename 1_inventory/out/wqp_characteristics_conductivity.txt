@@ -1,0 +1,13 @@
+The following characteristics are already included in the WQP codes cfg file: 
+Conductivity
+Specific conductivity
+
+
+The following characteristics might be relevant to the selected parameter and are not included in the WQP codes cfg file: 
+Condition class, chemical (Conductivity/Salinity)
+Periphyton productivity
+Phytoplankton productivity
+Primary productivity
+Productivity, Bacterial Carbon Production
+Productivity, photosynthetic rate, carbon production
+Specific conductivity***retired***use Specific conductance

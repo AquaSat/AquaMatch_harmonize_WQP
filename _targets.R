@@ -157,6 +157,20 @@ mrb_targets <- list(
                          y = p1_char_names_crosswalk,
                          by = c("CharacteristicName" = "char_name"))),
   
+  # A quick separate step to export the dataset to a file for easier review
+  # Not integrating it deeper into existing targets for now
+  tar_file(wqp_data_aoi_formatted_filtered_out,
+           {
+             out_path <- "data/wqp_data_aoi_formatted_filtered.feather"
+             
+             write_feather(x = wqp_data_aoi_formatted_filtered,
+                           path = out_path)
+             
+             out_path
+           },
+           packages = c("feather")),
+  
+  
   # For some reason the plots in this target don't work if you don't have
   # forcats loaded when using tar_read()
   tar_target(harmonized_silica,

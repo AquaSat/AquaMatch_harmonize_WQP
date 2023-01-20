@@ -88,7 +88,9 @@ p1_targets_list <- list(
   # Summarize the data that would come back from the WQP
   tar_file(
     p1_wqp_inventory_summary_csv,
-    summarize_wqp_inventory(p1_wqp_inventory_aoi, "1_inventory/log/summary_wqp_inventory.csv")
+    summarize_wqp_inventory(p1_wqp_inventory_aoi,
+                            "1_inventory/log/summary_wqp_inventory.csv")
   )
+  
   
 )

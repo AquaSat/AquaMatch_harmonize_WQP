@@ -14,15 +14,10 @@ execute:
   message: false
 ---
 
-```{r, echo = FALSE}
-tar_load(harmonized_sdd)
+```{r}
+png::readPNG(tar_read(harmonized_sdd)$sdd_analytical_method_groups_plot)
 ```
 
-```{r, echo = FALSE}
-harmonized_sdd$sdd_method_groups_plot
+```{r}
+png::readPNG(tar_read(harmonized_sdd)$sdd_fraction_groups_plot)
 ```
-
-```{r, echo = FALSE}
-harmonized_sdd$sdd_fraction_groups_plot
-```
-

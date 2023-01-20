@@ -1,18 +1,7 @@
 ---
-title: "Silica"
-author: "Katie Willi"
-format: 
-  html:
-    code-fold: true
-    code-summary: "Show the code"
-#page-layout: full
-fig-width: 15
-editor: visual
-execute:
-  echo: true
-  warning: false
-  error: false
-  message: false
+title: "DOC for MM!"
+output: html_document
+date: "2023-01-20"
 ---
 
 ## Aggregating
@@ -42,7 +31,7 @@ pcodes <-tables[[1]] %>%
   janitor::clean_names() %>%
   mutate(parm_cd=str_pad(as.character(parameter_code), 5, pad = "0"))
 
-raw_silica <- read_feather('data/comb/raw_silica_202210.feather') %>% 
+raw_doc <- read_feather('data/comb/raw_doc_202210.feather') %>% 
   dplyr::select(date=ActivityStartDate,
                 parameter=CharacteristicName,
                 parm_cd=USGSPCode,
@@ -75,14 +64,14 @@ raw_silica <- read_feather('data/comb/raw_silica_202210.feather') %>%
 
 # DATA LUMPING
 
-aggregated_methods <- raw_silica %>%
+aggregated_methods <- raw_doc %>%
   mutate(method_status = case_when(
     
-    # Silica-specific:
+    # doc-specific:
     grepl("4500-SiO2 C|4500 SiO2-C|4500 Si-C|4500 Si C|
           4500C|4500 C|4500-SiC|4500-SI02 C|4500 SIO2 C|
           4500-SIO2C",
-          analytical_method,ignore.case=T) ~ "Molybdosilicate Method",
+          analytical_method,ignore.case=T) ~ "Molybdodocte Method",
     
     grepl("4500-SiO2 D|4500 SiO2-D|4500 Si-D|4500 Si D|
           4500D|4500 D|4500-SiD", 
@@ -94,11 +83,11 @@ aggregated_methods <- raw_silica %>%
     grepl("4500-SiO2 E|4500 SiO2-E|4500 Si-E|4500 Si E|4500E|
           4500 E|4500-SiE|Technicon Industrial Method 105-71|
           4500 SIO2 E", 
-          analytical_method,ignore.case=T) ~ "Automated Method for Molybdate-Reactive Silica",
+          analytical_method,ignore.case=T) ~ "Automated Method for Molybdate-Reactive doc",
     
     grepl("4500-SiO2 F|4500 SiO2-F|4500 Si-F|4500 Si F|4500F|
           4500 F|4500-SiF|4500 SIO2 F", 
-          analytical_method,ignore.case=T) ~ "Flow Injection Analysis for Molybdate-Reactive Silicate",
+          analytical_method,ignore.case=T) ~ "Flow Injection Analysis for Molybdate-Reactive docte",
     
     grepl("366",analytical_method,ignore.case=T) ~ "EPA Method 366.0",
     
@@ -118,17 +107,17 @@ aggregated_methods <- raw_silica %>%
           analytical_method,ignore.case=T) ~ "ICP/MS",
     
     # General-ass ICP
-    grepl("Silica in Water by ICP| ICP, EPA method|ICP Package",
+    grepl("doc in Water by ICP| ICP, EPA method|ICP Package",
           analytical_method,ignore.case=T) ~ "Just ICP"))
 
 grouped_more <- aggregated_methods %>% 
   mutate(grouped=ifelse(method_status %in% 
-                          c('Molybdosilicate Method',
+                          c('Molybdodocte Method',
                             'Heteropoly Blue Method',
                             'EPA Method 370.1',
                             'EPA Method 366.0',
-                            'Automated Method for Molybdate-Reactive Silica',
-                            'Flow Injection Analysis for Molybdate-Reactive Silicate')|
+                            'Automated Method for Molybdate-Reactive doc',
+                            'Flow Injection Analysis for Molybdate-Reactive docte')|
         grepl("colorimetr|molybd|colorimeter", analytical_method, ignore.case=T),"Colorimetry", ifelse(is.na(method_status)|method_status=="Ambiguous","Ambiguous",method_status))) %>%
   mutate(grouped=ifelse(method_status %in% c("ICP-AES",
                                      "Just ICP",
@@ -144,9 +133,9 @@ rm(site_url,tables,aggregated_methods,pcodes)
 
 ### Methods
 
-Silica can be analyzed in a myriad of ways; in the water quality portal, silica had `r n_distinct(grouped_more$analytical_method)` unique analytic methods listed for a total of `r nrow(grouped_more)` samples. However, many of these analytic methods can be grouped together into just a few actual methodologies that are realistic for silica:
+doc can be analyzed in a myriad of ways; in the water quality portal, doc had `r n_distinct(grouped_more$analytical_method)` unique analytic methods listed for a total of `r nrow(grouped_more)` samples. However, many of these analytic methods can be grouped together into just a few actual methodologies that are realistic for doc:
 
--   **Colorimetry:** this represents samples that reference the molybdosilicate method (SM 4500 C), the heteropoly blue method (SM 4500 D), the automated method for molybdate-reactive silica (SM 4500 E), flow injection analysis for molybdate-reactive silica (SM 4500 F), gas segmented continuous flow colorimetric analysis (EPA 366.0), spectrophotometric detection of dissolved silica (EPA 370.1), "colorimetry", or "molybdate".
+-   **Colorimetry:** this represents samples that reference the molybdodocte method (SM 4500 C), the heteropoly blue method (SM 4500 D), the automated method for molybdate-reactive doc (SM 4500 E), flow injection analysis for molybdate-reactive doc (SM 4500 F), gas segmented continuous flow colorimetric analysis (EPA 366.0), spectrophotometric detection of dissolved doc (EPA 370.1), "colorimetry", or "molybdate".
 
 -   **ICP:** this represents samples that reference ICP/MS (SM 3125, EPA Method 200.8, or "ICP MS"), ICP-AES (SM 3120 , EPA Methods 200.7 and 6010, "ICP AES", or "ICP OES"), or just "ICP".
 
@@ -204,7 +193,7 @@ ggplot(data=pie, aes(x="", y=count, fill=legend)) +
   theme(text = element_text(size = 20))
 ```
 
-The ICP method is the second most common method for silica analysis, representing `r grouped_more %>% mutate(total=n()) %>% group_by(grouped) %>% filter(grouped=="ICP") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all silica samples.
+The ICP method is the second most common method for doc analysis, representing `r grouped_more %>% mutate(total=n()) %>% group_by(grouped) %>% filter(grouped=="ICP") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all doc samples.
 
 ```{r}
 pie <- grouped_more %>%
@@ -243,7 +232,7 @@ grouped_more %>%
 
 ### Sample Fractions
 
-When looking at these different grouped methodologies coupled with their fractionation we find that most samples were analyzed for the dissolved fraction of silica. In fact, only the heteropoly blue method (a colorimetric technique) had more samples that analyzed the total fraction of silica.
+When looking at these different grouped methodologies coupled with their fractionation we find that most samples were analyzed for the dissolved fraction of doc. In fact, only the heteropoly blue method (a colorimetric technique) had more samples that analyzed the total fraction of doc.
 
 ```{r}
 grouped_more %>%
@@ -265,9 +254,9 @@ grouped_more %>%
   scale_y_continuous(labels = comma)
 ```
 
-## How to tier silica
+## How to tier doc
 
-There is no clear way of tiering silica based on fraction if we want all tiers to be looking at the exact same thing. Instead, I suggest we only look at samples that are analyzing the dissolved fraction. The dissolved fraction makes up `r grouped_more %>% mutate(total=n()) %>% group_by(aquasat_fraction) %>% filter(aquasat_fraction=="Dissolved") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all silica samples in the Water Quality Portal, a clear sign that the majority of people monitoring silica are looking at the dissolved fraction. With this in mind, I suggest tiering silica as follows:
+There is no clear way of tiering doc based on fraction if we want all tiers to be looking at the exact same thing. Instead, I suggest we only look at samples that are analyzing the dissolved fraction. The dissolved fraction makes up `r grouped_more %>% mutate(total=n()) %>% group_by(aquasat_fraction) %>% filter(aquasat_fraction=="Dissolved") %>% summarize(perc=(n()/total)*100) %>% distinct() %>% ungroup() %>% select(perc) %>% round(digits=3) %>% paste()`% of all doc samples in the Water Quality Portal, a clear sign that the majority of people monitoring doc are looking at the dissolved fraction. With this in mind, I suggest tiering doc as follows:
 
 1.  **Restrictive.** ICP (all versions). Dissolved fraction. Only water samples with an accepted value that is reasonable with logical units.
 
@@ -284,7 +273,7 @@ Without any additional steps other than harmonizing units and removing NA/failur
 no_data_samples <- grouped_more %>%
   filter(is.na(value)&is.na(units)&is.na(lab_comments)&is.na(result_comments)) 
 
-silica_empties_removed <- grouped_more %>%
+doc_empties_removed <- grouped_more %>%
   #select only approved data:
   filter(status %in% c('Accepted','Final','Historical','Validated'),
          # REMOVE failure-related field comments, slightly different list of words
@@ -347,13 +336,13 @@ silica_empties_removed <- grouped_more %>%
          #remove samples that have no values and no lab/result metadata
          !index %in% no_data_samples$index)
 
-vals_cleaned <- silica_empties_removed %>%
+vals_cleaned <- doc_empties_removed %>%
   mutate(numeric_value=as.numeric(value)) %>%
   filter(!is.na(numeric_value)) # need to work on this
 
 # unit_disharmony <- function(d,lookup){
 #   d %>%
-#     anti_join(silica_lookup,by='units') %>%
+#     anti_join(doc_lookup,by='units') %>%
 #     group_by(units) %>%
 #     summarize(count=n())  %>%
 #     kable(.,'html',caption='The following measurements
@@ -363,17 +352,17 @@ vals_cleaned <- silica_empties_removed %>%
 # }
 
 #Set up a lookup table so that final units are all in ug/L. 
-silica_lookup <- tibble(units=c('mg/L','mg/l','ppm','ug/l','ug/L','mg/m3','ppb','mg/cm3','ug/ml','mg/ml','ppt','umol/L'),
+doc_lookup <- tibble(units=c('mg/L','mg/l','ppm','ug/l','ug/L','mg/m3','ppb','mg/cm3','ug/ml','mg/ml','ppt','umol/L'),
                         conversion = c(1000,1000,1000,1,1,1,1,1000000,1000,1000000,0.000001,60.080000))
 
-#unit_disharmony(vals_cleaned,silica_lookup)
+#unit_disharmony(vals_cleaned,doc_lookup)
 
-silica_harmonized <- vals_cleaned %>%
-  inner_join(silica_lookup,by='units') %>%
+doc_harmonized <- vals_cleaned %>%
+  inner_join(doc_lookup,by='units') %>%
          mutate(harmonized_value=(numeric_value*conversion)/1000,
          harmonized_unit='mg/L')
 
-silica_tiered <- silica_harmonized %>%
+doc_tiered <- doc_harmonized %>%
   filter(aquasat_fraction=="Dissolved") %>%
   mutate(tiers=case_when(grouped=="ICP" ~ "Restrictive",
                          #grouped=="ICP/MS" ~ "Restrictive",
@@ -382,7 +371,7 @@ silica_tiered <- silica_harmonized %>%
                          grouped=="Ambiguous" ~ "Dropped from Aquasat"))
 
 
-# meanscores <- attributes(silica_tiered$grouped)$harmonized_value
+# meanscores <- attributes(doc_tiered$grouped)$harmonized_value
 # 
 # meandf <- data.frame(
 #   variable = rep(names(meanscores), 4),
@@ -390,12 +379,12 @@ silica_tiered <- silica_harmonized %>%
 #   cluster  = rep(1:6, each=14)
 #   )
 
-ggplot(data=silica_tiered) +
+ggplot(data=doc_tiered) +
   geom_histogram(aes(x=(harmonized_value), fill=tiers), bins=100) +
   scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
   facet_wrap(~tiers, scales='fixed') +
-  xlab('Silica mg/L') +
+  xlab('doc mg/L') +
   theme_bw() +
   theme(legend.position = "none",
         text = element_text(size = 20))
@@ -405,11 +394,11 @@ ggplot(data=silica_tiered) +
 ## Remaining questions
 
 1.  Is this tiering appropriate? Does not take into account **differences in which method is better for a specific range of values**. **I'm also lumping all ICP methods (ICP-MS, ICP-AES, ICP, etc.) together.**
-    -   This approach to tiering tosses out what could be perfectly good data (e.g. high-quality "total" silica). Perhaps not an issue for silica, but this could be a pretty subjective way to tier other metals when we get to them?
+    -   This approach to tiering tosses out what could be perfectly good data (e.g. high-quality "total" doc). Perhaps not an issue for doc, but this could be a pretty subjective way to tier other metals when we get to them?
 2.  **How to handle non-detects/BDLs.** In the upstream workflow I am removing all samples with non-numeric values. However, many samples have information within the value field that could be used to determine samples that were below the detection limit:
 
 ```{r}
-silica_empties_removed %>%
+doc_empties_removed %>%
   mutate(numeric_value=as.numeric(value)) %>%
   filter(is.na(numeric_value)) %>%
   distinct(value,.keep_all = T) %>%
@@ -425,7 +414,7 @@ silica_empties_removed %>%
 There are also a lot of samples that are shown to be UNDER some value (i.e. \< 2.6). For these, I've played around with changing their value to a random number between 0 and half of the listed value, though this definitely makes some pretty large/maybe inappropriate assumptions about what these values actually mean! I've flagged these in the \`aquasat_comments\` field as being \*Approximated, EPA MDL method\*.
 
 ```{r}
-mdl <- silica_empties_removed %>%
+mdl <- doc_empties_removed %>%
   select(index,value) %>%
   filter(grepl("0|1|2|3|4|5|6|7|8|9",value) & grepl("<", value))
 
@@ -440,7 +429,7 @@ mdl$epa_mdl <- with(mdl,runif(nrow(mdl),zero,half))
 mdl <- select(mdl,index,epa_mdl)
 
 # replace value field with these new values
-mdls_added <- silica_empties_removed %>%
+mdls_added <- doc_empties_removed %>%
               left_join(mdl,by="index") %>%
               mutate(aquasat_value=ifelse(index %in% mdl$index, epa_mdl, value),
                      aquasat_comments = ifelse(index %in% mdl$index, "Approximated, EPA LDL method", NA))

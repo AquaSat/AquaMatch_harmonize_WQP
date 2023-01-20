@@ -42,7 +42,8 @@ p2_targets_list <- list(
                    char_names = unique(p2_site_counts_grouped$CharacteristicName), 
                    wqp_args = wqp_args),
     pattern = map(p2_site_counts_grouped),
-    error = "continue"
+    error = "continue",
+    cue = tar_cue("never")
   ),
   
   # Summarize the data downloaded from the WQP

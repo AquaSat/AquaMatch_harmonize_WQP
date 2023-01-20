@@ -277,17 +277,75 @@ There is no clear way of tiering silica based on fraction if we want all tiers t
 
 4.  **Ambiguous (and therefore removed)**. Ambiguous methods. Dissolved fraction. Only water samples with an accepted value that is reasonable with logical units.
 
-Without any additional steps other than harmonizing units and removing NA values (*I haven't looked at whether values are reasonable*), this is how that data looks:
+Without any additional steps other than harmonizing units and removing NA/failure-related values (*I also haven't looked at whether values are reasonable*), this is how that data looks:
 
 ```{r}
 #identify samples that have no meaningful data related to an NA value
 no_data_samples <- grouped_more %>%
   filter(is.na(value)&is.na(units)&is.na(lab_comments)&is.na(result_comments)) 
 
-#remove samples that have no values and no lab/result metadata
 silica_empties_removed <- grouped_more %>%
-  filter(status %in% c('Accepted','Final','Historical','Validated')) %>%
-  filter(!index %in% no_data_samples$index)
+  #select only approved data:
+  filter(status %in% c('Accepted','Final','Historical','Validated'),
+         # REMOVE failure-related field comments, slightly different list of words
+         # than lab and result list (not including things that could be used
+         # to describe field conditions like "warm", "ice", etc.). 
+         # MM THiS IS WHERE WE WANT TO USE YOUR WORD-PULLING CODE!
+         !grepl(
+           pattern = paste0(
+             c("fail", "suspect", "error", "beyond accept", "interference",
+               "questionable", "outside of accept", "problem", "contaminat",
+               "improper", "violation", "invalid", "unable", "no test", "cancelled",
+               "instrument down", "no result", "time exceed", "not accept",
+               "QC EXCEEDED"),
+             collapse = "|"),
+           x = field_comments,
+           ignore.case = T
+         ) |
+           is.na(field_comments),
+         # Remove failure-related lab (What about controls comments?):
+         !grepl(
+           pattern = paste0(
+             c("fail", "suspect", "error", "beyond accept", "interference",
+               "questionable", "outside of accept", "problem", "contaminat",
+               "improper", "warm", "violation", "invalid", "unable", "no test",
+               "cancelled", "instrument down", "no result", "time exceed",
+               "not accept", "QC EXCEEDED", "not ice", "ice melt",
+               "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
+             collapse = "|"),
+           x = lab_comments,
+           ignore.case = T
+         ) |
+           is.na(lab_comments),
+         # Remove failure-related result comments
+         !grepl(
+           pattern = paste0(
+             c("fail", "suspect", "error", "beyond accept", "interference",
+               "questionable", "outside of accept", "problem", "contaminat",
+               "improper", "warm", "violation", "invalid", "unable", "no test",
+               "cancelled", "instrument down", "no result", "time exceed",
+               "not accept", "QC EXCEEDED", "not ice", "ice melt",
+               "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
+             collapse = "|"),
+           x = result_comments,
+           ignore.case = T
+         ) | is.na(result_comments),
+         # No failure-related values
+         !grepl(
+           pattern = paste0(
+             c("fail", "suspect", "error", "beyond accept", "interference",
+               "questionable", "outside of accept", "problem", "contaminat",
+               "improper", "warm", "violation", "invalid", "unable", "no test",
+               "cancelled", "instrument down", "no result", "time exceed",
+               "not accept", "QC EXCEEDED", "not ice", "ice melt",
+               "PAST HOLDING TIME", "not done", "no reading",
+               "not reported", "no data"),
+             collapse = "|"),
+           x = value,
+           ignore.case = T
+         ) | is.na(value),
+         #remove samples that have no values and no lab/result metadata
+         !index %in% no_data_samples$index)
 
 vals_cleaned <- silica_empties_removed %>%
   mutate(numeric_value=as.numeric(value)) %>%

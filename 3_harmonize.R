@@ -48,7 +48,8 @@ p3_targets_list <- list(
              p3_wqp_data_aoi_formatted %>%
                left_join(x = .,
                          y = p1_char_names_crosswalk,
-                         by = c("CharacteristicName" = "char_name"))),
+                         by = c("CharacteristicName" = "char_name")),
+             format = "feather"),
   
   # A quick separate step to export the dataset to a file for easier review
   # Not integrating it deeper into existing targets for now

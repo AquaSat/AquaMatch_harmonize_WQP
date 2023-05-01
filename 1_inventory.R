@@ -76,7 +76,8 @@ p1_targets_list <- list(
                     wqp_args = wqp_args)
     },
     pattern = cross(p1_global_grid_aoi, p1_char_names),
-    error = "continue"
+    error = "continue"#,
+    # cue = tar_cue("never")
   ),
   
   # Subset the WQP inventory to only retain sites within the area of interest

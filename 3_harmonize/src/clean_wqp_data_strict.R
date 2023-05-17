@@ -70,7 +70,8 @@ clean_wqp_data_strict <- function(wqp_data,
               y = site_data %>%
                 select(MonitoringLocationIdentifier, CharacteristicName,
                        lon, lat, datum),
-              by = c("MonitoringLocationIdentifier", "CharacteristicName")) %>%
+              by = c("MonitoringLocationIdentifier", "CharacteristicName",
+                     "parameter")) %>%
     # Flag true missing results
     flag_missing_results(., commenttext_missing) %>%
     # Flag duplicate records

@@ -1,17 +1,20 @@
 # Source the functions that will be used to build the targets in p2_targets_list
-source("2_download/src/fetch_wqp_data.R")
-source("2_download/src/summarize_wqp_download.R")
+tar_source("2_download/src/")
 
 p2_targets_list <- list(
   
-  # Pull site id's and total number of records for each site from the WQP inventory
+  # Pull site IDs and total number of records for each site from the WQP inventory
   tar_target(
     p2_site_counts,
     p1_wqp_inventory_aoi %>%
+      # Hold onto location info, grid_id, characteristic, and provider data
+      # and use them for grouping
       group_by(MonitoringLocationIdentifier, lon, lat, datum, grid_id,
                CharacteristicName, ProviderName) %>%
+      # Count the number of rows per group
       summarize(results_count = sum(resultCount, na.rm = TRUE),
                 .groups = 'drop') %>%
+      # Add the overarching parameter names to the dataset
       left_join(x = .,
                 y = p1_wqp_params %>%
                   map2_df(.x,
@@ -24,6 +27,7 @@ p2_targets_list <- list(
       group_by(parameter) %>%
       # In case of testing:
       # sample_n(5) %>%
+      # Split dataset into a list for iterating downloads by parameter
       split(f = .$parameter)
   ),
   
@@ -38,8 +42,8 @@ p2_targets_list <- list(
   #   iteration = "group"
   # ),
   
-  # Manually breaking up by parameter for now. In the future this should be
-  # reworked into targets branching. The goal right now is to create a way for
+  # Manually breaking up by parameter for now. In the future this should likely
+  # be reworked into targets branching. The goal right now is to create a way for
   # each param to be downloaded separately so that an error in one doesn't
   # prevent others from being collected and combined
   tar_target(
@@ -222,14 +226,14 @@ p2_targets_list <- list(
                        p2_wqp_data_aoi_tss, p2_wqp_data_aoi_doc,
                        p2_wqp_data_aoi_temp, p2_wqp_data_aoi_phos,
                        p2_wqp_data_aoi_nitro),
-             format = "feather")
+             format = "feather"),
   
-  # # Summarize the data downloaded from the WQP
-  # tar_target(
-  #   p2_wqp_data_summary_csv,
-  #   summarize_wqp_download(p1_wqp_inventory_summary_csv, p2_wqp_data_aoi, 
-  #                      "2_download/log/summary_wqp_data.csv"),
-  #   format = "file"
-  # )
+  # Summarize the data downloaded from the WQP
+  tar_target(
+    p2_wqp_data_summary_csv,
+    summarize_wqp_download(p1_wqp_inventory_summary_csv, p2_wqp_data_aoi,
+                       "2_download/log/summary_wqp_data.csv"),
+    format = "file"
+  )
   
 )

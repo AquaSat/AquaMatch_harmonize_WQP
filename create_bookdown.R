@@ -49,7 +49,7 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       pre_harmonization_rmd,
       params = list(
-        documented_drops = documented_drops),
+        documented_drops = p3_documented_drops),
       output_file = "02_preharmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -63,7 +63,7 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       chla_harmonization_rmd,
       params = list(
-        documented_drops = documented_drops),
+        documented_drops = p3_documented_drops),
       output_file = "03_chla_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -77,7 +77,7 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       doc_harmonization_rmd,
       params = list(
-        documented_drops = documented_drops),
+        documented_drops = p3_documented_drops),
       output_file = "04_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -91,7 +91,7 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       sdd_harmonization_rmd,
       params = list(
-        documented_drops = documented_drops),
+        documented_drops = p3_documented_drops),
       output_file = "05_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -105,7 +105,7 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       tss_harmonization_rmd,
       params = list(
-        documented_drops = documented_drops),
+        documented_drops = p3_documented_drops),
       output_file = "06_tss_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -125,8 +125,7 @@ bookdown_targets_list <- list(
                               chla_harmonization_report,
                               doc_harmonization_report,
                               sdd_harmonization_report,
-                              tss_harmonization_report,
-                              modeling_report)),
+                              tss_harmonization_report)),
     cue = tar_cue("always")
   )
   

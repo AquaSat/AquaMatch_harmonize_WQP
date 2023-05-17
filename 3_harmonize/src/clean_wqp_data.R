@@ -60,7 +60,8 @@ clean_wqp_data <- function(wqp_data,
               y = site_data %>%
                 select(MonitoringLocationIdentifier, CharacteristicName,
                        lon, lat, datum),
-              by = c("MonitoringLocationIdentifier", "CharacteristicName")) %>%
+              by = c("MonitoringLocationIdentifier", "CharacteristicName",
+                     "parameter")) %>%
     # Flag true missing results
     flag_missing_results(., commenttext_missing) %>%
     # Flag duplicate records
@@ -110,14 +111,6 @@ clean_wqp_data <- function(wqp_data,
   
   # Remove white space and rename with short names before export
   wqp_data_clean <- wqp_data_pass_media %>%
-    # Temp fix to remove Facility sites; do this eventually in the WQP data pull
-    semi_join(x = .,
-              y = wqp_metadata %>%
-                filter(ResolvedMonitoringLocationTypeName %in%
-                         c("Estuary", "Lake, Reservoir, Impoundment", "Stream")),
-              by = c("OrganizationIdentifier",
-                     "MonitoringLocationIdentifier",
-                     "lat", "lon")) %>%
     rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
                 .cols = match_table$wqp_name) %>%
     mutate(year = year(date),

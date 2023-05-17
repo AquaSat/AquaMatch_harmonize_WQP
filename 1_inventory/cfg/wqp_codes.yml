@@ -19,6 +19,14 @@
     - "Chlorophyll c"
     - "Chlorophyll/Pheophytin ratio"
     
+  cdom:
+    - "Colored dissolved organic matter (CDOM)"
+    
+  silica:
+    - "Silica"
+    - "Apparent color"
+    - "True color"
+
   secchi:
     - "Depth, Secchi disk depth"
     - "Depth, Secchi disk depth (choice list)"

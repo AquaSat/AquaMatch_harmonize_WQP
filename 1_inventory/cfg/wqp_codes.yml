@@ -19,35 +19,41 @@
     - "Chlorophyll c"
     - "Chlorophyll/Pheophytin ratio"
     
+  cdom:
+    - "Colored dissolved organic matter (CDOM)"
+    
+  silica:
+    - "Silica"
+    - "Apparent color"
+    - "True color"
+
   secchi:
     - "Depth, Secchi disk depth"
     - "Depth, Secchi disk depth (choice list)"
     - "Secchi Reading Condition (choice list)"
     - "Secchi depth"
     - "Water transparency, Secchi disc"
-  
-  cdom:
-    - "Colored dissolved organic matter (CDOM)"
-    
+      
   doc:
     - "Organic carbon"
     - "Total carbon"
     - "Hydrophilic fraction of organic carbon"
     - "Non-purgeable Organic Carbon (NPOC)"
-    
-  silica:
-    - "Silica"
-    - "Silicon as SiO2"
-  
-  true_color:
-    - "Color"
-    - "Apparent color"
-    - "True color"
   
   tss:
     - "Total suspended solids"
-    - "Suspended sediment concentration (SSC)"
-    - "Suspended Sediment Concentration (SSC)"
     - "Total Suspended Particulate Matter"
-    - "Fixed suspended solids"
     
+  temperature:
+    - "Temperature, water"
+
+  phosphorus:
+  - "Soluble Reactive Phosphorus (SRP)"
+  - "Total Phosphorus, mixed forms"
+  - "Phosphorus, hydrolyzable plus orthophosphate"
+  - "Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms" 
+  - "Hydrolyzable phosphorus plus orthophosphate***retired***use Phosphorus, hydrolyzable plus orthophosphate"
+  
+  nitrogen:
+  - "Nutrient-nitrogen***retired***use TOTAL NITROGEN, MIXED FORMS with speciation AS N"     
+  - "Total Nitrogen, mixed forms"

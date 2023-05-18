@@ -1,8 +1,6 @@
 # Source the functions that will be used to build the targets in p1_targets_list
-source("1_inventory/src/check_characteristics.R")
-source("1_inventory/src/create_grids.R")
-source("1_inventory/src/get_wqp_inventory.R")
-source("1_inventory/src/summarize_wqp_inventory.R")
+tar_source("1_inventory/src/")
+
 
 p1_targets_list <- list(
   
@@ -37,8 +35,7 @@ p1_targets_list <- list(
   ),
   
   tar_target(
-    # A more generalized name would be to keep this as p1_AOI_sf from USGS
-    us_shp,
+    p1_AOI_sf,
     states() %>%
       filter(!(GEOID %in% c(60, 66, 69, 72, 78))),
     packages = c("tidyverse", "tigris")),
@@ -55,7 +52,7 @@ p1_targets_list <- list(
   # These boxes will be used to query the WQP.
   tar_target(
     p1_global_grid_aoi,
-    subset_grids_to_aoi(p1_global_grid, us_shp)
+    subset_grids_to_aoi(p1_global_grid, p1_AOI_sf)
   ),
   
   # Inventory data available from the WQP within each of the boxes that overlap
@@ -76,13 +73,14 @@ p1_targets_list <- list(
                     wqp_args = wqp_args)
     },
     pattern = cross(p1_global_grid_aoi, p1_char_names),
-    error = "continue"
+    error = "continue"#,
+    # cue = tar_cue("never")
   ),
   
   # Subset the WQP inventory to only retain sites within the area of interest
   tar_target(
     p1_wqp_inventory_aoi,
-    subset_inventory(p1_wqp_inventory, us_shp)
+    subset_inventory(p1_wqp_inventory, p1_AOI_sf)
   ),
   
   # Summarize the data that would come back from the WQP

@@ -1,7 +1,4 @@
 # Created by use_targets().
-# https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
-
-options(tidyverse.quiet = TRUE)
 
 # Load packages required to define the pipeline:
 library(targets)
@@ -9,17 +6,17 @@ library(tarchetypes)
 
 # Set target options:
 tar_option_set(
-  # Packages that all targets need
-  packages = c("tidyverse"), 
-  # Default
-  format = "rds"
+  packages = c("tidyverse"),
+  # error = "continue"#,
+  workspace_on_error = TRUE
 )
 
 # Run the R scripts with custom functions:
 tar_source(files = c(
   "1_inventory.R",
   "2_download.R",
-  "3_harmonize.R"))
+  "3_harmonize.R",
+  "create_bookdown.R"))
 
 # The list of targets/steps (these steps from MRB)
 config_targets <- list(
@@ -33,8 +30,8 @@ config_targets <- list(
   # Date range of interest
   tar_target(wq_dates,
              list(
-               start_date = "1984-01-01",
-               end_date = "2019-05-01"
+               start_date = "1970-01-01",
+               end_date = Sys.Date()
              )),
   
   # Define which parameter groups (and CharacteristicNames) to return from WQP. 
@@ -46,8 +43,8 @@ config_targets <- list(
   # omit characteristic names or include others, to change top-level parameter names,
   # or to customize parameter groupings. 
   tar_target(param_groups_select,
-             c("chlorophyll", "secchi", "cdom", "doc", "silica", "true_color", 
-               "tss")),
+             c("chlorophyll", "secchi", "doc", "tss", "temperature",
+               "phosphorus", "nitrogen")),
   
   
   # WQP inventory -----------------------------------------------------------
@@ -58,8 +55,7 @@ config_targets <- list(
              list(sampleMedia = c("Water","water"),
                   siteType = c("Lake, Reservoir, Impoundment",
                                "Stream",
-                               "Estuary",
-                               "Facility"),
+                               "Estuary"),
                   # Return sites with at least one data record
                   minresults = 1, 
                   startDateLo = wq_dates$start_date,
@@ -68,22 +64,7 @@ config_targets <- list(
 
 
 # Full targets list
-c(config_targets, p1_targets_list, p2_targets_list, p3_targets_list)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+c(config_targets,
+  p1_targets_list, p2_targets_list, p3_targets_list,
+  bookdown_targets_list)
 

@@ -1,8 +1,17 @@
-harmonize_tss <- function(raw_tss, p_codes){
+harmonize_tss_strict <- function(raw_tss, p_codes){
   
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = "tss harmonization",
+    reason = "Starting dataset",
+    short_reason = "Start",
+    number_dropped = 0,
+    n_rows = nrow(raw_tss),
+    order = 0
+  )
   # Minor data prep ---------------------------------------------------------
   
-  raw_tss <- raw_tss %>% 
+  tss <- raw_tss %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     filter(
@@ -12,10 +21,23 @@ harmonize_tss <- function(raw_tss, p_codes){
     # to track a unique record
     rowid_to_column(.,"index")
   
+  # Record info on any dropped rows  
+  dropped_media <- tibble(
+    step = "tss harmonization",
+    reason = "Filtered for only water media",
+    short_reason = "Water media",
+    number_dropped = nrow(raw_tss) - nrow(tss),
+    n_rows = nrow(tss),
+    order = 1
+  )
+  
+  rm(raw_tss)
+  gc()
+  
   
   # Remove fails ------------------------------------------------------------
   
-  tss_fails_removed <- raw_tss %>%
+  tss_fails_removed <- tss %>%
     # No failure-related field comments, slightly different list of words than
     # lab and result list (not including things that could be used to describe
     # field conditions like "warm", "ice", etc.):
@@ -83,9 +105,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   print(
     paste0(
       "Rows removed due to fails, missing data, etc.: ",
-      nrow(raw_tss) - nrow(tss_fails_removed)
+      nrow(tss) - nrow(tss_fails_removed)
     )
   )
+  
+  dropped_fails <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows indicating fails, missing data, etc.",
+    short_reason = "Fails, etc.",
+    number_dropped = nrow(tss) - nrow(tss_fails_removed),
+    n_rows = nrow(tss_fails_removed),
+    order = 2)
   
   
   # Clean up MDLs -----------------------------------------------------------
@@ -139,6 +169,15 @@ harmonize_tss <- function(raw_tss, p_codes){
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
+  dropped_mdls <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while cleaning MDLs",
+    short_reason = "Clean MDLs",
+    number_dropped = nrow(tss_fails_removed) - nrow(tss_mdls_added),
+    n_rows = nrow(tss_mdls_added),
+    order = 3
+  )
+  
   
   # Clean up approximated values --------------------------------------------
   
@@ -167,7 +206,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   print(
     paste(
-      round((nrow(tss_approx)) / nrow(raw_tss) * 100, 3),
+      round((nrow(tss_approx)) / nrow(tss) * 100, 3),
       '% of samples had values listed as approximated'
     )
   )
@@ -181,6 +220,15 @@ harmonize_tss <- function(raw_tss, p_codes){
            harmonized_comments = ifelse(index %in% tss_approx$index,
                                         'Value identified as "approximated" by organization.',
                                         harmonized_comments))
+  
+  dropped_approximates <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while cleaning approximate values",
+    short_reason = "Clean approximates",
+    number_dropped = nrow(tss_mdls_added) - nrow(tss_approx_added),
+    n_rows = nrow(tss_approx_added),
+    order = 4
+  )
   
   
   # Clean up "greater than" values ------------------------------------------
@@ -204,7 +252,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   print(
     paste(
-      round((nrow(greater_vals)) / nrow(raw_tss) * 100, 9),
+      round((nrow(greater_vals)) / nrow(tss) * 100, 9),
       '% of samples had values listed as being above a detection limit//greater than'
     )
   )
@@ -218,8 +266,17 @@ harmonize_tss <- function(raw_tss, p_codes){
                                         'Value identified as being greater than listed value.',
                                         harmonized_comments))
   
+  dropped_greater_than <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while cleaning 'greater than' values",
+    short_reason = "Greater thans",
+    number_dropped = nrow(tss_approx_added) - nrow(tss_harmonized_values),
+    n_rows = nrow(tss_harmonized_values),
+    order = 5
+  )
+  
   # Free up memory
-  rm(raw_tss)
+  rm(tss)
   gc()
   
   
@@ -249,6 +306,15 @@ harmonize_tss <- function(raw_tss, p_codes){
       "Rows removed while harmonizing units: ",
       nrow(tss_harmonized_values) - nrow(tss_harmonized_units)
     )
+  )
+  
+  dropped_harmonization <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while harmonizing units",
+    short_reason = "Harmonize units",
+    number_dropped = nrow(tss_harmonized_values) - nrow(tss_harmonized_units),
+    n_rows = nrow(tss_harmonized_units),
+    order = 6
   )
   
   
@@ -348,7 +414,7 @@ harmonize_tss <- function(raw_tss, p_codes){
       TRUE ~ "Ambiguous")) 
   
   tss_filter_aggregates <- tss_aggregated_methods %>%
-    filter(!grepl(pattern = "nonsensical",
+    filter(!grepl(pattern = "nonsensical|ambiguous",
                   x = method_status,
                   ignore.case = TRUE))
   
@@ -358,6 +424,15 @@ harmonize_tss <- function(raw_tss, p_codes){
       "Rows removed due to analytical method type: ",
       nrow(tss_aggregated_methods) - nrow(tss_filter_aggregates)
     )
+  )
+  
+  dropped_methods <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while aggregating analytical methods",
+    short_reason = "Analytical methods",
+    number_dropped = nrow(tss_aggregated_methods) - nrow(tss_filter_aggregates),
+    n_rows = nrow(tss_filter_aggregates),
+    order = 7
   )
   
   
@@ -379,13 +454,33 @@ harmonize_tss <- function(raw_tss, p_codes){
     )
   )
   
+  dropped_fractions <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while filtering fraction types",
+    short_reason = "Fraction types",
+    number_dropped = nrow(tss_filter_aggregates) - nrow(tss_remove_fractions),
+    n_rows = nrow(tss_remove_fractions),
+    order = 8
+  )
+  
+  
   # Export ------------------------------------------------------------------
   
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_fails, dropped_fractions, 
+                                dropped_greater_than, dropped_harmonization, dropped_mdls, 
+                                dropped_media, dropped_methods)
+  
+  documented_drops_out_path <- "3_harmonize/out/harmonize_tss_strict_dropped_metadata.csv"
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
   # Export in memory-friendly way
-  out_path <- "3_harmonize/out/harmonized_tss.feather"
+  data_out_path <- "3_harmonize/out/harmonized_tss_strict.feather"
   
   write_feather(tss_remove_fractions,
-                out_path)
+                data_out_path)
   
   # Final dataset length:
   print(
@@ -395,6 +490,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     )
   )
   
-  return(out_path)
-  
+  return(list(
+    harmonized_tss_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))    
 }

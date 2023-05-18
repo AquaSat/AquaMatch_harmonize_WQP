@@ -1,13 +1,23 @@
 
-harmonize_sdd <- function(raw_sdd, p_codes,
-                          sdd_analytical_method_matchup,
-                          sdd_sample_method_matchup,
-                          sdd_equipment_matchup){
+harmonize_sdd_strict <- function(raw_sdd, p_codes,
+                                 sdd_analytical_method_matchup,
+                                 sdd_sample_method_matchup,
+                                 sdd_equipment_matchup){
+  
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = "sdd harmonization",
+    reason = "Starting dataset",
+    short_reason = "Start",
+    number_dropped = 0,
+    n_rows = nrow(raw_sdd),
+    order = 0
+  )
   
   # Minor data prep ---------------------------------------------------------
   
   # First step is to read in the data and do basic formatting and filtering
-  raw_sdd <- raw_sdd %>%
+  sdd <- raw_sdd %>%
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     # Remove trailing white space in labels (Is this still necessary?)
     filter(
@@ -16,10 +26,23 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     # to track a unique record
     rowid_to_column(., "index")
   
+  # Record info on any dropped rows  
+  dropped_media <- tibble(
+    step = "sdd harmonization",
+    reason = "Filtered for only water media",
+    short_reason = "Water media",
+    number_dropped = nrow(raw_sdd) - nrow(sdd),
+    n_rows = nrow(sdd),
+    order = 1
+  )
+  
+  rm(raw_sdd)
+  gc()
+  
   
   # Remove fails ------------------------------------------------------------
   
-  sdd_fails_removed <- raw_sdd %>%
+  sdd_fails_removed <- sdd %>%
     filter(
       # REMOVE failure-related field comments, slightly different list of words
       # than lab and result list (not including things that could be used
@@ -82,9 +105,17 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   print(
     paste0(
       "Rows removed due to fails, missing data, etc.: ",
-      nrow(raw_sdd) - nrow(sdd_fails_removed)
+      nrow(sdd) - nrow(sdd_fails_removed)
     )
   )
+  
+  dropped_fails <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows indicating fails, missing data, etc.",
+    short_reason = "Fails, etc.",
+    number_dropped = nrow(sdd) - nrow(sdd_fails_removed),
+    n_rows = nrow(sdd_fails_removed),
+    order = 2)
   
   
   # Clean up MDLs -----------------------------------------------------------
@@ -138,6 +169,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
+  dropped_mdls <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while cleaning MDLs",
+    short_reason = "Clean MDLs",
+    number_dropped = nrow(sdd_fails_removed) - nrow(sdd_mdls_added),
+    n_rows = nrow(sdd_mdls_added),
+    order = 3
+  )
+  
   
   # Clean up approximated values --------------------------------------------
   
@@ -181,6 +221,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
                                         'Value identified as "approximated" by organization.',
                                         harmonized_comments))
   
+  dropped_approximates <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while cleaning approximate values",
+    short_reason = "Clean approximates",
+    number_dropped = nrow(sdd_mdls_added) - nrow(sdd_approx_added),
+    n_rows = nrow(sdd_approx_added),
+    order = 4
+  )
+  
   
   # Clean up "greater than" values ------------------------------------------
   
@@ -217,8 +266,17 @@ harmonize_sdd <- function(raw_sdd, p_codes,
                                         'Value identified as being greater than listed value.',
                                         harmonized_comments))
   
+  dropped_greater_than <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while cleaning 'greater than' values",
+    short_reason = "Greater thans",
+    number_dropped = nrow(sdd_approx_added) - nrow(sdd_harmonized_values),
+    n_rows = nrow(sdd_harmonized_values),
+    order = 5
+  )
+  
   # Free up memory
-  rm(raw_sdd)
+  rm(sdd)
   gc()
   
   
@@ -251,6 +309,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     )
   )
   
+  dropped_harmonization <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while harmonizing units",
+    short_reason = "Harmonize units",
+    number_dropped = nrow(sdd_harmonized_values) - nrow(converted_units_sdd),
+    n_rows = nrow(converted_units_sdd),
+    order = 6
+  )
+  
   
   # Aggregate analytical methods --------------------------------------------
   
@@ -281,6 +348,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     )
   )
   
+  dropped_methods <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while aggregating analytical methods",
+    short_reason = "Analytical methods",
+    number_dropped = nrow(converted_units_sdd) - nrow(grouped_analytical_methods_sdd),
+    n_rows = nrow(grouped_analytical_methods_sdd),
+    order = 7
+  )
+  
   
   # Filter fractions --------------------------------------------------------
   
@@ -305,60 +381,93 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     )
   )
   
+  dropped_fractions <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while filtering fraction types",
+    short_reason = "Fraction types",
+    number_dropped = nrow(grouped_analytical_methods_sdd) - nrow(grouped_fractions_sdd),
+    n_rows = nrow(grouped_fractions_sdd),
+    order = 8
+  )
+  
   
   # Aggregate sample methods ------------------------------------------------
   
-  # # Now count the sample_method column: 
-  # sample_counts <- grouped_fractions_sdd %>%
-  #   count(sample_method) %>%
-  #   arrange(desc(n))
-  # 
-  # # Add a new column describing the sample_method group:
-  # grouped_sample_methods_sdd <- grouped_fractions_sdd %>%
-  #   left_join(x = .,
-  #             y = sdd_sample_method_matchup,
-  #             by = c("sample_method")) %>%
-  #   filter(sample_method_grouping != "unlikely")
-  # 
-  # # How many records removed due to unlikely sample methods?
-  # print(
-  #   paste0(
-  #     "Rows removed due to unlikely sample methods: ",
-  #     nrow(grouped_fractions_sdd) - nrow(grouped_sample_methods_sdd)
-  #   )
-  # )
+  # Now count the sample_method column:
+  sample_counts <- grouped_fractions_sdd %>%
+    count(sample_method) %>%
+    arrange(desc(n))
   
-  grouped_sample_methods_sdd <- grouped_fractions_sdd
+  # Add a new column describing the sample_method group:
+  grouped_sample_methods_sdd <- grouped_fractions_sdd %>%
+    left_join(x = .,
+              y = sdd_sample_method_matchup,
+              by = c("sample_method")) %>%
+    filter(sample_method_grouping != "unlikely")
   
+  # How many records removed due to unlikely sample methods?
+  print(
+    paste0(
+      "Rows removed due to unlikely sample methods: ",
+      nrow(grouped_fractions_sdd) - nrow(grouped_sample_methods_sdd)
+    )
+  )
+  
+  dropped_sample_methods <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while aggregating sample methods",
+    short_reason = "Sample methods",
+    number_dropped = nrow(grouped_fractions_sdd) - nrow(grouped_sample_methods_sdd),
+    n_rows = nrow(grouped_sample_methods_sdd),
+    order = 9
+  )
   
   # Aggregate collection equipment ------------------------------------------
   
-  # # Now count the collection_equipment column:
-  # equipment_counts <- grouped_sample_methods_sdd %>%
-  #   count(collection_equipment) %>%
-  #   arrange(desc(n))
-  # 
-  # grouped_equipment_sdd <- grouped_sample_methods_sdd %>%
-  #   left_join(x = .,
-  #             y = sdd_equipment_matchup,
-  #             by = c("collection_equipment")) %>%
-  #   filter(equipment_grouping != "unlikely")
-  # 
-  # # How many records removed due to unlikely sample methods?
-  # print(
-  #   paste0(
-  #     "Rows removed due to unlikely sample methods: ",
-  #     nrow(grouped_sample_methods_sdd) - nrow(grouped_equipment_sdd)
-  #   )
-  # )
+  # Now count the collection_equipment column:
+  equipment_counts <- grouped_sample_methods_sdd %>%
+    count(collection_equipment) %>%
+    arrange(desc(n))
   
-  grouped_equipment_sdd <- grouped_sample_methods_sdd
+  grouped_equipment_sdd <- grouped_sample_methods_sdd %>%
+    left_join(x = .,
+              y = sdd_equipment_matchup,
+              by = c("collection_equipment")) %>%
+    filter(equipment_grouping != "unlikely")
+  
+  # How many records removed due to unlikely sample methods?
+  print(
+    paste0(
+      "Rows removed due to unlikely sample methods: ",
+      nrow(grouped_sample_methods_sdd) - nrow(grouped_equipment_sdd)
+    )
+  )
+  
+  dropped_equipment <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while aggregating collection equipment",
+    short_reason = "Collection equipment",
+    number_dropped = nrow(grouped_sample_methods_sdd) - nrow(grouped_equipment_sdd),
+    n_rows = nrow(grouped_equipment_sdd),
+    order = 10
+  )
   
   
   # Export ------------------------------------------------------------------
   
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_equipment, dropped_fails,
+                                dropped_fractions, dropped_greater_than,
+                                dropped_harmonization, dropped_mdls,
+                                dropped_media, dropped_methods, dropped_sample_methods)
+  
+  documented_drops_out_path <- "3_harmonize/out/harmonize_sdd_strict_dropped_metadata.csv"
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_sdd.feather"
+  data_out_path <- "3_harmonize/out/harmonized_sdd_strict.feather"
   
   write_feather(grouped_equipment_sdd,
                 data_out_path)
@@ -371,6 +480,8 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     )
   )
   
-  return(data_out_path)
+  return(list(
+    harmonized_sdd_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))  
   
 }

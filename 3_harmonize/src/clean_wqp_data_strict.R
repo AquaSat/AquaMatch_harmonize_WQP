@@ -34,21 +34,31 @@
 #' the Water Quality Portal, where each row represents a unique data record.
 #' 
 
-clean_wqp_data <- function(wqp_data,
-                           char_names_crosswalk,
-                           site_data,
-                           match_table,
-                           wqp_metadata,
-                           commenttext_missing = c('analysis lost', 'not analyzed',
-                                                   'not recorded', 'not collected',
-                                                   'no measurement taken'),
-                           duplicate_definition = c('OrganizationIdentifier',
-                                                    'MonitoringLocationIdentifier',
-                                                    'ActivityStartDate',
-                                                    'ActivityStartTime.Time',
-                                                    'CharacteristicName',
-                                                    'ResultSampleFractionText'),
-                           remove_duplicated_rows = TRUE){
+clean_wqp_data_strict <- function(wqp_data,
+                                  char_names_crosswalk,
+                                  site_data,
+                                  match_table,
+                                  wqp_metadata,
+                                  commenttext_missing = c('analysis lost', 'not analyzed',
+                                                          'not recorded', 'not collected',
+                                                          'no measurement taken'),
+                                  duplicate_definition = c('OrganizationIdentifier',
+                                                           'MonitoringLocationIdentifier',
+                                                           'ActivityStartDate',
+                                                           'ActivityStartTime.Time',
+                                                           'CharacteristicName',
+                                                           'ResultSampleFractionText'),
+                                  remove_duplicated_rows = TRUE){
+  
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = "pre-harmonization",
+    reason = "Starting dataset",
+    short_reason = "Start",
+    number_dropped = 0,
+    n_rows = nrow(wqp_data),
+    order = 0
+  )
   
   # Clean data and assign flags if applicable
   wqp_data_no_dup <- wqp_data %>%
@@ -77,15 +87,38 @@ clean_wqp_data <- function(wqp_data,
                     nrow(wqp_data) - nrow(wqp_data_no_dup)))
   }
   
+  # Record info on the dropped rows
+  dropped_duplicates <- tibble(
+    step = "pre-harmonization",
+    reason = "Removed duplicated records",
+    short_reason = "Remove duplicates",
+    number_dropped = nrow(wqp_data) - nrow(wqp_data_no_dup),
+    n_rows = nrow(wqp_data_no_dup),
+    order = 1
+  )
+  
+  rm(wqp_data)
+  gc()
   
   # Remove records flagged as having missing results
-  # wqp_data_no_missing <- wqp_data_no_dup %>%
-  #   filter(!flag_missing_result)
-  # 
+  wqp_data_no_missing <- wqp_data_no_dup %>%
+    filter(!flag_missing_result)
+  
   # # Inform the user what we found for missing rows
-  # message(sprintf(paste0("Removed %s records with missing results."), 
-  #                 nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing)))
-  wqp_data_no_missing <- wqp_data_no_dup
+  message(sprintf(paste0("Removed %s records with missing results."),
+                  nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing)))
+  
+  dropped_missing <- tibble(
+    step = "pre-harmonization",
+    reason = "Removed missing results",
+    short_reason = "Remove missing",
+    number_dropped = nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing),
+    n_rows = nrow(wqp_data_no_missing),
+    order = 2
+  )
+  
+  rm(wqp_data_no_dup)
+  gc()
   
   # Remove records that don't meet needs for status
   wqp_data_pass_status <- wqp_data_no_missing %>%
@@ -99,6 +132,17 @@ clean_wqp_data <- function(wqp_data,
   message(sprintf(paste0("Removed %s records with unacceptable statuses."), 
                   nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status)))
   
+  dropped_status <- tibble(
+    step = "pre-harmonization",
+    reason = "Keep only status = accepted/final/historical/validated/preliminary",
+    short_reason = "Finalized statuses",
+    number_dropped = nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status),
+    n_rows = nrow(wqp_data_pass_status),
+    order = 3
+  )
+  
+  rm(wqp_data_no_missing)
+  gc()
   
   # Remove records that don't meet needs for type
   wqp_data_pass_media <- wqp_data_pass_status %>%
@@ -109,19 +153,64 @@ clean_wqp_data <- function(wqp_data,
   message(sprintf(paste0("Removed %s records with unacceptable type."), 
                   nrow(wqp_data_pass_status) - nrow(wqp_data_pass_media)))
   
+  dropped_media <- tibble(
+    step = "pre-harmonization",
+    reason = "Keep only media = surface water/water/estuary",
+    short_reason = "Media types",
+    number_dropped = nrow(wqp_data_pass_status) - nrow(wqp_data_pass_media),
+    n_rows = nrow(wqp_data_pass_media),
+    order = 4
+  )
+  
+  rm(wqp_data_pass_status)
+  gc()
+  
   # Remove white space and rename with short names before export
   wqp_data_clean <- wqp_data_pass_media %>%
+    # Temp fix to remove Facility sites; do this eventually in the WQP data pull
+    semi_join(x = .,
+              y = wqp_metadata %>%
+                filter(ResolvedMonitoringLocationTypeName %in%
+                         c("Estuary", "Lake, Reservoir, Impoundment", "Stream")),
+              by = c("OrganizationIdentifier",
+                     "MonitoringLocationIdentifier",
+                     "lat", "lon")) %>%
     rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
                 .cols = match_table$wqp_name) %>%
     mutate(year = year(date),
            units = trimws(units))
   
+  data_out_path <- "3_harmonize/out/wqp_data_aoi_ready.feather"
+  
+  write_feather(x = wqp_data_clean, path = data_out_path)
+  
   # Inform the user about rows dropped due to non-target location types
   message(sprintf(paste0("Removed %s records due to non-target location types"), 
                   nrow(wqp_data_pass_media) - nrow(wqp_data_clean)))
   
+  dropped_location <- tibble(
+    step = "pre-harmonization",
+    reason = "Keep only location type = estuary/lake, res, impoundment/stream",
+    short_reason = "Location type",
+    number_dropped = nrow(wqp_data_pass_media) - nrow(wqp_data_clean),
+    n_rows = nrow(wqp_data_clean),
+    order = 5
+  )
   
-  return(wqp_data_clean)
+  rm(wqp_data_pass_media)
+  gc()
+  
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_duplicates, dropped_missing,
+                                dropped_status, dropped_media, dropped_location)
+  documented_drops_out_path <- "3_harmonize/out/clean_wqp_data_strict_dropped_metadata.csv"
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
+  return(list(
+    wqp_data_clean_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))
   
 }
 

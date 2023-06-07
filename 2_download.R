@@ -119,6 +119,15 @@ p2_targets_list <- list(
     iteration = "group"
   ),
   
+  tar_target(
+    p2_site_counts_grouped_depth,
+    add_download_groups(p2_site_counts$depth,
+                        max_sites = 500,
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
+      tar_group(),
+    iteration = "group"
+  ),
   # Again, manual iteration that should be reworked into branches:
   
   # Map over groups of sites to download data.
@@ -148,7 +157,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_chl,
     fetch_wqp_data(p2_site_counts_grouped_chl,
                    char_names = unique(p2_site_counts_grouped_chl$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_chl),
     error = "continue",
     format = "feather"
@@ -159,7 +168,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_sdd,
     fetch_wqp_data(p2_site_counts_grouped_sdd,
                    char_names = unique(p2_site_counts_grouped_sdd$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_sdd),
     error = "continue",
     format = "feather"#,
@@ -170,7 +179,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_tss,
     fetch_wqp_data(p2_site_counts_grouped_tss,
                    char_names = unique(p2_site_counts_grouped_tss$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_tss),
     error = "continue",
     format = "feather"#,
@@ -181,7 +190,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_doc,
     fetch_wqp_data(p2_site_counts_grouped_doc,
                    char_names = unique(p2_site_counts_grouped_doc$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_doc),
     error = "continue",
     format = "feather"#,
@@ -192,7 +201,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_temp,
     fetch_wqp_data(p2_site_counts_grouped_temp,
                    char_names = unique(p2_site_counts_grouped_temp$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_temp),
     error = "continue",
     format = "feather"#,
@@ -203,7 +212,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_phos,
     fetch_wqp_data(p2_site_counts_grouped_phos,
                    char_names = unique(p2_site_counts_grouped_phos$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_phos),
     error = "continue",
     format = "feather"#,
@@ -214,8 +223,19 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_nitro,
     fetch_wqp_data(p2_site_counts_grouped_nitro,
                    char_names = unique(p2_site_counts_grouped_nitro$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_nitro),
+    error = "continue",
+    format = "feather"#,
+    # cue = tar_cue("never")
+  ),
+  
+  tar_target(
+    p2_wqp_data_aoi_depth,
+    fetch_wqp_data(p2_site_counts_grouped_depth,
+                   char_names = unique(p2_site_counts_grouped_depth$CharacteristicName),
+                   wqp_args = p0_wqp_args),
+    pattern = map(p2_site_counts_grouped_depth),
     error = "continue",
     format = "feather"#,
     # cue = tar_cue("never")
@@ -225,7 +245,7 @@ p2_targets_list <- list(
              bind_rows(p2_wqp_data_aoi_chl, p2_wqp_data_aoi_sdd,
                        p2_wqp_data_aoi_tss, p2_wqp_data_aoi_doc,
                        p2_wqp_data_aoi_temp, p2_wqp_data_aoi_phos,
-                       p2_wqp_data_aoi_nitro),
+                       p2_wqp_data_aoi_nitro, p2_wqp_data_aoi_depth),
              format = "feather"),
   
   # Summarize the data downloaded from the WQP

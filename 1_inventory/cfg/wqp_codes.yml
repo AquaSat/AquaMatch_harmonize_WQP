@@ -1,9 +1,6 @@
 # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
 # characteristicName:
 
-
-
-    
   chlorophyll:
     - "Chlorophyll"
     - "Chlorophyll A"
@@ -48,12 +45,25 @@
     - "Temperature, water"
 
   phosphorus:
-  - "Soluble Reactive Phosphorus (SRP)"
-  - "Total Phosphorus, mixed forms"
-  - "Phosphorus, hydrolyzable plus orthophosphate"
-  - "Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms" 
-  - "Hydrolyzable phosphorus plus orthophosphate***retired***use Phosphorus, hydrolyzable plus orthophosphate"
+    - "Soluble Reactive Phosphorus (SRP)"
+    - "Total Phosphorus, mixed forms"
+    - "Phosphorus, hydrolyzable plus orthophosphate"
+    - "Phosphate-phosphorus"
+    - "Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms" 
+    - "Hydrolyzable phosphorus plus orthophosphate"
   
   nitrogen:
-  - "Nutrient-nitrogen***retired***use TOTAL NITROGEN, MIXED FORMS with speciation AS N"     
-  - "Total Nitrogen, mixed forms"
+    - "Nutrient-nitrogen"     
+    - "Nutrient-nitrogen***retired***use TOTAL NITROGEN, MIXED FORMS with speciation AS N" 
+    - "Total Nitrogen, mixed forms"
+  
+  depth:
+    - "Depth"
+  # - "Sampling depth, feet"
+  # - "Sampling depth, meters"
+  # - "Depth of sensor below water surface, feet"
+  # - "Depth of sensor below water surface, meters"
+  # - "Depth to top of sampling interval, meters"
+  # - "Depth to bottom of sampling interval, meters"
+  # - "Depth of sensor below water surface, not corrected for barometric pressure variations, feet"
+  # - "Depth of sensor below water surface, not corrected for barometric pressure variations, meters"

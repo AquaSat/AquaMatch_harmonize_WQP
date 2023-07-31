@@ -47,6 +47,16 @@ p2_targets_list <- list(
   # each param to be downloaded separately so that an error in one doesn't
   # prevent others from being collected and combined
   tar_target(
+    p2_site_counts_grouped_alk,
+    add_download_groups(p2_site_counts$alkalinity, 
+                        max_sites = 500,
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
+      tar_group(),
+    iteration = "group"
+  ),
+  
+  tar_target(
     p2_site_counts_grouped_chl,
     add_download_groups(p2_site_counts$chlorophyll, 
                         max_sites = 500,
@@ -152,6 +162,16 @@ p2_targets_list <- list(
   #   # cue = tar_cue("never")
   # ),
   
+  tar_target(
+    p2_wqp_data_aoi_alk,
+    fetch_wqp_data(p2_site_counts_grouped_alk,
+                   char_names = unique(p2_site_counts_grouped_alk$CharacteristicName),
+                   wqp_args = p0_wqp_args),
+    pattern = map(p2_site_counts_grouped_alk),
+    error = "continue",
+    format = "feather"
+    # cue = tar_cue("never")
+  ),
   
   tar_target(
     p2_wqp_data_aoi_chl,
@@ -242,18 +262,63 @@ p2_targets_list <- list(
   ),
   
   tar_target(p2_wqp_data_aoi,
-             bind_rows(p2_wqp_data_aoi_chl, p2_wqp_data_aoi_sdd,
-                       p2_wqp_data_aoi_tss, p2_wqp_data_aoi_doc,
-                       p2_wqp_data_aoi_temp, p2_wqp_data_aoi_phos,
-                       p2_wqp_data_aoi_nitro, p2_wqp_data_aoi_depth),
+             bind_rows(p2_wqp_data_aoi_alk, p2_wqp_data_aoi_chl,
+                       p2_wqp_data_aoi_sdd, p2_wqp_data_aoi_tss,
+                       p2_wqp_data_aoi_doc, p2_wqp_data_aoi_temp,
+                       p2_wqp_data_aoi_phos, p2_wqp_data_aoi_nitro,
+                       p2_wqp_data_aoi_depth),
              format = "feather"),
   
   # Summarize the data downloaded from the WQP
   tar_target(
     p2_wqp_data_summary_csv,
     summarize_wqp_download(p1_wqp_inventory_summary_csv, p2_wqp_data_aoi,
-                       "2_download/log/summary_wqp_data.csv"),
+                           "2_download/log/summary_wqp_data.csv"),
     format = "file"
+  ),
+  
+  # Download the original AquaSat raw data for ingestion into this pipeline:
+  tar_target(
+    p2_raw_original_aq,
+    {
+      in_path <- "data/in/aq_wqp_raw.zip"
+      
+      download(url = "https://figshare.com/ndownloader/files/15169262",
+               destfile = in_path)
+      
+      unzip(zipfile = in_path, exdir = "data/in/")
+      
+      # Return the unzipped folder's path
+      "data/in/wqp_raw/"
+    },
+    packages = "downloader"
+  ),
+  
+  # Read in original AquaSat's raw chlorophyll
+  tar_file_read(
+    p2_raw_orig_chl,
+    paste0(p2_raw_original_aq, "all_raw_chlorophyll.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_doc,
+    paste0(p2_raw_original_aq, "all_raw_doc.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_sdd,
+    paste0(p2_raw_original_aq, "all_raw_secchi.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_tss,
+    paste0(p2_raw_original_aq, "all_raw_tss.csv"),
+    read = read_csv(!!.x)
   )
+  
+  
   
 )

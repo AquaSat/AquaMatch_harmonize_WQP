@@ -1,6 +1,14 @@
 # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
 # characteristicName:
 
+  alkalinity:
+    - "Alkalinity"
+    - "Alkalinity, bicarbonate"
+    - "Alkalinity, carbonate"
+    - "Alkalinity, Hydroxide"
+    - "Alkalinity, Phenolphthalein (total hydroxide+1/2 carbonate)"
+    - "Alkalinity, total"
+  
   chlorophyll:
     - "Chlorophyll"
     - "Chlorophyll A"

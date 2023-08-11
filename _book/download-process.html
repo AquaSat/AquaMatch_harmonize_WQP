@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Page not found | _main.knit</title>
+  <title>2 Download process | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Page not found | _main.knit" />
+  <meta property="og:title" content="2 Download process | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Page not found | _main.knit" />
+  <meta name="twitter:title" content="2 Download process | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-
+<link rel="prev" href="index.html"/>
+<link rel="next" href="pre-harmonization-decision-process.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -219,19 +219,130 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="page-not-found" class="section level1">
-<h1>Page not found</h1>
-<p>The page you requested cannot be found (perhaps it was moved or renamed).</p>
-<p>You may want to try searching to find the page's new location, or use
-the table of contents to find the page you are looking for.</p>
+<div id="download-process" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">2</span> Download process<a href="download-process.html#download-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="catalogue-existing-data" class="section level3 hasAnchor" number="2.0.1">
+<h3><span class="header-section-number">2.0.1</span> Catalogue existing data<a href="download-process.html#catalogue-existing-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The download process begins by cataloging the existing data that is
+available. We start out using the following parameters and parameter
+codes for retrieving data:</p>
+<p>chlorophyll:</p>
+<ul>
+<li>“Chlorophyll”</li>
+<li>“Chlorophyll A”</li>
+<li>“Chlorophyll a”</li>
+<li>“Chlorophyll a (probe relative fluorescence)”</li>
+<li>“Chlorophyll a (probe)”</li>
+<li>“Chlorophyll a - Periphyton (attached)”</li>
+<li>“Chlorophyll a - Phytoplankton (suspended)”</li>
+<li>“Chlorophyll a, corrected for pheophytin”</li>
+<li>“Chlorophyll a, free of pheophytin”</li>
+<li>“Chlorophyll a, uncorrected for pheophytin”</li>
+<li>“Chlorophyll b”</li>
+<li>“Chlorophyll c”</li>
+<li>“Chlorophyll/Pheophytin ratio”</li>
+</ul>
+<p>secchi:</p>
+<ul>
+<li>“Depth, Secchi disk depth”</li>
+<li>“Depth, Secchi disk depth (choice list)”</li>
+<li>“Secchi Reading Condition (choice list)”</li>
+<li>“Secchi depth”</li>
+<li>“Water transparency, Secchi disc”</li>
+</ul>
+<p>doc:</p>
+<ul>
+<li>“Organic carbon”</li>
+<li>“Total carbon”</li>
+<li>“Hydrophilic fraction of organic carbon”</li>
+<li>“Non-purgeable Organic Carbon (NPOC)”</li>
+</ul>
+<p>tss:</p>
+<ul>
+<li>“Total suspended solids”</li>
+<li>“Total Suspended Particulate Matter”</li>
+</ul>
+<p><br></p>
+</div>
+<div id="maps-of-data-spread-within-the-contiguous-us" class="section level3 hasAnchor" number="2.0.2">
+<h3><span class="header-section-number">2.0.2</span> Maps of data spread within the contiguous US:<a href="download-process.html#maps-of-data-spread-within-the-contiguous-us" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Maps are presented below with counts of records across a grid. The grid
+is how records are grouped in download requests to the Water Quality
+Portal. Florida is mapped separately because of its high concentration
+of values. <strong>Note:</strong> 1) the top four grid cells in the FL map are
+included in both maps, 2) the counts here are for raw data that are not
+filtered for simultaneous records.</p>
+<details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="download-process.html#cb1-1" tabindex="-1"></a><span class="co"># Combine counts in each grid_id with the grid polygons</span></span>
+<span id="cb1-2"><a href="download-process.html#cb1-2" tabindex="-1"></a>grid_counts <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="at">x =</span> global_grid,</span>
+<span id="cb1-3"><a href="download-process.html#cb1-3" tabindex="-1"></a>                         <span class="at">y =</span> site_counts <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="download-process.html#cb1-4" tabindex="-1"></a>                           <span class="fu">count</span>(grid_id),</span>
+<span id="cb1-5"><a href="download-process.html#cb1-5" tabindex="-1"></a>                         <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;id&quot;</span> <span class="ot">=</span> <span class="st">&quot;grid_id&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="download-process.html#cb1-6" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">9311</span>)</span>
+<span id="cb1-7"><a href="download-process.html#cb1-7" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="download-process.html#cb1-8" tabindex="-1"></a>state_selection <span class="ot">&lt;-</span> <span class="fu">states</span>(<span class="at">progress_bar =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-9"><a href="download-process.html#cb1-9" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>NAME <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Alaska&quot;</span>, <span class="st">&quot;Hawaii&quot;</span>, <span class="st">&quot;American Samoa&quot;</span>,</span>
+<span id="cb1-10"><a href="download-process.html#cb1-10" tabindex="-1"></a>                      <span class="st">&quot;Guam&quot;</span>, <span class="st">&quot;Puerto Rico&quot;</span>,</span>
+<span id="cb1-11"><a href="download-process.html#cb1-11" tabindex="-1"></a>                      <span class="st">&quot;United States Virgin Islands&quot;</span>,</span>
+<span id="cb1-12"><a href="download-process.html#cb1-12" tabindex="-1"></a>                      <span class="st">&quot;Commonwealth of the Northern Mariana Islands&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-13"><a href="download-process.html#cb1-13" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">9311</span>)</span></code></pre></div>
+</details>
+<pre><code>## Retrieving data for the year 2021</code></pre>
+<details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="download-process.html#cb3-1" tabindex="-1"></a>non_fl_map <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb3-2"><a href="download-process.html#cb3-2" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> grid_counts <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="download-process.html#cb3-3" tabindex="-1"></a>            <span class="fu">filter</span>(<span class="sc">!</span>id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="co">#10847:10850,</span></span>
+<span id="cb3-4"><a href="download-process.html#cb3-4" tabindex="-1"></a>                              <span class="dv">10668</span>, <span class="dv">10669</span>, <span class="dv">10670</span>, <span class="dv">10489</span>, <span class="dv">10490</span>,</span>
+<span id="cb3-5"><a href="download-process.html#cb3-5" tabindex="-1"></a>                              <span class="dv">10491</span>, <span class="dv">10309</span>, <span class="dv">10310</span>)),</span>
+<span id="cb3-6"><a href="download-process.html#cb3-6" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">fill =</span> n)) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="download-process.html#cb3-7" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> state_selection <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="download-process.html#cb3-8" tabindex="-1"></a>            <span class="fu">filter</span>(NAME <span class="sc">!=</span> <span class="st">&quot;Florida&quot;</span>), <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-9"><a href="download-process.html#cb3-9" tabindex="-1"></a>  <span class="co"># geom_sf_text(data = grid_counts, aes(label = id)) +</span></span>
+<span id="cb3-10"><a href="download-process.html#cb3-10" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb3-11"><a href="download-process.html#cb3-11" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb3-12"><a href="download-process.html#cb3-12" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fu">min</span>(<span class="fu">st_coordinates</span>(state_selection)[,<span class="st">&quot;X&quot;</span>]),</span>
+<span id="cb3-13"><a href="download-process.html#cb3-13" tabindex="-1"></a>                    <span class="fu">max</span>(<span class="fu">st_coordinates</span>(state_selection)[,<span class="st">&quot;X&quot;</span>])),</span>
+<span id="cb3-14"><a href="download-process.html#cb3-14" tabindex="-1"></a>           <span class="at">ylim =</span> <span class="fu">c</span>(<span class="fu">min</span>(<span class="fu">st_coordinates</span>(state_selection)[,<span class="st">&quot;Y&quot;</span>]),</span>
+<span id="cb3-15"><a href="download-process.html#cb3-15" tabindex="-1"></a>                    <span class="fu">max</span>(<span class="fu">st_coordinates</span>(state_selection)[,<span class="st">&quot;Y&quot;</span>]))) <span class="sc">+</span></span>
+<span id="cb3-16"><a href="download-process.html#cb3-16" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="st">&quot;Record count&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-17"><a href="download-process.html#cb3-17" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb3-18"><a href="download-process.html#cb3-18" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="download-process.html#cb3-19" tabindex="-1"></a>non_fl_map</span></code></pre></div>
+</details>
+<p><img src="chapters/01_download_files/figure-gfm/unnamed-chunk-2-1.png" /><!-- --></p>
+<details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="download-process.html#cb4-1" tabindex="-1"></a>fl_states <span class="ot">&lt;-</span> state_selection <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="download-process.html#cb4-2" tabindex="-1"></a>  <span class="fu">filter</span>(NAME <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Florida&quot;</span>, <span class="st">&quot;Georgia&quot;</span>, <span class="st">&quot;Alabama&quot;</span>))</span>
+<span id="cb4-3"><a href="download-process.html#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="download-process.html#cb4-4" tabindex="-1"></a>fl_map <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb4-5"><a href="download-process.html#cb4-5" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> grid_counts <span class="sc">%&gt;%</span></span>
+<span id="cb4-6"><a href="download-process.html#cb4-6" tabindex="-1"></a>            <span class="fu">filter</span>(id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">10847</span><span class="sc">:</span><span class="dv">10850</span>, <span class="dv">10668</span>, <span class="dv">10669</span>, <span class="dv">10670</span>, <span class="dv">10489</span>, <span class="dv">10490</span>,</span>
+<span id="cb4-7"><a href="download-process.html#cb4-7" tabindex="-1"></a>                              <span class="dv">10491</span>, <span class="dv">10309</span>, <span class="dv">10310</span>)),</span>
+<span id="cb4-8"><a href="download-process.html#cb4-8" tabindex="-1"></a>          <span class="fu">aes</span>(<span class="at">fill =</span> n)) <span class="sc">+</span></span>
+<span id="cb4-9"><a href="download-process.html#cb4-9" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> fl_states, <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="download-process.html#cb4-10" tabindex="-1"></a>  <span class="co"># geom_sf_label(data = grid_counts, aes(label = id)) +</span></span>
+<span id="cb4-11"><a href="download-process.html#cb4-11" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb4-12"><a href="download-process.html#cb4-12" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb4-13"><a href="download-process.html#cb4-13" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="fu">min</span>(<span class="fu">st_coordinates</span>(fl_states)[,<span class="st">&quot;X&quot;</span>]),</span>
+<span id="cb4-14"><a href="download-process.html#cb4-14" tabindex="-1"></a>                    <span class="fu">max</span>(<span class="fu">st_coordinates</span>(fl_states)[,<span class="st">&quot;X&quot;</span>])),</span>
+<span id="cb4-15"><a href="download-process.html#cb4-15" tabindex="-1"></a>           <span class="at">ylim =</span> <span class="fu">c</span>(<span class="fu">min</span>(<span class="fu">st_coordinates</span>(fl_states)[,<span class="st">&quot;Y&quot;</span>]),</span>
+<span id="cb4-16"><a href="download-process.html#cb4-16" tabindex="-1"></a>                    <span class="fu">max</span>(<span class="fu">st_coordinates</span>(fl_states)[,<span class="st">&quot;Y&quot;</span>]))) <span class="sc">+</span></span>
+<span id="cb4-17"><a href="download-process.html#cb4-17" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="st">&quot;Record count&quot;</span>) <span class="sc">+</span></span>
+<span id="cb4-18"><a href="download-process.html#cb4-18" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb4-19"><a href="download-process.html#cb4-19" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="download-process.html#cb4-20" tabindex="-1"></a>fl_map</span></code></pre></div>
+</details>
+<p><img src="chapters/01_download_files/figure-gfm/unnamed-chunk-2-2.png" /><!-- --></p>
+
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="pre-harmonization-decision-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

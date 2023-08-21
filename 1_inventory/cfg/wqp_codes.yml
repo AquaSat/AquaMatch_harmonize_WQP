@@ -63,8 +63,6 @@
     
   silica:
     - "Silica"
-    - "Apparent color"
-    - "True color"
 
   ssc:
     - "Suspended Sediment Concentration (SSC)"
@@ -73,6 +71,10 @@
   temperature:
     - "Temperature, water"
 
+  true_color:
+    - "Apparent color"
+    - "True color"
+  
   tss:
     - "Total suspended solids"
     - "Total Particulate Matter"

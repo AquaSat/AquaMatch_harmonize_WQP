@@ -23,9 +23,9 @@ bookdown_targets_list <- list(
   tar_file(tss_harmonization_rmd,
            "bookdown_raw/06_tss_harmonization.Rmd"),
   
-  tar_file(modeling_rmd,
-           "bookdown_raw/model_report.Rmd"),
-  
+  # tar_file(modeling_rmd,
+  #          "bookdown_raw/model_report.Rmd"),
+  # 
   
   # Knit chapters -----------------------------------------------------------
   

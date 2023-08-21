@@ -6,6 +6,6 @@ output:
 documentclass: book
 ---
 
-# Light Partitioning
+# AquaSat version 2
 
 This bookdown documents the harmonization process for parameters from the Water Quality Portal.

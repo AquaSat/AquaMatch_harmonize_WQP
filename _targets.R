@@ -28,7 +28,7 @@ config_targets <- list(
   # the workflow components more easily
   
   # Date range of interest
-  tar_target(wq_dates,
+  tar_target(p0_wq_dates,
              list(
                start_date = "1970-01-01",
                end_date = Sys.Date()
@@ -42,24 +42,26 @@ config_targets <- list(
   # change depending on the user or application, so the yml file can be edited to 
   # omit characteristic names or include others, to change top-level parameter names,
   # or to customize parameter groupings. 
-  tar_target(param_groups_select,
-             c("chlorophyll", "secchi", "doc", "tss", "temperature",
-               "phosphorus", "nitrogen")),
+  tar_target(p0_param_groups_select,
+             c(#"alkalinity", "cdom", "depth", "nitrogen",
+               "chlorophyll", "doc", "secchi", "tss"#,
+               # "ssc", "temperature", "phosphorus", "poc", silica"
+               )),
   
   
   # WQP inventory -----------------------------------------------------------
   
   # Specify arguments to WQP queries
   # see https://www.waterqualitydata.us/webservices_documentation for more information 
-  tar_target(wqp_args,
+  tar_target(p0_wqp_args,
              list(sampleMedia = c("Water","water"),
                   siteType = c("Lake, Reservoir, Impoundment",
                                "Stream",
                                "Estuary"),
                   # Return sites with at least one data record
                   minresults = 1, 
-                  startDateLo = wq_dates$start_date,
-                  startDateHi = wq_dates$end_date))
+                  startDateLo = p0_wq_dates$start_date,
+                  startDateHi = p0_wq_dates$end_date))
 )
 
 

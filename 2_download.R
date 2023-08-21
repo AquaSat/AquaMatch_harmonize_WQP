@@ -46,6 +46,16 @@ p2_targets_list <- list(
   # be reworked into targets branching. The goal right now is to create a way for
   # each param to be downloaded separately so that an error in one doesn't
   # prevent others from being collected and combined
+  # tar_target(
+  #   p2_site_counts_grouped_alk,
+  #   add_download_groups(p2_site_counts$alkalinity, 
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
+  
   tar_target(
     p2_site_counts_grouped_chl,
     add_download_groups(p2_site_counts$chlorophyll, 
@@ -86,38 +96,69 @@ p2_targets_list <- list(
     iteration = "group"
   ),
   
-  tar_target(
-    p2_site_counts_grouped_temp,
-    add_download_groups(p2_site_counts$temperature %>%
-                          # For now exclude STORET - lots of high frequency
-                          # data there
-                          filter(ProviderName == "NWIS"), 
-                        max_sites = 500,
-                        max_results = 250000) %>%
-      group_by(download_grp) %>%
-      tar_group(),
-    iteration = "group"
-  ),
+  # tar_target(
+  #   p2_site_counts_grouped_temp,
+  #   add_download_groups(p2_site_counts$temperature %>%
+  #                         # For now exclude STORET - lots of high frequency
+  #                         # data there
+  #                         filter(ProviderName == "NWIS"), 
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
   
-  tar_target(
-    p2_site_counts_grouped_nitro,
-    add_download_groups(p2_site_counts$nitrogen,
-                        max_sites = 500,
-                        max_results = 250000) %>%
-      group_by(download_grp) %>%
-      tar_group(),
-    iteration = "group"
-  ),
+  # tar_target(
+  #   p2_site_counts_grouped_nitro,
+  #   add_download_groups(p2_site_counts$nitrogen,
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
   
-  tar_target(
-    p2_site_counts_grouped_phos,
-    add_download_groups(p2_site_counts$phosphorus,
-                        max_sites = 500,
-                        max_results = 250000) %>%
-      group_by(download_grp) %>%
-      tar_group(),
-    iteration = "group"
-  ),
+  # tar_target(
+  #   p2_site_counts_grouped_phos,
+  #   add_download_groups(p2_site_counts$phosphorus,
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
+  
+  # tar_target(
+  #   p2_site_counts_grouped_depth,
+  #   add_download_groups(p2_site_counts$depth,
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
+  
+  # tar_target(
+  #   p2_site_counts_grouped_ssc,
+  #   add_download_groups(p2_site_counts$ssc,
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
+  
+  # tar_target(
+  #   p2_site_counts_grouped_poc,
+  #   add_download_groups(p2_site_counts$poc,
+  #                       max_sites = 500,
+  #                       max_results = 250000) %>%
+  #     group_by(download_grp) %>%
+  #     tar_group(),
+  #   iteration = "group"
+  # ),
+  
   
   # Again, manual iteration that should be reworked into branches:
   
@@ -143,12 +184,22 @@ p2_targets_list <- list(
   #   # cue = tar_cue("never")
   # ),
   
+  # tar_target(
+  #   p2_wqp_data_aoi_alk,
+  #   fetch_wqp_data(p2_site_counts_grouped_alk,
+  #                  char_names = unique(p2_site_counts_grouped_alk$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_alk),
+  #   error = "continue",
+  #   format = "feather"
+  #   # cue = tar_cue("never")
+  # ),
   
   tar_target(
     p2_wqp_data_aoi_chl,
     fetch_wqp_data(p2_site_counts_grouped_chl,
                    char_names = unique(p2_site_counts_grouped_chl$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_chl),
     error = "continue",
     format = "feather"
@@ -159,7 +210,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_sdd,
     fetch_wqp_data(p2_site_counts_grouped_sdd,
                    char_names = unique(p2_site_counts_grouped_sdd$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_sdd),
     error = "continue",
     format = "feather"#,
@@ -170,7 +221,7 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_tss,
     fetch_wqp_data(p2_site_counts_grouped_tss,
                    char_names = unique(p2_site_counts_grouped_tss$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_tss),
     error = "continue",
     format = "feather"#,
@@ -181,59 +232,144 @@ p2_targets_list <- list(
     p2_wqp_data_aoi_doc,
     fetch_wqp_data(p2_site_counts_grouped_doc,
                    char_names = unique(p2_site_counts_grouped_doc$CharacteristicName),
-                   wqp_args = wqp_args),
+                   wqp_args = p0_wqp_args),
     pattern = map(p2_site_counts_grouped_doc),
     error = "continue",
     format = "feather"#,
     # cue = tar_cue("never")
   ),
   
-  tar_target(
-    p2_wqp_data_aoi_temp,
-    fetch_wqp_data(p2_site_counts_grouped_temp,
-                   char_names = unique(p2_site_counts_grouped_temp$CharacteristicName),
-                   wqp_args = wqp_args),
-    pattern = map(p2_site_counts_grouped_temp),
-    error = "continue",
-    format = "feather"#,
-    # cue = tar_cue("never")
-  ),
+  # tar_target(
+  #   p2_wqp_data_aoi_temp,
+  #   fetch_wqp_data(p2_site_counts_grouped_temp,
+  #                  char_names = unique(p2_site_counts_grouped_temp$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_temp),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
   
-  tar_target(
-    p2_wqp_data_aoi_phos,
-    fetch_wqp_data(p2_site_counts_grouped_phos,
-                   char_names = unique(p2_site_counts_grouped_phos$CharacteristicName),
-                   wqp_args = wqp_args),
-    pattern = map(p2_site_counts_grouped_phos),
-    error = "continue",
-    format = "feather"#,
-    # cue = tar_cue("never")
-  ),
+  # tar_target(
+  #   p2_wqp_data_aoi_phos,
+  #   fetch_wqp_data(p2_site_counts_grouped_phos,
+  #                  char_names = unique(p2_site_counts_grouped_phos$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_phos),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
   
-  tar_target(
-    p2_wqp_data_aoi_nitro,
-    fetch_wqp_data(p2_site_counts_grouped_nitro,
-                   char_names = unique(p2_site_counts_grouped_nitro$CharacteristicName),
-                   wqp_args = wqp_args),
-    pattern = map(p2_site_counts_grouped_nitro),
-    error = "continue",
-    format = "feather"#,
-    # cue = tar_cue("never")
-  ),
+  # tar_target(
+  #   p2_wqp_data_aoi_nitro,
+  #   fetch_wqp_data(p2_site_counts_grouped_nitro,
+  #                  char_names = unique(p2_site_counts_grouped_nitro$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_nitro),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
+  
+  # tar_target(
+  #   p2_wqp_data_aoi_depth,
+  #   fetch_wqp_data(p2_site_counts_grouped_depth,
+  #                  char_names = unique(p2_site_counts_grouped_depth$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_depth),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
+  
+  # tar_target(
+  #   p2_wqp_data_aoi_ssc,
+  #   fetch_wqp_data(p2_site_counts_grouped_ssc,
+  #                  char_names = unique(p2_site_counts_grouped_ssc$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_ssc),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
+  
+  # tar_target(
+  #   p2_wqp_data_aoi_poc,
+  #   fetch_wqp_data(p2_site_counts_grouped_poc,
+  #                  char_names = unique(p2_site_counts_grouped_poc$CharacteristicName),
+  #                  wqp_args = p0_wqp_args),
+  #   pattern = map(p2_site_counts_grouped_poc),
+  #   error = "continue",
+  #   format = "feather"#,
+  #   # cue = tar_cue("never")
+  # ),
   
   tar_target(p2_wqp_data_aoi,
-             bind_rows(p2_wqp_data_aoi_chl, p2_wqp_data_aoi_sdd,
-                       p2_wqp_data_aoi_tss, p2_wqp_data_aoi_doc,
-                       p2_wqp_data_aoi_temp, p2_wqp_data_aoi_phos,
-                       p2_wqp_data_aoi_nitro),
+             bind_rows(# p2_wqp_data_aoi_alk,
+               p2_wqp_data_aoi_chl,
+               p2_wqp_data_aoi_sdd, 
+               p2_wqp_data_aoi_tss,
+               p2_wqp_data_aoi_doc, 
+               # p2_wqp_data_aoi_temp,
+               # p2_wqp_data_aoi_phos, 
+               # p2_wqp_data_aoi_nitro,
+               # p2_wqp_data_aoi_depth, 
+               # p2_wqp_data_aoi_ssc,
+               # p2_wqp_data_aoi_poc
+             ),
              format = "feather"),
   
   # Summarize the data downloaded from the WQP
   tar_target(
     p2_wqp_data_summary_csv,
     summarize_wqp_download(p1_wqp_inventory_summary_csv, p2_wqp_data_aoi,
-                       "2_download/log/summary_wqp_data.csv"),
+                           "2_download/log/summary_wqp_data.csv"),
     format = "file"
+  ),
+  
+  # Download the original AquaSat raw data for ingestion into this pipeline:
+  tar_target(
+    p2_raw_original_aq,
+    {
+      in_path <- "data/in/aq_wqp_raw.zip"
+      
+      download(url = "https://figshare.com/ndownloader/files/15169262",
+               destfile = in_path)
+      
+      unzip(zipfile = in_path, exdir = "data/in/")
+      
+      # Return the unzipped folder's path
+      "data/in/wqp_raw/"
+    },
+    packages = "downloader"
+  ),
+  
+  # Read in original AquaSat's raw chlorophyll
+  tar_file_read(
+    p2_raw_orig_chl,
+    paste0(p2_raw_original_aq, "all_raw_chlorophyll.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_doc,
+    paste0(p2_raw_original_aq, "all_raw_doc.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_sdd,
+    paste0(p2_raw_original_aq, "all_raw_secchi.csv"),
+    read = read_csv(!!.x)
+  ),
+  
+  tar_file_read(
+    p2_raw_orig_tss,
+    paste0(p2_raw_original_aq, "all_raw_tss.csv"),
+    read = read_csv(!!.x)
   )
+  
+  
   
 )

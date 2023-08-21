@@ -1,8 +1,16 @@
 # https://www.waterqualitydata.us/Codes/Characteristicname?mimeType=xml
 # characteristicName:
 
-
-
+  alkalinity:
+    - "Alkalinity"
+    - "Alkalinity, bicarbonate"
+    - "Alkalinity, carbonate"
+    - "Alkalinity, Hydroxide"
+    - "Alkalinity, Phenolphthalein (total hydroxide+1/2 carbonate)"
+    - "Alkalinity, total"
+  
+  cdom:
+    - "Colored dissolved organic matter (CDOM)"
     
   chlorophyll:
     - "Chlorophyll"
@@ -19,13 +27,32 @@
     - "Chlorophyll c"
     - "Chlorophyll/Pheophytin ratio"
     
-  cdom:
-    - "Colored dissolved organic matter (CDOM)"
-    
-  silica:
-    - "Silica"
-    - "Apparent color"
-    - "True color"
+  depth:
+    - "Depth"
+
+  doc:
+    - "Organic carbon"
+    - "Total carbon"
+    - "Hydrophilic fraction of organic carbon"
+    - "Non-purgeable Organic Carbon (NPOC)"
+
+  nitrogen:
+    - "Nutrient-nitrogen"     
+    - "Nutrient-nitrogen***retired***use TOTAL NITROGEN, MIXED FORMS with speciation AS N" 
+    - "Total Nitrogen, mixed forms"
+
+  phosphorus:
+    - "Soluble Reactive Phosphorus (SRP)"
+    - "Total Phosphorus, mixed forms"
+    - "Phosphorus, hydrolyzable plus orthophosphate"
+    - "Phosphate-phosphorus"
+    - "Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms" 
+    - "Hydrolyzable phosphorus plus orthophosphate"
+
+  poc:
+    - "Total Particulate Organic Carbon"
+    - "Particulate organic carbon"
+    - "Total Particulate Carbon"
 
   secchi:
     - "Depth, Secchi disk depth"
@@ -33,27 +60,23 @@
     - "Secchi Reading Condition (choice list)"
     - "Secchi depth"
     - "Water transparency, Secchi disc"
-      
-  doc:
-    - "Organic carbon"
-    - "Total carbon"
-    - "Hydrophilic fraction of organic carbon"
-    - "Non-purgeable Organic Carbon (NPOC)"
-  
-  tss:
-    - "Total suspended solids"
-    - "Total Suspended Particulate Matter"
+    
+  silica:
+    - "Silica"
+
+  ssc:
+    - "Suspended Sediment Concentration (SSC)"
+    - "Suspended sediment concentration (SSC)"
     
   temperature:
     - "Temperature, water"
 
-  phosphorus:
-  - "Soluble Reactive Phosphorus (SRP)"
-  - "Total Phosphorus, mixed forms"
-  - "Phosphorus, hydrolyzable plus orthophosphate"
-  - "Phosphate-phosphorus***retired***use Total Phosphorus, mixed forms" 
-  - "Hydrolyzable phosphorus plus orthophosphate***retired***use Phosphorus, hydrolyzable plus orthophosphate"
+  true_color:
+    - "Apparent color"
+    - "True color"
   
-  nitrogen:
-  - "Nutrient-nitrogen***retired***use TOTAL NITROGEN, MIXED FORMS with speciation AS N"     
-  - "Total Nitrogen, mixed forms"
+  tss:
+    - "Total suspended solids"
+    - "Total Particulate Matter"
+    - "Total Suspended Particulate Matter"
+    

@@ -24,14 +24,14 @@ p1_targets_list <- list(
   # Get a vector of WQP characteristic names to match parameter groups of interest
   tar_target(
     p1_char_names,
-    filter_characteristics(p1_char_names_crosswalk, param_groups_select)
+    filter_characteristics(p1_char_names_crosswalk, p0_param_groups_select)
   ),
   
   # Save output file(s) containing WQP characteristic names that are similar to the
   # parameter groups of interest.
   tar_file(
     p1_similar_char_names_txt,
-    find_similar_characteristics(p1_char_names, param_groups_select, "1_inventory/out")
+    find_similar_characteristics(p1_char_names, p0_param_groups_select, "1_inventory/out")
   ),
   
   tar_target(
@@ -70,7 +70,7 @@ p1_targets_list <- list(
       # in 1_fetch/src/get_wqp_inventory.R for further details.
       inventory_wqp(grid = p1_global_grid_aoi,
                     char_names = p1_char_names,
-                    wqp_args = wqp_args)
+                    wqp_args = p0_wqp_args)
     },
     pattern = cross(p1_global_grid_aoi, p1_char_names),
     error = "continue"#,

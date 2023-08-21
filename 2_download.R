@@ -312,7 +312,8 @@ p2_targets_list <- list(
                p2_wqp_data_aoi_tss,
                p2_wqp_data_aoi_doc, 
                # p2_wqp_data_aoi_temp,
-               # p2_wqp_data_aoi_phos, p2_wqp_data_aoi_nitro,
+               # p2_wqp_data_aoi_phos, 
+               # p2_wqp_data_aoi_nitro,
                # p2_wqp_data_aoi_depth, p2_wqp_data_aoi_ssc,
                # p2_wqp_data_aoi_poc
              ),

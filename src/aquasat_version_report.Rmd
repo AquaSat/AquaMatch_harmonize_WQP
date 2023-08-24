@@ -1,0 +1,766 @@
+---
+title: "AquaSat/Match version difference report"
+author: "Matthew R Brousil"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
+date: "`r Sys.Date()`"
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(feather)
+library(lubridate)
+library(kableExtra)
+library(tigris)
+library(sf)
+library(dataRetrieval)
+```
+
+# Summary
+
+```{r, results = "hide", message = FALSE, include=FALSE}
+# Raw data pulled for the AquaSat v2 project
+raw_aq2 <- read_feather(path = "2_download/out/p2_wqp_data_aoi_20230525.feather")
+
+# Raw data pulled for original AquaSat project
+# https://figshare.com/articles/dataset/wqp_raw_zip/8139290
+raw_aq <- map_df(.x = list("data/wqp_raw/all_raw_chlorophyll.csv",
+                           "data/wqp_raw/all_raw_doc.csv",
+                           "data/wqp_raw/all_raw_secchi.csv",
+                           "data/wqp_raw/all_raw_tss.csv"),
+                 .f = read_csv)
+```
+
+We have recently determined that some amount of rows that were in the original AquaSat dataset are not showing up in the AquaSat v2 dataset. I'll show in this document how the raw version (i.e., pulled from WQP and not yet processed) of the new dataset is missing rows from the previous version.
+
+<br>
+
+# Prep
+
+In preparation for this, I:
+
+1.  Filter both datasets to include data from 1984 - 2019
+
+```{r message=FALSE}
+raw_aq <- raw_aq %>%
+  filter(year(ActivityStartDate) %in% 1984:2019)
+
+raw_aq2 <- raw_aq2 %>% 
+  filter(year(ActivityStartDate) %in% 1984:2019)
+```
+
+
+2.  Make sure that only shared `CharacteristicNames` are present in both datasets
+
+```{r}
+# Identify chars present in both raw versions of AquaSat
+aq_chars <- unique(raw_aq$CharacteristicName)
+aq2_chars <- unique(raw_aq2$CharacteristicName)
+
+shared_chars <- dplyr::intersect(x = aq_chars, y = aq2_chars)
+
+# Do removals from each version
+raw_aq <- raw_aq %>%
+  filter(CharacteristicName %in% shared_chars)
+
+raw_aq2 <- raw_aq2 %>%
+  filter(CharacteristicName %in% shared_chars)
+
+# Confirm CharacteristicNames match
+all( sort(unique(raw_aq$CharacteristicName)) == sort(unique(raw_aq2$CharacteristicName)) )
+```
+
+
+3. Format `ActivityStartDateTime` so that all records containing only a date have a noon timestamp to allow conversion to POSIXct for joining
+
+```{r}
+raw_aq <- raw_aq %>%
+  mutate(ActivityStartDateTime = as.character(ActivityStartDateTime),
+         ActivityStartDateTime = if_else(
+           # 10 characters = date only (e.g., 1988-08-14)
+           condition = nchar(ActivityStartDateTime) == 10,
+           # If date only, add time = noon
+           true = paste0(ActivityStartDateTime, " 12:00:00"),
+           false = ActivityStartDateTime
+         ),
+         ActivityStartDateTime = ymd_hms(ActivityStartDateTime))
+
+raw_aq2 <- raw_aq2 %>%
+  mutate(ActivityStartDateTime = as.character(ActivityStartDateTime),
+         ActivityStartDateTime = if_else(
+           # 10 characters = date only (e.g., 1988-08-14)
+           condition = nchar(ActivityStartDateTime) == 10,
+           # If date only, add time = noon
+           true = paste0(ActivityStartDateTime, " 12:00:00"),
+           false = ActivityStartDateTime
+         ),
+         ActivityStartDateTime = ymd_hms(ActivityStartDateTime))
+```
+
+<br>
+
+# Row matchups
+
+Below I show the result of joining the original AquaSat raw pull with the current raw pull based on different combinations of join columns:
+
+
+## Join columns: Location + Chars + Start time + OrgID + Depth:
+
+These columns are a set of internally agreed upon identifiers for running joins between versions of WQP pulls from different time points.
+
+I isolate the missing records by joining on the `MonitoringLocationIdentifier`, `CharacteristicName`, `ActivityStartDateTime`, `OrganizationIdentifier`, and `ActivityDepthHeightMeasure.MeasureValue` columns.  
+
+```{r}
+missing_aq2 <- anti_join(
+  x = raw_aq %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = as.character(ActivityDepthHeightMeasure.MeasureValue)),
+  y = raw_aq2 %>%
+    mutate(ResultMeasure.MeasureUnitCode = tolower(ResultMeasure.MeasureUnitCode)),
+  by = c("MonitoringLocationIdentifier", "CharacteristicName",
+         "ActivityStartDateTime", "OrganizationIdentifier",
+         "ActivityDepthHeightMeasure.MeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(missing_aq2) / 1000000, 2), " million")`** rows that were present in raw AquaSat WQP pull that are not in the raw AquaSat v2.
+
+<br>
+
+```{r}
+perc_aq <- (nrow(missing_aq2) / nrow(raw_aq) * 100)
+perc_aq2 <- (nrow(missing_aq2) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(perc_aq, 2), "%")` the total number of rows in raw AquaSat and `r paste0(round(perc_aq2, 2), "%")` in raw AquaSat v2.
+
+<br>
+
+**Proportion of AquaSat records missing in AquaSat v2 by year and parameter:**
+```{r message = FALSE, warning = FALSE}
+aq_param_counts <- raw_aq %>%
+  # Get standalone year column
+  mutate(year = year(ActivityStartDate),
+         # Tag parameter based on CharacteristicName
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "aq_total")
+
+missing_aq2 %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+<br>
+
+<br>
+
+## Join columns: Location + Chars + Start date + OrgID + Org formal name + Result:
+
+These columns were a selection used in previous iterations of this exploration, included here for comparison.
+
+```{r}
+prev_missing_aq2 <- anti_join(
+  x = raw_aq %>%
+    mutate(ResultMeasureValue = as.character(ResultMeasureValue),
+           ActivityStartDate = as.character(ActivityStartDate)),
+  y = raw_aq2,
+  by = c("CharacteristicName", "OrganizationIdentifier", "OrganizationFormalName",
+         "MonitoringLocationIdentifier", "ActivityStartDate", "ResultMeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(prev_missing_aq2) / 1000000, 2), " million")`** rows that were present in raw AquaSat WQP pull that are not in the raw AquaSat v2.
+
+<br>
+
+```{r}
+prev_perc_aq <- (nrow(prev_missing_aq2) / nrow(raw_aq) * 100)
+prev_perc_aq2 <- (nrow(prev_missing_aq2) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(prev_perc_aq, 2), "%")` the total number of rows in raw AquaSat and `r paste0(round(prev_perc_aq2, 2), "%")` in raw AquaSat v2.
+
+<br>
+
+```{r}
+prev_missing_aq2 %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+<br>
+
+<br>
+
+## Join columns: Location + Chars + Start time + Result:
+
+We realized that organization IDs were not necessarily as stable as we thought initially. So this iteration drops them and brings the result column in for further specificity.
+
+```{r}
+no_depth_org_missing_aq2 <- anti_join(
+  x = raw_aq %>%
+    mutate(ResultMeasureValue = as.character(ResultMeasureValue)),
+  y = raw_aq2,
+  by = c("CharacteristicName", "MonitoringLocationIdentifier",
+         "ActivityStartDateTime", "ResultMeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(no_depth_org_missing_aq2) / 1000000, 2), " million")`** rows that were present in raw AquaSat WQP pull that are not in the raw AquaSat v2.
+
+<br>
+
+```{r}
+no_depth_org_perc_aq <- (nrow(no_depth_org_missing_aq2) / nrow(raw_aq) * 100)
+no_depth_org_perc_aq2 <- (nrow(no_depth_org_missing_aq2) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(no_depth_org_perc_aq, 2), "%")` the total number of rows in raw AquaSat and `r paste0(round(no_depth_org_perc_aq2, 2), "%")` in raw AquaSat v2.
+
+<br>
+```{r}
+no_depth_org_missing_aq2 %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+<br>
+
+<br>
+
+## Join columns: Location + Chars + Start time + abs(Depth):
+
+Depth is a column that has had higher usage in the WQP database in recent times. Here we wanted to see how using this after taking the absolute value would work. The idea being that some records may have been corrected to standardize use of "-" signs in depth after 2019.
+
+```{r}
+abs_depth_no_org_missing_aq2 <- anti_join(
+  x = raw_aq %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(ActivityDepthHeightMeasure.MeasureValue)),
+  y = raw_aq2 %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue))),
+  by = c("CharacteristicName", "MonitoringLocationIdentifier",
+         "ActivityStartDateTime", "ActivityDepthHeightMeasure.MeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(abs_depth_no_org_missing_aq2) / 1000000, 2), " million")`** rows that were present in raw AquaSat WQP pull that are not in the raw AquaSat v2.
+
+<br>
+
+```{r}
+abs_depth_no_org_perc_aq <- (nrow(abs_depth_no_org_missing_aq2) / nrow(raw_aq) * 100)
+abs_depth_no_org_perc_aq2 <- (nrow(abs_depth_no_org_missing_aq2) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(abs_depth_no_org_perc_aq, 2), "%")` the total number of rows in raw AquaSat and `r paste0(round(abs_depth_no_org_perc_aq2, 2), "%")` in raw AquaSat v2.
+
+<br>
+```{r}
+abs_depth_no_org_missing_aq2 %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+<br>
+
+<br>
+
+## Join columns: Location + Chars + Start time + abs(Depth) + Result:
+
+Here we re-do the previous join with results added for further specificity. Are records better matched when depth is corrected, allowing for better joins to final result measurements? (No)
+
+
+```{r}
+res_abs_depth_no_org_missing_aq2 <- anti_join(
+  x = raw_aq %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(ActivityDepthHeightMeasure.MeasureValue),
+           ResultMeasureValue = as.character(ResultMeasureValue)),
+  y = raw_aq2 %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue))),
+  by = c("CharacteristicName", "MonitoringLocationIdentifier",
+         "ActivityDepthHeightMeasure.MeasureValue",
+         "ActivityStartDateTime", "ResultMeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(res_abs_depth_no_org_missing_aq2) / 1000000, 2), " million")`** rows that were present in raw AquaSat WQP pull that are not in the raw AquaSat v2.
+
+<br>
+
+```{r}
+abs_res_depth_no_org_perc_aq <- (nrow(res_abs_depth_no_org_missing_aq2) / nrow(raw_aq) * 100)
+abs_res_depth_no_org_perc_aq2 <- (nrow(res_abs_depth_no_org_missing_aq2) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(abs_res_depth_no_org_perc_aq, 2), "%")` the total number of rows in raw AquaSat and `r paste0(round(abs_res_depth_no_org_perc_aq2, 2), "%")` in raw AquaSat v2.
+
+<br>
+```{r}
+res_abs_depth_no_org_missing_aq2 %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+<br>
+
+<br>
+
+## Join columns: Location + Chars + Start time + abs(Depth) -- gained data?
+
+Here we switch the order in which the join happens so that we are checking rows gained in 2023 since the original pull in 2019.
+
+```{r}
+rev_abs_depth_no_org_missing_aq <- anti_join(
+  x = raw_aq2 %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue))),
+  y = raw_aq %>%
+    mutate(ActivityDepthHeightMeasure.MeasureValue = abs(ActivityDepthHeightMeasure.MeasureValue),
+           ActivityStartDate = as.character(ActivityStartDate)),
+  by = c("CharacteristicName", "MonitoringLocationIdentifier",
+         "ActivityStartDateTime", "ActivityDepthHeightMeasure.MeasureValue"))
+```
+
+This combination of columns results in **`r paste0(round(nrow(rev_abs_depth_no_org_missing_aq) / 1000000, 2), " million")`** rows that are present in raw AquaSat v2 WQP pull that were not in the raw AquaSat.
+
+<br>
+
+```{r}
+rev_abs_depth_no_org_perc_aq2 <- (nrow(rev_abs_depth_no_org_missing_aq) / nrow(raw_aq2) * 100)
+```
+
+This number of missing rows is `r paste0(round(rev_abs_depth_no_org_perc_aq2, 2), "%")` the total number of rows in raw AquaSat v2.
+
+<br>
+```{r}
+rev_abs_depth_no_org_missing_aq %>%
+  mutate(year = year(ActivityStartDate),
+         parameter = case_when(
+           CharacteristicName %in% c(
+             "Chlorophyll", "Chlorophyll A", "Chlorophyll a",
+             "Chlorophyll a (probe relative fluorescence)", 
+             "Chlorophyll a (probe)", "Chlorophyll a - Periphyton (attached)", 
+             "Chlorophyll a - Phytoplankton (suspended)",
+             "Chlorophyll a, corrected for pheophytin", 
+             "Chlorophyll a, free of pheophytin",
+             "Chlorophyll a, uncorrected for pheophytin", 
+             "Chlorophyll b", "Chlorophyll c",
+             "Chlorophyll/Pheophytin ratio"
+           ) ~ "chlorophyll",
+           CharacteristicName %in% c(
+             "Depth, Secchi disk depth",
+             "Depth, Secchi disk depth (choice list)",
+             "Secchi Reading Condition (choice list)",
+             "Secchi depth", "Water transparency, Secchi disc"
+           ) ~ "sdd",
+           CharacteristicName %in% c(
+             "Organic carbon", "Total carbon",
+             "Hydrophilic fraction of organic carbon", 
+             "Non-purgeable Organic Carbon (NPOC)"
+             ) ~ "doc",
+           CharacteristicName %in% c(
+             "Total suspended solids", "Total Suspended Particulate Matter"
+             ) ~ "tss"
+           )) %>%
+  count(parameter, year, name = "missing_total") %>%
+  full_join(x = ., y = aq_param_counts, by = c("parameter", "year")) %>%
+  mutate(prop_missing = missing_total / aq_total) %>%
+  ggplot() +
+  geom_bar(aes(x = year, y = prop_missing),
+           color = "black", fill = "white", stat = "identity") +
+  ylab("Proportion") +
+  xlab("Year") +
+  facet_wrap(vars(parameter)) +
+  theme_bw()
+```
+
+
+```{r include=FALSE}
+# Remove unneeded objects
+rm("aq_group_count_chardate", "aq2_group_count_chardate", "group_count_chardate", 
+"missing_aq2_chardate", "missing_aq2_chardateloc", 
+"perc_aq", "perc_aq_chardate", "perc_aq_chardateloc", "perc_aq2", 
+"perc_aq2_chardate", "perc_aq2_chardateloc", "perc_na_per_aq_col", 
+"perc_na_per_aq2_col", "prev_missing_aq2", "no_depth_org_missing_aq2",
+"abs_depth_no_org_missing_aq2", "rev_abs_depth_no_org_missing_aq2",
+"res_abs_depth_no_org_missing_aq2")
+gc()
+```
+
+
+
+<br>
+
+# Geographic distribution of data missing from AquaSat v2 in CONUS
+
+Locations of missing data could be important to identifying the reason they are missing. However, the raw original AquaSat data do not include coordinates so I have to try to pull those from current WQP. 
+
+<br>
+
+**Map showing distribution of missing data**
+```{r message = FALSE, warning = FALSE}
+# Read in dataset that contains metadata on WQP sites
+# Downloaded site data from WQP using:
+# https://www.waterqualitydata.us/#countrycode=US&mimeType=csv&providers=NWIS&providers=STEWARDS&providers=STORET
+wqp_meta <- read_csv("data/us_wqp_station.csv")
+
+# Locations of missing sites
+missing_site_locs <- wqp_meta %>%
+  filter(MonitoringLocationIdentifier %in% unique(missing_aq2$MonitoringLocationIdentifier)) %>%
+  # Only use sites with complete location data and standard CRS types
+  filter(!is.na(LatitudeMeasure) &
+           !is.na(LongitudeMeasure) &
+           !is.na(HorizontalCoordinateReferenceSystemDatumName) &
+           !(HorizontalCoordinateReferenceSystemDatumName %in%
+               c("UNKWN", "OTHER", "GUAM", "OLDHI", "Unknown"))
+  )
+
+# Locations of all AquaSat sites
+aq_site_locs <- wqp_meta %>%
+  filter(MonitoringLocationIdentifier %in% unique(raw_aq$MonitoringLocationIdentifier)) %>%
+  filter(!is.na(LatitudeMeasure) &
+           !is.na(LongitudeMeasure) &
+           !is.na(HorizontalCoordinateReferenceSystemDatumName) &
+           !(HorizontalCoordinateReferenceSystemDatumName %in%
+               c("UNKWN", "OTHER", "GUAM", "OLDHI", "AMSMA", "Unknown"))
+  )
+
+# What percent of the missing sites did I manage to get location data for?
+perc_sites_found <- ((
+  length(unique(missing_site_locs$MonitoringLocationIdentifier)) /
+    length(unique(missing_aq2$MonitoringLocationIdentifier))
+) * 100) %>%
+  round(digits = 2)
+
+# What percent of missing rows do these geographic locations account for?
+perc_rows_locs <- (((filter(missing_aq2,
+                         MonitoringLocationIdentifier %in% unique(missing_site_locs$MonitoringLocationIdentifier)) %>%
+  nrow()) / nrow(missing_aq2)) * 100) %>%
+  round(digits = 2)
+```
+
+I was able to get complete location data for `r paste0(perc_sites_found, "%")` of the sites involved in the data missing from AquaSat v2. This represents `r paste0(perc_rows_locs, "%")` of rows missing in AquaSat v2.
+
+The missing rows are summarized geographically for the continental US below:
+
+```{r message = FALSE, warning = FALSE}
+# Missing rows in AquaSat v2, but as sf object
+missing_aq2_sf <- inner_join(x = missing_aq2, 
+                             y = missing_site_locs %>%
+                               select(MonitoringLocationIdentifier, 
+                                      OrganizationFormalName,
+                                      OrganizationIdentifier, 
+                                      HorizontalCoordinateReferenceSystemDatumName, 
+                                      LatitudeMeasure, LongitudeMeasure),
+                             by = c("MonitoringLocationIdentifier",
+                                    "OrganizationFormalName",
+                                    "OrganizationIdentifier")) %>%
+  # There's several types of CRS used, so convert each to WGS84 and then do the
+  # sf conversion
+  split(f = .$HorizontalCoordinateReferenceSystemDatumName) %>%
+  map_df(.x = .,
+         .f = ~ .x %>%
+           st_as_sf(coords = c("LongitudeMeasure", "LatitudeMeasure"),
+                    crs = unique(.x$HorizontalCoordinateReferenceSystemDatumName)) %>%
+           st_transform(crs = 4326)) %>%
+  # THEN convert to equal area (preference for viz)
+  st_transform(crs = 9311)
+
+# Make sure to generate lat and long cols
+missing_aq2_sf$x <- st_coordinates(missing_aq2_sf)[, "X"]
+missing_aq2_sf$y <- st_coordinates(missing_aq2_sf)[, "Y"]
+
+# Get state polygons
+states_sf <- states(progress_bar = FALSE) %>%
+  st_transform(crs = 9311)
+
+# Count of AquaSat records for each HUC 4 polygon. Created in external script
+# with a 30 hour runtime
+huc_4_sums <- read_csv(file = "data/huc4_counts.csv") %>%
+    rename(aq_sums = n)
+
+# Watershed Boundary Dataset Hydrologic Unit 4 shapefiles
+wbd_4 <- st_read(dsn = "data/WBD_National_GDB/WBD_National_GDB.gdb",
+                 layer = "WBDHU4") %>%
+  st_transform(crs = 9311)
+
+# Subset HUC4 to continental US
+wbd_4_conus <- wbd_4[states_sf %>%
+                       filter(!NAME %in% c(
+                         "Hawaii", "American Samoa",
+                         "Guam", "Puerto Rico",
+                         "United States Virgin Islands",
+                         "Commonwealth of the Northern Mariana Islands")), ]
+
+# One time run of spatial intersection of the missing AquaSat rows with the HUC4
+# polygons:
+
+# 1.6 hours
+# tictoc::tic()
+# missing_wbd_4_match <- st_intersection(x = missing_aq2_sf, y = wbd_4_conus)
+# tictoc::toc()
+
+# write_rds(x = missing_wbd_4_match,
+#          file = "data/aq2_missing_huc4_match.rds")
+
+# Read in the data created in the run above
+missing_wbd_4_match <- read_rds("data/aq2_missing_huc4_match.rds")
+
+# Count the number of missing records in each HUC4
+huc_4_summary <- as.data.frame(missing_wbd_4_match) %>%
+  count(huc4, name = "missing_aq2_sums")
+
+# Get sf object of HUC4 shapes tagged with number of AquaSat rows, number of rows
+# missing in AquaSat v2, and the proportion missing
+huc_4_joined <- reduce(.x = list(wbd_4_conus, huc_4_sums, huc_4_summary),
+                       .f = left_join) %>%
+  mutate(missing_aq2_sums = replace_na(missing_aq2_sums, 0),
+         prop_missing = missing_aq2_sums / aq_sums)
+```
+
+<br>
+
+**Number of raw AquaSat records missing in v2 by HUC 4:**
+```{r message = FALSE, warning = FALSE}
+# Map the number of missing rows
+huc_4_joined %>%
+  ggplot() +
+  geom_sf(aes(fill = missing_aq2_sums)) +
+  ggtitle("Number of AquaSat records missing in v2 by HUC 4") +
+  scale_fill_viridis_c(name = "Count",
+                       trans = "log10",
+                       labels = scales::label_number()) +
+  theme_bw() +
+  theme(axis.text = element_blank())
+```
+
+<br>
+
+**Proportion of raw AquaSat records missing in v2 by HUC 4:**
+```{r message = FALSE, warning = FALSE, fig.show="hold", out.width="50%"}
+# Map the proportion of missing rows
+huc_4_joined %>%
+  ggplot() +
+  geom_sf(aes(fill = prop_missing)) +
+  ggtitle("Proportion of AquaSat records missing in v2 by HUC 4") +
+  scale_fill_viridis_c("Proportion") +
+  theme_bw() +
+  theme(axis.text = element_blank())
+
+# In this version remove Lake Michigan because it's nearly 100% missing
+huc_4_joined %>%
+  filter(prop_missing <= 0.90) %>%
+  ggplot() +
+  geom_sf(aes(fill = prop_missing)) +
+  ggtitle("Proportion of AquaSat records missing in v2 by HUC 4",
+          subtitle = "2 HUCs removed with > 90% missing, NAs removed as well") +
+  scale_fill_viridis_c("Proportion") +
+  theme_bw() +
+  theme(axis.text = element_blank())
+```
+
+

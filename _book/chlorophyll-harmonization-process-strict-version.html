@@ -513,15 +513,15 @@ depth value is within +/-2m <strong>OR</strong> the raw character version indica
 something similar. We also keep <code>NA</code> depths to avoid losing a ton of
 records. This is how it’s coded:</p>
 <details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-1" tabindex="-1"></a>converted_units_chla <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-2" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="at">x =</span> .,</span>
-<span id="cb11-3"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-3" tabindex="-1"></a>            <span class="at">y =</span> depth_unit_conversion_table,</span>
-<span id="cb11-4"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-4" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;sample_depth_unit&quot;</span> <span class="ot">=</span> <span class="st">&quot;depth_units&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb11-5"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">harmonized_depth_value =</span> <span class="fu">as.numeric</span>(sample_depth) <span class="sc">*</span> depth_conversion,</span>
-<span id="cb11-6"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-6" tabindex="-1"></a>         <span class="at">harmonized_depth_unit =</span> <span class="st">&quot;m&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb11-7"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-7" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(harmonized_depth_value) <span class="sc">&lt;=</span> <span class="dv">2</span> <span class="sc">|</span></span>
-<span id="cb11-8"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-8" tabindex="-1"></a>           sample_depth <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;0-2&quot;</span>, <span class="st">&quot;0-0.5&quot;</span>)<span class="sc">|</span></span>
-<span id="cb11-9"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-9" tabindex="-1"></a>           <span class="fu">is.na</span>(sample_depth))</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-1" tabindex="-1"></a>converted_units_chla <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-2" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="at">x =</span> .,</span>
+<span id="cb9-3"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-3" tabindex="-1"></a>            <span class="at">y =</span> depth_unit_conversion_table,</span>
+<span id="cb9-4"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-4" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;sample_depth_unit&quot;</span> <span class="ot">=</span> <span class="st">&quot;depth_units&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">harmonized_depth_value =</span> <span class="fu">as.numeric</span>(sample_depth) <span class="sc">*</span> depth_conversion,</span>
+<span id="cb9-6"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-6" tabindex="-1"></a>         <span class="at">harmonized_depth_unit =</span> <span class="st">&quot;m&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-7" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(harmonized_depth_value) <span class="sc">&lt;=</span> <span class="dv">2</span> <span class="sc">|</span></span>
+<span id="cb9-8"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-8" tabindex="-1"></a>           sample_depth <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;0-2&quot;</span>, <span class="st">&quot;0-0.5&quot;</span>)<span class="sc">|</span></span>
+<span id="cb9-9"><a href="chlorophyll-harmonization-process-strict-version.html#cb9-9" tabindex="-1"></a>           <span class="fu">is.na</span>(sample_depth))</span></code></pre></div>
 </details>
 <p><br></p>
 <p>Through our depth filtering we lose 123.41 thousand rows and have 1.81

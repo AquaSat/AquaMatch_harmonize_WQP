@@ -306,7 +306,8 @@ p2_targets_list <- list(
   # ),
   
   tar_target(p2_wqp_data_aoi,
-             bind_rows(# p2_wqp_data_aoi_alk,
+             bind_rows(
+               # p2_wqp_data_aoi_alk,
                p2_wqp_data_aoi_chl,
                p2_wqp_data_aoi_sdd, 
                p2_wqp_data_aoi_tss,
@@ -370,6 +371,5 @@ p2_targets_list <- list(
     read = read_csv(!!.x)
   )
   
-  
-  
+
 )

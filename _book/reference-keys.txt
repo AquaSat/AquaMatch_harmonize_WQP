@@ -1,7 +1,7 @@
 aquasat-version-2
 download-process
 catalogue-existing-data
-maps-of-data-spread-within-the-contiguous-us
+maps-of-data-spread
 pre-harmonization-decision-process
 initial-dataset
 remove-duplicates

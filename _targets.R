@@ -7,8 +7,7 @@ library(tarchetypes)
 # Set target options:
 tar_option_set(
   packages = c("tidyverse"),
-  # error = "continue"#,
-  workspace_on_error = TRUE
+  error = "continue"
 )
 
 # Run the R scripts with custom functions:
@@ -18,14 +17,13 @@ tar_source(files = c(
   "3_harmonize.R",
   "create_bookdown.R"))
 
-# The list of targets/steps (these steps from MRB)
+# The list of targets/steps
 config_targets <- list(
   
   # WQP config --------------------------------------------------------------
   
   # Things that often used to be YAMLs, and which probably should be again in 
-  # the future. For right now I'm putting them as targets so I can conceptualize
-  # the workflow components more easily
+  # the future
   
   # Date range of interest
   tar_target(p0_wq_dates,
@@ -36,17 +34,14 @@ config_targets <- list(
   
   # Define which parameter groups (and CharacteristicNames) to return from WQP. 
   # Different options for parameter groups are represented in the first level of 
-  # 1_inventory/cfg/wqp_codes.yml. This yml file is meant to provide a starting 
-  # place for an analysis and does not represent a definitive list of characteristic 
-  # names. Which characteristic names to include for any given parameter group may 
-  # change depending on the user or application, so the yml file can be edited to 
+  # 1_inventory/cfg/wqp_codes.yml. The yml file can be edited to 
   # omit characteristic names or include others, to change top-level parameter names,
   # or to customize parameter groupings. 
   tar_target(p0_param_groups_select,
-             c(#"alkalinity", "cdom", "depth", "nitrogen",
-               "chlorophyll", "doc", "secchi", "tss"#,
-               # "ssc", "temperature", "phosphorus", "poc", silica"
-               )),
+             c(# "alkalinity", "cdom", "depth", "nitrogen",
+               # "ssc", "temperature", "phosphorus", "poc", silica",
+               "chlorophyll", "doc", "secchi", "tss"
+             )),
   
   
   # WQP inventory -----------------------------------------------------------
@@ -54,7 +49,7 @@ config_targets <- list(
   # Specify arguments to WQP queries
   # see https://www.waterqualitydata.us/webservices_documentation for more information 
   tar_target(p0_wqp_args,
-             list(sampleMedia = c("Water","water"),
+             list(sampleMedia = c("Water", "water"),
                   siteType = c("Lake, Reservoir, Impoundment",
                                "Stream",
                                "Estuary"),

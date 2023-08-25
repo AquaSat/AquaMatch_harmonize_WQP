@@ -31,13 +31,14 @@ p1_targets_list <- list(
   # parameter groups of interest.
   tar_file(
     p1_similar_char_names_txt,
-    find_similar_characteristics(p1_char_names, p0_param_groups_select, "1_inventory/out")
+    find_similar_characteristics(p1_char_names,
+                                 p0_param_groups_select,
+                                 "1_inventory/out")
   ),
   
   tar_target(
     p1_AOI_sf,
-    states() %>%
-      filter(!(GEOID %in% c(60, 66, 69, 72, 78))),
+    states(),
     packages = c("tidyverse", "tigris")),
   
   # Create a big grid of boxes to set up chunked data queries.

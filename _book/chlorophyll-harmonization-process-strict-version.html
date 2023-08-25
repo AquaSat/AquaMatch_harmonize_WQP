@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2023-08-09" />
+<meta name="date" content="2023-08-25" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2" data-path="download-process.html"><a href="download-process.html"><i class="fa fa-check"></i><b>2</b> Download process</a>
 <ul>
 <li class="chapter" data-level="2.0.1" data-path="download-process.html"><a href="download-process.html#catalogue-existing-data"><i class="fa fa-check"></i><b>2.0.1</b> Catalogue existing data</a></li>
-<li class="chapter" data-level="2.0.2" data-path="download-process.html"><a href="download-process.html#maps-of-data-spread-within-the-contiguous-us"><i class="fa fa-check"></i><b>2.0.2</b> Maps of data spread within the contiguous US:</a></li>
+<li class="chapter" data-level="2.0.2" data-path="download-process.html"><a href="download-process.html#maps-of-data-spread"><i class="fa fa-check"></i><b>2.0.2</b> Maps of data spread:</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html"><i class="fa fa-check"></i><b>3</b> Pre-harmonization decision process</a>
 <ul>
@@ -224,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="initial-dataset-1" class="section level3 hasAnchor" number="4.0.1">
 <h3><span class="header-section-number">4.0.1</span> 0. Initial dataset<a href="chlorophyll-harmonization-process-strict-version.html#initial-dataset-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>After the preharmonization process the chlorophyll-only WQP dataset
-contains 3.45 million rows.</p>
+contains 3.49 million rows.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -233,7 +233,7 @@ contains 3.45 million rows.</p>
 <p>The first step in chla harmonization is to ensure that the media type
 for the data is <code>"water"</code> or <code>"Water"</code>. This should just be a
 precautionary step: 0 rows are removed. The final row count after this
-is 3.45 million.</p>
+is 3.49 million.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -249,7 +249,7 @@ to chlorophyll a in the dataset. We retain the following values:</p>
 <li><code>Chlorophyll a, free of pheophytin</code></li>
 <li><code>Chlorophyll a - Phytoplankton (suspended)</code></li>
 </ul>
-<p>1.31 million rows are removed and 2.15 million rows remain.</p>
+<p>1.35 million rows are removed and 2.14 million rows remain.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -263,7 +263,7 @@ results in a dropped record includes (but is not limited to): <code>"fail"</code
 <code>"suspect"</code>, <code>"error"</code>, <code>"beyond accept"</code>, <code>"interference"</code>,
 <code>"questionable"</code>, <code>"problem"</code>, <code>"violation"</code>, <code>"rejected"</code>, <code>"no data"</code>.
 Specific target text varies by column.</p>
-<p>84.65 thousand rows are removed and 2.06 million rows remain.</p>
+<p>84.53 thousand rows are removed and 2.06 million rows remain.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -434,7 +434,7 @@ ppt
 </tbody>
 </table>
 <p>This should not result in a change in rows but we still check:
-1.28154^{5} rows are removed. The final row count after this is 1.94
+1.27864^{5} rows are removed. The final row count after this is 1.93
 million.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
 <p><br></p>
@@ -513,18 +513,18 @@ depth value is within +/-2m <strong>OR</strong> the raw character version indica
 something similar. We also keep <code>NA</code> depths to avoid losing a ton of
 records. This is how it’s coded:</p>
 <details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-1" tabindex="-1"></a>converted_units_chla <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-2" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="at">x =</span> .,</span>
-<span id="cb5-3"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-3" tabindex="-1"></a>            <span class="at">y =</span> depth_unit_conversion_table,</span>
-<span id="cb5-4"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-4" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;sample_depth_unit&quot;</span> <span class="ot">=</span> <span class="st">&quot;depth_units&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">harmonized_depth_value =</span> <span class="fu">as.numeric</span>(sample_depth) <span class="sc">*</span> depth_conversion,</span>
-<span id="cb5-6"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-6" tabindex="-1"></a>         <span class="at">harmonized_depth_unit =</span> <span class="st">&quot;m&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-7"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-7" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(harmonized_depth_value) <span class="sc">&lt;=</span> <span class="dv">2</span> <span class="sc">|</span></span>
-<span id="cb5-8"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-8" tabindex="-1"></a>           sample_depth <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;0-2&quot;</span>, <span class="st">&quot;0-0.5&quot;</span>)<span class="sc">|</span></span>
-<span id="cb5-9"><a href="chlorophyll-harmonization-process-strict-version.html#cb5-9" tabindex="-1"></a>           <span class="fu">is.na</span>(sample_depth))</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-1" tabindex="-1"></a>converted_units_chla <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-2" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="at">x =</span> .,</span>
+<span id="cb11-3"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-3" tabindex="-1"></a>            <span class="at">y =</span> depth_unit_conversion_table,</span>
+<span id="cb11-4"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-4" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;sample_depth_unit&quot;</span> <span class="ot">=</span> <span class="st">&quot;depth_units&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">harmonized_depth_value =</span> <span class="fu">as.numeric</span>(sample_depth) <span class="sc">*</span> depth_conversion,</span>
+<span id="cb11-6"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-6" tabindex="-1"></a>         <span class="at">harmonized_depth_unit =</span> <span class="st">&quot;m&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-7"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-7" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(harmonized_depth_value) <span class="sc">&lt;=</span> <span class="dv">2</span> <span class="sc">|</span></span>
+<span id="cb11-8"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-8" tabindex="-1"></a>           sample_depth <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;0-2&quot;</span>, <span class="st">&quot;0-0.5&quot;</span>)<span class="sc">|</span></span>
+<span id="cb11-9"><a href="chlorophyll-harmonization-process-strict-version.html#cb11-9" tabindex="-1"></a>           <span class="fu">is.na</span>(sample_depth))</span></code></pre></div>
 </details>
 <p><br></p>
-<p>Through our depth filtering we lose 121.84 thousand rows and have 1.81
+<p>Through our depth filtering we lose 123.41 thousand rows and have 1.81
 million remaining.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
@@ -537,7 +537,7 @@ unclear, or which don’t meet our needs. We accomplish this using an
 external match table <code>csv</code> file that is joined to the dataset. Methods
 that are <code>NA</code> for their aggregated grouping or which are <code>"unlikely"</code> to
 be accurate methods are dropped.</p>
-<p>This process drops 2648 rows leaving 1.81 million remaining.</p>
+<p>This process drops 2748 rows leaving 1.8 million remaining.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -550,7 +550,7 @@ then retain only those records that have a fraction with
 <code>"Makes sense"</code>. Fractions included in this are
 <code>"Non-Filterable (Particle)"</code>, <code>"Suspended"</code>, <code>"Non-filterable"</code>,
 <code>"&lt;Blank&gt;"</code>, and <code>"Acid Soluble"</code>.</p>
-<p>This process drops 118.24 thousand rows leaving 1.69 million remaining
+<p>This process drops 120.98 thousand rows leaving 1.68 million remaining
 in the final harmonized chla dataset.</p>
 <p><img src="chapters/03_chla_harmonization_files/figure-gfm/unnamed-chunk-27-1.png" /><!-- --></p>
 

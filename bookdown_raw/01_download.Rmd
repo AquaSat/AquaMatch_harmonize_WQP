@@ -54,17 +54,17 @@ doc:
 
 tss:
 
--   "Total suspended solids"
--   "Total Suspended Particulate Matter"
+- "Total suspended solids"
+- "Total Particulate Matter"
+- "Total Suspended Particulate Matter"
 
 <br>
 
-### Maps of data spread within the contiguous US:
+### Maps of data spread:
 
-Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. Florida is mapped separately because of its high concentration of values. **Note:** 1) the top four grid cells in the FL map are included in both maps, 2) the counts here are for raw data that are not filtered for simultaneous records.
+Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. **Note:** The counts here are for raw data that are not filtered for simultaneous records.
 
 ```{r}
-
 # Combine counts in each grid_id with the grid polygons
 grid_counts <- left_join(x = global_grid,
                          y = site_counts %>%
@@ -73,52 +73,152 @@ grid_counts <- left_join(x = global_grid,
   st_transform(crs = 9311)
 
 state_selection <- states(progress_bar = FALSE) %>%
-  filter(!NAME %in% c("Alaska", "Hawaii", "American Samoa",
-                      "Guam", "Puerto Rico",
-                      "United States Virgin Islands",
-                      "Commonwealth of the Northern Mariana Islands")) %>%
   st_transform(crs = 9311)
 
-non_fl_map <- ggplot() +
-  geom_sf(data = grid_counts %>%
-            filter(!id %in% c(#10847:10850,
-                              10668, 10669, 10670, 10489, 10490,
-                              10491, 10309, 10310)),
+# Conterminous US map:
+conterminous_us <- state_selection %>%
+  filter(!(NAME %in% c("Alaska", "Hawaii", "American Samoa",
+                       "Guam", "Puerto Rico",
+                       "United States Virgin Islands",
+                       "Commonwealth of the Northern Mariana Islands")))
+
+ggplot() +
+  geom_sf(data = grid_counts,
           aes(fill = n)) +
-  geom_sf(data = state_selection %>%
-            filter(NAME != "Florida"), fill = NA, color = "white") +
-  # geom_sf_text(data = grid_counts, aes(label = id)) +
+  geom_sf(data = conterminous_us,
+          fill = NA, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
-  coord_sf(xlim = c(min(st_coordinates(state_selection)[,"X"]),
-                    max(st_coordinates(state_selection)[,"X"])),
-           ylim = c(min(st_coordinates(state_selection)[,"Y"]),
-                    max(st_coordinates(state_selection)[,"Y"]))) +
-  scale_fill_viridis_c("Record count") +
+  coord_sf(xlim = c(min(st_coordinates(conterminous_us)[,"X"]),
+                    max(st_coordinates(conterminous_us)[,"X"])),
+           ylim = c(min(st_coordinates(conterminous_us)[,"Y"]),
+                    max(st_coordinates(conterminous_us)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Conterminous US") +
   theme_bw()
 
-non_fl_map
+# Alaska map:
+AK <- state_selection %>%
+  filter(NAME == "Alaska")
 
-fl_states <- state_selection %>%
-  filter(NAME %in% c("Florida", "Georgia", "Alabama"))
-
-fl_map <- ggplot() +
-  geom_sf(data = grid_counts %>%
-            filter(id %in% c(10847:10850, 10668, 10669, 10670, 10489, 10490,
-                              10491, 10309, 10310)),
+ggplot() +
+  geom_sf(data = grid_counts,
           aes(fill = n)) +
-  geom_sf(data = fl_states, fill = NA, color = "black") +
-  # geom_sf_label(data = grid_counts, aes(label = id)) +
+  geom_sf(data = AK,
+          fill = NA, color = "black") +
   xlab(NULL) +
   ylab(NULL) +
-  coord_sf(xlim = c(min(st_coordinates(fl_states)[,"X"]),
-                    max(st_coordinates(fl_states)[,"X"])),
-           ylim = c(min(st_coordinates(fl_states)[,"Y"]),
-                    max(st_coordinates(fl_states)[,"Y"]))) +
-  scale_fill_viridis_c("Record count") +
+  coord_sf(xlim = c(min(st_coordinates(AK)[,"X"]),
+                    max(st_coordinates(AK)[,"X"])),
+           ylim = c(min(st_coordinates(AK)[,"Y"]),
+                    max(st_coordinates(AK)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Alaska") +
   theme_bw()
 
-fl_map
+# Hawaii map:
+HI <- state_selection %>%
+  filter(NAME == "Hawaii")
 
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = HI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(min(st_coordinates(HI)[,"X"]),
+                    0.9 * max(st_coordinates(HI)[,"X"])),
+           ylim = c(1.1 * min(st_coordinates(HI)[,"Y"]),
+                    max(st_coordinates(HI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Hawaii") +
+  theme_bw()
+
+
+# American Samoa map:
+AS <- state_selection %>%
+  filter(NAME %in% c("American Samoa"))
+
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = AS,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(1.025 * min(st_coordinates(AS)[,"X"]),
+                    0.975 *max(st_coordinates(AS)[,"X"])),
+           ylim = c(1.05 * min(st_coordinates(AS)[,"Y"]),
+                    max(st_coordinates(AS)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("American Samoa") +
+  theme_bw()
+
+
+# Guam & Commonwealth of the Northern Mariana Islands map
+GU_CNMI <- state_selection %>%
+  filter(NAME %in% c("Guam", "Commonwealth of the Northern Mariana Islands"))
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = GU_CNMI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(1.025 * min(st_coordinates(GU_CNMI)[,"X"]),
+                    0.975 * max(st_coordinates(GU_CNMI)[,"X"])),
+           ylim = c(0.95 * min(st_coordinates(GU_CNMI)[,"Y"]),
+                    1.05 * max(st_coordinates(GU_CNMI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Guam & Commonwealth of the Northern Mariana Islands") +
+  theme_bw()
+
+
+# Puerto Rico & United States Virgin Islands map:
+PR_VI <- state_selection %>%
+  filter(NAME %in% c("Puerto Rico", "United States Virgin Islands"))
+
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = PR_VI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(0.95 * min(st_coordinates(PR_VI)[,"X"]),
+                    1.05 * max(st_coordinates(PR_VI)[,"X"])),
+           ylim = c(1.075 * min(st_coordinates(PR_VI)[,"Y"]),
+                    0.925 * max(st_coordinates(PR_VI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Puerto Rico & United States Virgin Islands") +
+  theme_bw()
 
 ```

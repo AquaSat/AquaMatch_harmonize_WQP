@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2023-08-09" />
+<meta name="date" content="2023-08-25" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2" data-path="download-process.html"><a href="download-process.html"><i class="fa fa-check"></i><b>2</b> Download process</a>
 <ul>
 <li class="chapter" data-level="2.0.1" data-path="download-process.html"><a href="download-process.html#catalogue-existing-data"><i class="fa fa-check"></i><b>2.0.1</b> Catalogue existing data</a></li>
-<li class="chapter" data-level="2.0.2" data-path="download-process.html"><a href="download-process.html#maps-of-data-spread-within-the-contiguous-us"><i class="fa fa-check"></i><b>2.0.2</b> Maps of data spread within the contiguous US:</a></li>
+<li class="chapter" data-level="2.0.2" data-path="download-process.html"><a href="download-process.html#maps-of-data-spread"><i class="fa fa-check"></i><b>2.0.2</b> Maps of data spread:</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html"><i class="fa fa-check"></i><b>3</b> Pre-harmonization decision process</a>
 <ul>
@@ -224,7 +224,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="initial-dataset-3" class="section level3 hasAnchor" number="6.0.1">
 <h3><span class="header-section-number">6.0.1</span> 0. Initial dataset<a href="secchi-harmonization-process-strict-version.html#initial-dataset-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>After the preharmonization process the secchi-only WQP dataset contains
-2.6 million rows.</p>
+2.62 million rows.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -232,7 +232,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h3><span class="header-section-number">6.0.2</span> 1. Filter for water media<a href="secchi-harmonization-process-strict-version.html#filter-for-water-media-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The first step in secchi harmonization is to ensure that the media type
 for the data is <code>"water"</code> or <code>"Water"</code>. This should just be a
-precautionary step: 0 rows are removed. The row count after this is 2.6
+precautionary step: 0 rows are removed. The row count after this is 2.62
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -247,7 +247,7 @@ results in a dropped record includes (but is not limited to): <code>"fail"</code
 <code>"suspect"</code>, <code>"error"</code>, <code>"beyond accept"</code>, <code>"interference"</code>,
 <code>"questionable"</code>, <code>"problem"</code>, <code>"violation"</code>, <code>"rejected"</code>,
 <code>"no secchi"</code>. Specific target text varies by column.</p>
-<p>19.51 thousand rows are removed and 2.58 million rows remain.</p>
+<p>19.52 thousand rows are removed and 2.6 million rows remain.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -267,7 +267,7 @@ column we use that number instead.</p>
 <p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
 value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The row count after this is 2.58 million.</p>
+are removed. The row count after this is 2.6 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -285,7 +285,7 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 </ol>
 <p>We then use the approximate value as the record’s value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The row count after this is 2.58 million.</p>
+are removed. The row count after this is 2.6 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 </div>
 <div id="clean-values-with-greater-than-data-1" class="section level3 hasAnchor" number="6.0.6">
@@ -304,7 +304,7 @@ approximate cleaning</li>
 <p>We then use the “greater than” value (without <code>&gt;</code>) as the record’s value
 moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The row count after this is 2.58 million.</p>
+are removed. The row count after this is 2.6 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -375,8 +375,8 @@ mi
 </tr>
 </tbody>
 </table>
-<p>We also limit values to less than 15m to ensure realistic data. 9373
-rows are removed. The row count after this is 2.57 million.</p>
+<p>We also limit values to less than 15m to ensure realistic data. 9985
+rows are removed. The row count after this is 2.59 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -387,7 +387,7 @@ then filter out methods that may have been erroneously added, were
 unclear, or which don’t meet our needs. We accomplish this using an
 external match table <code>csv</code> file that is joined to the dataset. Methods
 that are coded <code>"unlikely"</code> to be accurate methods are dropped.</p>
-<p>This process drops 288 rows leaving 2.57 million remaining.</p>
+<p>This process drops 1841 rows leaving 2.59 million remaining.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -399,7 +399,7 @@ categories based on whether the fraction text makes sense or not and
 then retain only those records that have a fraction with
 <code>"Makes sense"</code>. Fractions included in this are <code>NA</code>, <code>"Total"</code>, <code>" "</code>,
 <code>"None"</code>, <code>"Unfiltered"</code>, <code>"Field"</code>.</p>
-<p>This process drops 94.01 thousand rows leaving 2.47 million remaining in
+<p>This process drops 94.01 thousand rows leaving 2.49 million remaining in
 the dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-21-1.png" /><!-- --></p>
 <p><br></p>
@@ -411,7 +411,7 @@ the dataset.</p>
 we accomplish this using an external match table <code>csv</code> file that is
 joined to the dataset. Methods that are coded <code>"unlikely"</code> to be
 accurate methods are dropped.</p>
-<p>This process drops 19.54 thousand rows leaving 2.45 million remaining.</p>
+<p>This process drops 30.55 thousand rows leaving 2.46 million remaining.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -422,7 +422,7 @@ accurate methods are dropped.</p>
 indicates non-secchi measurements. Once again we use an external match
 table <code>csv</code> file that is joined to the dataset. Equipment types that are
 coded <code>"unlikely"</code> to be accurate to secchi are dropped.</p>
-<p>This process drops 58.33 thousand rows leaving 2.39 million remaining.</p>
+<p>This process drops 56.53 thousand rows leaving 2.41 million remaining.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 

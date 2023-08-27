@@ -1,6 +1,6 @@
 ---
-title: "AquaSat/Match version difference report"
-author: "Matthew R Brousil"
+title: "AquaMatch version difference report"
+author: "ROSSyndicate"
 output:
   html_document:
     code_folding: hide

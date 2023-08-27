@@ -30,7 +30,7 @@ step_data <- documented_drops %>%
 ```
 
 
-### 0. Initial dataset
+### Initial dataset
 
 ```{r echo=FALSE}
 step_0_rows <- filter(step_data,
@@ -68,7 +68,7 @@ step_data %>%
 
 <br>
 
-### 1. Filter for water media
+### Filter for water media
 
 ```{r echo = FALSE}
 step_1_rows <- filter(step_data,
@@ -111,7 +111,7 @@ step_data %>%
 
 <br>
 
-### 2. Remove fails and other missing data
+### Remove fails and other missing data
 
 ```{r echo = FALSE}
 step_2_rows <- filter(step_data,
@@ -159,7 +159,7 @@ step_data %>%
 <br>
 
 
-### 3. Clean MDLs
+### Clean MDLs
 
 ```{r echo = FALSE}
 step_3_rows <- filter(step_data,
@@ -209,7 +209,7 @@ step_data %>%
 <br>
 
 
-### 4. Clean approximate values
+### Clean approximate values
 
 ```{r echo = FALSE}
 step_4_rows <- filter(step_data,
@@ -261,7 +261,7 @@ step_data %>%
 
 <br>
 
-### 5. Clean values with "greater than" data
+### Clean values with "greater than" data
 
 ```{r echo = FALSE}
 step_5_rows <- filter(step_data,
@@ -313,7 +313,7 @@ step_data %>%
 <br>
 
 
-### 6. Harmonize record units
+### Harmonize record units
 
 ```{r echo = FALSE}
 step_6_rows <- filter(step_data,
@@ -374,7 +374,7 @@ step_data %>%
 
 <br>
 
-### 7. Filter based on analytical method
+### Filter based on analytical method
 
 ```{r echo = FALSE}
 step_7_rows <- filter(step_data,
@@ -421,7 +421,7 @@ step_data %>%
 
 <br>
 
-### 8. Filter based on fraction type
+### Filter based on fraction type
 
 ```{r echo = FALSE}
 step_8_rows <- filter(step_data,

@@ -10,7 +10,7 @@ always_allow_html: true
 
 # Download process
 
-```{r message=FALSE, echo=FALSE}
+```{r message=FALSE, warning = FALSE, echo=FALSE}
 global_grid <- params$global_grid
 site_counts <- params$site_counts
 
@@ -19,7 +19,7 @@ options(tigris_use_cache = TRUE)
 
 ### Catalogue existing data
 
-The download process begins by cataloging the existing data that is available. We start out using the following parameters and parameter codes for retrieving data:
+The download process begins by cataloging the existing data that is available in the WQP. We start out using the following parameters and parameter codes for retrieving data:
 
 chlorophyll:
 

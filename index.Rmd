@@ -6,6 +6,8 @@ output:
 documentclass: book
 ---
 
-# AquaSat version 2
+# AquaMatch harmonization process
 
-This bookdown documents the harmonization process for parameters from the Water Quality Portal.
+This bookdown documents the harmonization process for raw parameter data downloaded from the Water Quality Portal (WQP) and used to build the AquaMatch dataset.
+
+The data from the WQP includes a wide range of methods and characteristic names. For example, "chlorophyll" can be chlorophyll a, b, or both and retrieved using a variety of methods. We first get a better understanding of the type of data we have in order to know which methods and characteristic names to keep and use.

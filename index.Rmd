@@ -12,4 +12,4 @@ This bookdown documents the harmonization process for raw data downloaded from t
 
 The data from the WQP includes a wide range of methods and characteristic names. For example, "chlorophyll" can be chlorophyll a, b, or both and retrieved using a variety of methods. We first get a better understanding of the type of data we have in order to know which methods and characteristic names to keep and use.
 
-This document first describes selections made while downloading WQP data, then describes the "preharmonization" process that data for all parameters go through, and then describes how the chlorophyll, DOC, secchi, and TSS parameters are each harmonized.
+This document first describes selections made while downloading WQP data, then describes the "preharmonization" process that data for all parameters go through, and then describes how the chlorophyll, DOC, secchi, and TSS parameters are each filtered and harmonized.

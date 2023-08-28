@@ -395,7 +395,7 @@ tibble(
 ```
 
 
-This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
+`r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
 
 ```{r echo = FALSE}

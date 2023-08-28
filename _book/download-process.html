@@ -224,8 +224,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="catalogue-existing-data" class="section level3 hasAnchor" number="2.0.1">
 <h3><span class="header-section-number">2.0.1</span> Catalogue existing data<a href="download-process.html#catalogue-existing-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The download process begins by cataloging the existing data that is
-available. We start out using the following parameters and parameter
-codes for retrieving data:</p>
+available in the WQP. We start out using the characteristic names below
+(grouped by parameters) for retrieving data. Data for these parameters
+are requested from the WQP within a spatial grid that is mapped in the
+next section.</p>
 <p>chlorophyll:</p>
 <ul>
 <li>“Chlorophyll”</li>
@@ -270,7 +272,7 @@ codes for retrieving data:</p>
 <p>Maps are presented below with counts of records across a grid. The grid
 is how records are grouped in download requests to the Water Quality
 Portal. <strong>Note:</strong> The counts here are for raw data that are not filtered
-for simultaneous records.</p>
+or harmonized.</p>
 <details class=chunk-details><summary class=chunk-summary><span class=chunk-summary-text>Code</span></summary>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="download-process.html#cb1-1" tabindex="-1"></a><span class="co"># Combine counts in each grid_id with the grid polygons</span></span>
 <span id="cb1-2"><a href="download-process.html#cb1-2" tabindex="-1"></a>grid_counts <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="at">x =</span> global_grid,</span>

@@ -231,15 +231,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="remove-duplicates" class="section level3 hasAnchor" number="3.0.2">
 <h3><span class="header-section-number">3.0.2</span> Remove duplicates<a href="pre-harmonization-decision-process.html#remove-duplicates" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The first filtering step is to remove any duplicated records present in
-the dataset. This results in dropping 3.01 million rows for a record
+the dataset. Duplicate records occasionally occur in the WQP database
+and so can be returned when downloading data. The pipeline allows for
+the user to specify which columns to use when checking for duplicated
+information. This results in dropping 3.01 million rows for a record
 count of 12.18 million.</p>
 <p><img src="chapters/02_preharmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
 </div>
 <div id="missing-results" class="section level3 hasAnchor" number="3.0.3">
 <h3><span class="header-section-number">3.0.3</span> Missing results<a href="pre-harmonization-decision-process.html#missing-results" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Next missing results are dropped from the dataset. 503.21 thousand rows
-are dropped, resulting in a final count of 11.68 million.</p>
+<p>Next records that have missing data are dropped from the dataset.
+Several criteria are used when checking for missing data. One such
+criterion would be met if both the result column and detection limit
+column had missing data. 503.21 thousand rows are dropped, resulting in
+a final count of 11.68 million.</p>
 <p><img src="chapters/02_preharmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -255,15 +261,19 @@ following statuses:</p>
 <li><code>"Preliminary"</code></li>
 <li><code>NA</code></li>
 </ul>
-<p>44.82 thousand rows are dropped from the dataset leaving it with 11.63
-million remaining.</p>
+<p>These statuses generally indicate a reliable result having been reached,
+however we also include <code>NA</code> in an effort to be conservative. More
+specifically, when making decisions for this and other columns we
+occasionally keep values such as <code>NA</code> if removing records with the value
+would drop a large proportion of the available data. 44.82 thousand rows
+are dropped from the dataset leaving it with 11.63 million remaining.</p>
 <p><img src="chapters/02_preharmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
 <div id="filter-media" class="section level3 hasAnchor" number="3.0.5">
 <h3><span class="header-section-number">3.0.5</span> Filter media<a href="pre-harmonization-decision-process.html#filter-media" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Next the <code>ActivityMediaSubdivisionName</code> is filtered to only include only
-the following media:</p>
+the following media types:</p>
 <ul>
 <li><code>"Surface Water"</code></li>
 <li><code>"Water"</code></li>
@@ -278,8 +288,8 @@ the following media:</p>
 <p>The final step in pre-harmonization is filtering out any
 <code>ResolvedMonitoringLocationTypeName</code> that is not <code>"Estuary"</code>,
 <code>"Lake, Reservoir, Impoundment"</code>, or <code>"Stream"</code>.</p>
-<p>After dropping 0 thousand rows the pre-harmonization dataset is complete
-with 11.62 million.</p>
+<p>After dropping 0 rows the pre-harmonization dataset is complete with
+11.62 million.</p>
 <p><img src="chapters/02_preharmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 
 </div>

@@ -278,8 +278,7 @@ step_5_dropped <- filter(step_data,
                          order == 5) %>%
   mutate(thou_row = number_dropped / 1000) %>%
   pull(thou_row) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+  round(digits = 2)
 ```
 
 The final step in pre-harmonization is filtering out any `ResolvedMonitoringLocationTypeName` that is not `"Estuary"`, `"Lake, Reservoir, Impoundment"`, or `"Stream"`.

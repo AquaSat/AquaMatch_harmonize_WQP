@@ -348,7 +348,7 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     mutate(aquasat_fraction = if_else(
       condition = fraction %in% c("Non-Filterable (Particle)", "Suspended",
                                   "Non-filterable", "<Blank>", "Acid Soluble"),
-      true = "Nonsensical",
+      true = "Unlikely",
       false = "Makes sense")) %>%
     filter(aquasat_fraction == "Makes sense")
   

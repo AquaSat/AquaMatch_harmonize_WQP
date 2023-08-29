@@ -392,7 +392,7 @@ step_7_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-Our next step is to aggregate TSS analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were grouped as `"Ambiguous"` or `"Nonsensical"` are dropped.
+Our next step is to aggregate TSS analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were grouped as `"Ambiguous"` or `"Unlikely"` are dropped.
 
 This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining.
 

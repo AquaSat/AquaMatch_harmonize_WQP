@@ -90,7 +90,6 @@ clean_wqp_data <- function(wqp_data,
   # Remove records that don't meet needs for status
   wqp_data_pass_status <- wqp_data_no_missing %>%
     filter(ResultStatusIdentifier %in%
-             # c('Accepted', 'Final', 'Historical', 'Validated')
              # MR's version had Preliminary & NA included too, so let's try those:
              c('Accepted', 'Final', 'Historical', 'Validated', 'Preliminary')|
              is.na(ResultStatusIdentifier))

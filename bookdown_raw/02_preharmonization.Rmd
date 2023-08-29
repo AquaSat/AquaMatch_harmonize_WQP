@@ -85,7 +85,7 @@ step_1_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The first filtering step is to remove any duplicated records present in the dataset. Duplicate records occasionally occur in the WQP database and so can be returned when downloading data. The pipeline allows for the user to specify which columns to use when checking for duplicated information. This results in dropping `r step_1_dropped` rows for a record count of `r step_1_rows`.
+The first filtering step is to remove any duplicated records present in the dataset. Duplicate records occur in the WQP database. The pipeline allows for the user to specify which columns to use when checking for duplicated information. WQP columns currently used to check for duplicates include: OrganizationIdentifier, MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time, CharacteristicName, and ResultSampleFractionText. This results in dropping `r step_1_dropped` rows for a record count of `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -130,7 +130,14 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Next records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. One such criterion would be met if both the result column and detection limit column had missing data.  `r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
+Next records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
+
+1. Both the result column and detection limit column had `NA` data
+2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
+3. Result detection condition column contains `not reported`
+4. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+
+`r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
 
 
 ```{r echo = FALSE}
@@ -185,7 +192,7 @@ We next filter the `ResultStatusIdentifier` column to include only the following
 + `"Preliminary"`
 + `NA`
 
-These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally keep values such as `NA` if removing records with the value would drop a large proportion of the available data. `r step_3_dropped` rows are dropped from the dataset leaving it with `r step_3_rows` remaining.
+These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data. `r step_3_dropped` rows are dropped from the dataset leaving it with `r step_3_rows` remaining.
 
 ```{r echo = FALSE}
 step_data %>%

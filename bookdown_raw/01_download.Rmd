@@ -10,7 +10,7 @@ always_allow_html: true
 
 # Download process
 
-```{r message=FALSE, echo=FALSE}
+```{r message=FALSE, warning = FALSE, echo=FALSE}
 global_grid <- params$global_grid
 site_counts <- params$site_counts
 
@@ -19,7 +19,7 @@ options(tigris_use_cache = TRUE)
 
 ### Catalogue existing data
 
-The download process begins by cataloging the existing data that is available. We start out using the following parameters and parameter codes for retrieving data:
+The download process begins by cataloging the existing data that is available in the WQP. We start out using the characteristic names below (grouped by parameters) for retrieving data. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
 
 chlorophyll:
 
@@ -62,7 +62,7 @@ tss:
 
 ### Maps of data spread:
 
-Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. **Note:** The counts here are for raw data that are not filtered for simultaneous records.
+Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. **Note:** The counts here are for raw data that are not filtered or harmonized.
 
 ```{r}
 # Combine counts in each grid_id with the grid polygons

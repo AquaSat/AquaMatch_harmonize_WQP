@@ -370,7 +370,7 @@ harmonize_sdd_strict <- function(raw_sdd, p_codes,
     mutate(aquasat_fraction = if_else(
       condition = fraction %in% c(NA, "Total", " ", "None", "Unfiltered", "Field"),
       true = "Makes sense",
-      false = "Nonsensical")) %>%
+      false = "Unlikely")) %>%
     filter(aquasat_fraction == "Makes sense")
   
   # How many records removed due to unlikely fraction types?

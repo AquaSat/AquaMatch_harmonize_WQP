@@ -123,7 +123,6 @@ clean_wqp_data_strict <- function(wqp_data,
   # Remove records that don't meet needs for status
   wqp_data_pass_status <- wqp_data_no_missing %>%
     filter(ResultStatusIdentifier %in%
-             # c('Accepted', 'Final', 'Historical', 'Validated')
              # MR's version had Preliminary & NA included too, so let's try those:
              c('Accepted', 'Final', 'Historical', 'Validated', 'Preliminary')|
              is.na(ResultStatusIdentifier))
@@ -167,7 +166,8 @@ clean_wqp_data_strict <- function(wqp_data,
   
   # Remove white space and rename with short names before export
   wqp_data_clean <- wqp_data_pass_media %>%
-    # Temp fix to remove Facility sites; do this eventually in the WQP data pull
+    # Remove Facility sites: this used to be necessary but likely isn't anymore
+    # Once checked can remove
     semi_join(x = .,
               y = wqp_metadata %>%
                 filter(ResolvedMonitoringLocationTypeName %in%

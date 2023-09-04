@@ -34,21 +34,21 @@
 #' the Water Quality Portal, where each row represents a unique data record.
 #' 
 
-clean_wqp_data_strict <- function(wqp_data,
-                                  char_names_crosswalk,
-                                  site_data,
-                                  match_table,
-                                  wqp_metadata,
-                                  commenttext_missing = c('analysis lost', 'not analyzed',
-                                                          'not recorded', 'not collected',
-                                                          'no measurement taken'),
-                                  duplicate_definition = c('OrganizationIdentifier',
-                                                           'MonitoringLocationIdentifier',
-                                                           'ActivityStartDate',
-                                                           'ActivityStartTime.Time',
-                                                           'CharacteristicName',
-                                                           'ResultSampleFractionText'),
-                                  remove_duplicated_rows = TRUE){
+clean_wqp_data <- function(wqp_data,
+                           char_names_crosswalk,
+                           site_data,
+                           match_table,
+                           wqp_metadata,
+                           commenttext_missing = c('analysis lost', 'not analyzed',
+                                                   'not recorded', 'not collected',
+                                                   'no measurement taken'),
+                           duplicate_definition = c('OrganizationIdentifier',
+                                                    'MonitoringLocationIdentifier',
+                                                    'ActivityStartDate',
+                                                    'ActivityStartTime.Time',
+                                                    'CharacteristicName',
+                                                    'ResultSampleFractionText'),
+                           remove_duplicated_rows = TRUE){
   
   # Starting values for dataset
   starting_data <- tibble(
@@ -203,7 +203,7 @@ clean_wqp_data_strict <- function(wqp_data,
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_duplicates, dropped_missing,
                                 dropped_status, dropped_media, dropped_location)
-  documented_drops_out_path <- "3_harmonize/out/clean_wqp_data_strict_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/clean_wqp_data_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)

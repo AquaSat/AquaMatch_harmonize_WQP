@@ -37,17 +37,17 @@ p3_targets_list <- list(
              packages = c("tidyverse", "lubridate"),
              format = "feather"),
   
-  tar_target(p3_wqp_data_aoi_ready_strict,
-             clean_wqp_data_strict(wqp_data = p3_wqp_data_aoi_formatted,
-                                   char_names_crosswalk = p1_char_names_crosswalk,
-                                   site_data = bind_rows(p2_site_counts),
-                                   match_table = p3_wqp_col_match, 
-                                   wqp_metadata = p1_wqp_inventory_aoi),
+  tar_target(p3_wqp_data_aoi_ready,
+             clean_wqp_data(wqp_data = p3_wqp_data_aoi_formatted,
+                            char_names_crosswalk = p1_char_names_crosswalk,
+                            site_data = bind_rows(p2_site_counts),
+                            match_table = p3_wqp_col_match, 
+                            wqp_metadata = p1_wqp_inventory_aoi),
              packages = c("tidyverse", "lubridate", "feather")),
   
   # Connect cleaned data output to the pipeline
-  tar_target(p3_cleaned_wqp_data_strict,
-             read_feather(p3_wqp_data_aoi_ready_strict$wqp_data_clean_path),
+  tar_target(p3_cleaned_wqp_data,
+             read_feather(p3_wqp_data_aoi_ready$wqp_data_clean_path),
              packages = "feather",
              format = "feather",
              cue = tar_cue("always")),
@@ -103,33 +103,33 @@ p3_targets_list <- list(
   # Harmonization process ---------------------------------------------------
   
   tar_target(p3_harmonized_tss,
-             harmonize_tss(raw_tss = p3_cleaned_wqp_data_strict %>%
+             harmonize_tss(raw_tss = p3_cleaned_wqp_data %>%
                              filter(parameter == "tss"),
                            p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "pander", "feather")),
   
-  tar_target(p3_harmonized_tss_strict,
-             harmonize_tss_strict(raw_tss = p3_cleaned_wqp_data_strict %>%
+  tar_target(p3_harmonized_tss,
+             harmonize_tss(raw_tss = p3_cleaned_wqp_data %>%
                                     filter(parameter == "tss"),
                                   p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "pander", "feather")),
   
   tar_target(p3_harmonized_chla,
-             harmonize_chla(raw_chla = p3_cleaned_wqp_data_strict %>%
+             harmonize_chla(raw_chla = p3_cleaned_wqp_data %>%
                               filter(parameter == "chlorophyll"),
                             p_codes = p3_p_codes,
                             chla_analytical_method_matchup = p3_chla_analytical_method_matchup),
              packages = c("tidyverse", "lubridate", "feather")),
   
-  tar_target(p3_harmonized_chla_strict,
-             harmonize_chla_strict(raw_chla = p3_cleaned_wqp_data_strict %>%
+  tar_target(p3_harmonized_chla,
+             harmonize_chla(raw_chla = p3_cleaned_wqp_data %>%
                                      filter(parameter == "chlorophyll"),
                                    p_codes = p3_p_codes,
                                    chla_analytical_method_matchup = p3_chla_analytical_method_matchup),
              packages = c("tidyverse", "lubridate", "feather")),
   
   tar_target(p3_harmonized_sdd,
-             harmonize_sdd(raw_sdd = p3_cleaned_wqp_data_strict %>%
+             harmonize_sdd(raw_sdd = p3_cleaned_wqp_data %>%
                              filter(parameter == "secchi"),
                            p_codes = p3_p_codes,
                            sdd_analytical_method_matchup = p3_sdd_analytical_method_matchup,
@@ -137,8 +137,8 @@ p3_targets_list <- list(
                            sdd_equipment_matchup = p3_sdd_equipment_matchup),
              packages = c("tidyverse", "lubridate", "feather")),
   
-  tar_target(p3_harmonized_sdd_strict,
-             harmonize_sdd_strict(raw_sdd = p3_cleaned_wqp_data_strict %>%
+  tar_target(p3_harmonized_sdd,
+             harmonize_sdd(raw_sdd = p3_cleaned_wqp_data %>%
                                     filter(parameter == "secchi"),
                                   p_codes = p3_p_codes,
                                   sdd_analytical_method_matchup = p3_sdd_analytical_method_matchup,
@@ -147,23 +147,23 @@ p3_targets_list <- list(
              packages = c("tidyverse", "lubridate", "feather")),
   
   tar_target(p3_harmonized_doc,
-             harmonize_doc(raw_doc = p3_cleaned_wqp_data_strict %>%
+             harmonize_doc(raw_doc = p3_cleaned_wqp_data %>%
                              filter(parameter == "doc"),
                            p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "feather")),
   
-  tar_target(p3_harmonized_doc_strict,
-             harmonize_doc_strict(raw_doc = p3_cleaned_wqp_data_strict %>%
+  tar_target(p3_harmonized_doc,
+             harmonize_doc(raw_doc = p3_cleaned_wqp_data %>%
                                     filter(parameter == "doc"),
                                   p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "feather")),
   
   tar_target(p3_documented_drops,
-             map_df(.x = c(p3_wqp_data_aoi_ready_strict$compiled_drops_path,
-                           p3_harmonized_chla_strict$compiled_drops_path,
-                           p3_harmonized_sdd_strict$compiled_drops_path,
-                           p3_harmonized_doc_strict$compiled_drops_path,
-                           p3_harmonized_tss_strict$compiled_drops_path),
+             map_df(.x = c(p3_wqp_data_aoi_ready$compiled_drops_path,
+                           p3_harmonized_chla$compiled_drops_path,
+                           p3_harmonized_sdd$compiled_drops_path,
+                           p3_harmonized_doc$compiled_drops_path,
+                           p3_harmonized_tss$compiled_drops_path),
                     .f = read_csv),
              cue = tar_cue("always")),
   

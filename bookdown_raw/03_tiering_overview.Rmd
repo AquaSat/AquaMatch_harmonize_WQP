@@ -16,11 +16,15 @@ We have standardized the columns used in the data tiering process. The process, 
 ## Analytical methods tiers
 
 Tier 1: Data are likely comparable across sites and times
+
 Tier 2: Data are potentially comparable across sites and times
+
 Tier 3: Data are unlikely to be comparable across sites and times
 
 ## Field tiers
 
 Tier 1: Sample was filtered and has a depth measurement and units provided
+
 Tier 2: Depth data is either absent or incomplete for the sample but the sample was filtered
+
 Tier 3: Depth data is either absent or incomplete and the sample was not filtered

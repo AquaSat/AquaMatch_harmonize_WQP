@@ -7,7 +7,7 @@ params:
 always_allow_html: true
 ---
 
-# DOC harmonization process (strict version)
+# DOC harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops

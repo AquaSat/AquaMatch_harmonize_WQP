@@ -1,5 +1,5 @@
 
-harmonize_doc_strict <- function(raw_doc, p_codes){
+harmonize_doc <- function(raw_doc, p_codes){
   
   # Starting values for dataset
   starting_data <- tibble(
@@ -273,18 +273,18 @@ harmonize_doc_strict <- function(raw_doc, p_codes){
   # Investigate depth -------------------------------------------------------
   
   # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(sample_depth_unit = c('cm', 'feet', 'ft', 'in',
-                                                         'm', 'meters'),
+  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
+                                                                                  'm', 'meters'),
                                    depth_conversion = c(1 / 100, 0.3048, 0.3048,
                                                         0.0254, 1, 1)) 
   # Join depth lookup table to doc data
   doc_harmonized_depth <- inner_join(x = doc_harmonized_units,
                                      y = depth_conversion_table,
-                                     by = c('sample_depth_unit')) %>%
+                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
     # Some depth measurements have negative values (assume that is just preference)
     # I also added .01 meters because many samples have depth of zero assuming they were
     # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(sample_depth) * depth_conversion) + .01)
+    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
   
   # We lose lots of data by keeping only data with depth measurements
   print(
@@ -418,15 +418,15 @@ harmonize_doc_strict <- function(raw_doc, p_codes){
   doc_harmonized <- doc_filter_tiers %>%
     mutate(
       harmonized_fraction = case_when(
-        fraction %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
-                        'Filtered, field') ~ "Dissolved",
-        fraction %in% c('Total', 'Total Recovrble', 'Total Recoverable',
-                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
-                        "Non-Filterable (Particle)") ~ "Total",
-        fraction %in% c('Fixed') ~ "Fixed",
-        fraction %in% c('Non-Filterable (Particle)') ~ 'Particle',
-        is.na(fraction) | fraction %in% c(" ", "Field", "Bed Sediment",
-                                          "Inorganic", "Organic") ~ "Ambiguous")
+        ResultSampleFractionText %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
+                                        'Filtered, field') ~ "Dissolved",
+        ResultSampleFractionText %in% c('Total', 'Total Recovrble', 'Total Recoverable',
+                                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
+                                        "Non-Filterable (Particle)") ~ "Total",
+        ResultSampleFractionText %in% c('Fixed') ~ "Fixed",
+        ResultSampleFractionText %in% c('Non-Filterable (Particle)') ~ 'Particle',
+        is.na(ResultSampleFractionText) | ResultSampleFractionText %in% c(" ", "Field", "Bed Sediment",
+                                                                          "Inorganic", "Organic") ~ "Ambiguous")
     ) %>%
     # Filter to dissolved fraction
     filter(harmonized_fraction == "Dissolved")
@@ -457,13 +457,13 @@ harmonize_doc_strict <- function(raw_doc, p_codes){
                                 dropped_fractions, dropped_harmonization,
                                 dropped_mdls, dropped_media, dropped_methods)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_doc_strict_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/harmonize_doc_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_doc_strict.feather"
+  data_out_path <- "3_harmonize/out/harmonized_doc.feather"
   
   write_feather(doc_harmonized,
                 data_out_path)

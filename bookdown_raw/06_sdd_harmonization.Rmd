@@ -7,7 +7,7 @@ params:
 always_allow_html: true
 ---
 
-# Secchi harmonization process (strict version)
+# Secchi harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops

@@ -7,7 +7,7 @@ params:
 always_allow_html: true
 ---
 
-# Chlorophyll harmonization process (strict version)
+# Chlorophyll harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops
@@ -460,12 +460,12 @@ Once the units have been standardized we'll make sure that the numeric depth val
 converted_units_chla %>%
   left_join(x = .,
             y = depth_unit_conversion_table,
-            by = c("sample_depth_unit" = "depth_units")) %>%
-  mutate(harmonized_depth_value = as.numeric(sample_depth) * depth_conversion,
+            by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+  mutate(harmonized_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion,
          harmonized_depth_unit = "m") %>%
   filter(abs(harmonized_depth_value) <= 2 |
-           sample_depth %in% c("0-2", "0-0.5")|
-           is.na(sample_depth))
+           ActivityDepthHeightMeasure.MeasureValue %in% c("0-2", "0-0.5")|
+           is.na(ActivityDepthHeightMeasure.MeasureValue))
 ```
 
 <br>

@@ -34,7 +34,7 @@ p3_targets_list <- list(
                             site_data = bind_rows(p2_site_counts),
                             match_table = p3_wqp_col_match, 
                             wqp_metadata = p1_wqp_inventory_aoi),
-             packages = c("tidyverse", "lubridate"),
+             packages = c("tidyverse", "lubridate", "feather"),
              format = "feather"),
   
   # Connect cleaned data output to the pipeline

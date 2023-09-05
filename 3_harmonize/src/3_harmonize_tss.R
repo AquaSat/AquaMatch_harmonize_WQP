@@ -292,7 +292,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   )
   
   tss_harmonized_units <- tss_harmonized_values %>%
-    # Drop nonsensical units using an inner join
+    # Drop unlikely units using an inner join
     inner_join(unit_conversion_table, by = 'units') %>%
     # To avoid editing the tss_lookup, I'm converting ug/l to mg/l here:
     mutate(harmonized_value = (harmonized_value * conversion) / 1000,
@@ -379,13 +379,13 @@ harmonize_tss <- function(raw_tss, p_codes){
             ignore.case = T) ~ "Settleable Solids ",
       grepl("2540C|2540 C|Total Dissolved|160.1|TDS|TOTAL FILTRATABLE RESIDUE",
             analytical_method,
-            ignore.case = T) ~ "Nonsensical",
+            ignore.case = T) ~ "Unlikely",
       grepl("160.4|2540 E|Ashing|Volatile Residue",
             analytical_method,
-            ignore.case = T) ~ "Nonsensical", 
+            ignore.case = T) ~ "Unlikely", 
       grepl("Percent Solids|Total Solids|2540B|Total, Fixed and Volatile",
             analytical_method,
-            ignore.case = T) ~ "Nonsensical",
+            ignore.case = T) ~ "Unlikely",
       # Clearly TSS, but not exactly sure how it was performed
       grepl(paste0(c("Nonfilterable Solids", "Non-filterable Residue by Filtration and Drying",
                      "Total Nonfilterable Residue", "RESIDUE, TOTAL NONFILTRABLE",
@@ -402,19 +402,19 @@ harmonize_tss <- function(raw_tss, p_codes){
                      "Conductivity", "Alkalinity", "Chlorophyll", "SM ", "EPA ", "2540 G"),
                    collapse = "|"),
             analytical_method,
-            ignore.case = T) ~ "Nonsensical",
+            ignore.case = T) ~ "Unlikely",
       grepl(paste0(c("UNKOWN", "SSC by filtration (D3977;WI WSC)",
                      "Sediment conc by evaporation", "Historic", "Filterable Residue - TDS",
                      "Cheyenne River Sioux Tribe Quality Assurance Procedures"),
                    collapse = "|"),
             analytical_method,
-            ignore.case = T) ~ "Nonsensical",
+            ignore.case = T) ~ "Unlikely",
       # This fills the rest as ambiguous. Should include things like local
       # SOPs, not known, etc.
       TRUE ~ "Ambiguous")) 
   
   tss_filter_aggregates <- tss_aggregated_methods %>%
-    filter(!grepl(pattern = "nonsensical|ambiguous",
+    filter(!grepl(pattern = "unlikely|ambiguous",
                   x = method_status,
                   ignore.case = TRUE))
   

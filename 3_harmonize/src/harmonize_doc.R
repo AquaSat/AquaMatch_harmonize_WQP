@@ -1,9 +1,19 @@
 
 harmonize_doc <- function(raw_doc, p_codes){
   
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = "doc harmonization",
+    reason = "Starting dataset",
+    short_reason = "Starting",
+    number_dropped = 0,
+    n_rows = nrow(raw_doc),
+    order = 0
+  )
+  
   # Minor data prep ---------------------------------------------------------
   
-  raw_doc <- raw_doc %>% 
+  doc <- raw_doc %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     filter(
@@ -12,10 +22,23 @@ harmonize_doc <- function(raw_doc, p_codes){
     # Index for being able to track each sample
     rowid_to_column(.,"index")
   
+  # Record info on any dropped rows  
+  dropped_media <- tibble(
+    step = "doc harmonization",
+    reason = "Filtered for only water media",
+    short_reason = "Water media",
+    number_dropped = nrow(raw_doc) - nrow(doc),
+    n_rows = nrow(doc),
+    order = 1
+  )
+  
+  rm(raw_doc)
+  gc()
+  
   
   # Remove fails ------------------------------------------------------------
   
-  doc_fails_removed <- raw_doc %>%
+  doc_fails_removed <- doc %>%
     # No failure-related field comments, slightly different list of words than
     # lab and result list (not including things that could be used to describe
     # field conditions like "warm", "ice", etc.):
@@ -83,9 +106,17 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste0(
       "Rows removed due to fails, missing data, etc.: ",
-      nrow(raw_doc) - nrow(doc_fails_removed)
+      nrow(doc) - nrow(doc_fails_removed)
     )
   )
+  
+  dropped_fails <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows indicating fails, missing data, etc.",
+    short_reason = "Fails, etc.",
+    number_dropped = nrow(doc) - nrow(doc_fails_removed),
+    n_rows = nrow(doc_fails_removed),
+    order = 2)
   
   
   # Clean up MDLs -----------------------------------------------------------
@@ -139,6 +170,15 @@ harmonize_doc <- function(raw_doc, p_codes){
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
+  dropped_mdls <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning MDLs",
+    short_reason = "Clean MDLs",
+    number_dropped = nrow(doc_fails_removed) - nrow(doc_mdls_added),
+    n_rows = nrow(doc_mdls_added),
+    order = 3
+  )
+  
   
   # Clean up approximated values --------------------------------------------
   
@@ -167,7 +207,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   print(
     paste(
-      round((nrow(doc_approx)) / nrow(raw_doc) * 100, 3),
+      round((nrow(doc_approx)) / nrow(doc) * 100, 3),
       '% of samples had values listed as approximated'
     )
   )
@@ -181,6 +221,15 @@ harmonize_doc <- function(raw_doc, p_codes){
            harmonized_comments = ifelse(index %in% doc_approx$index,
                                         'Value identified as "approximated" by organization.',
                                         harmonized_comments))
+  
+  dropped_approximates <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning approximate values",
+    short_reason = "Clean approximates",
+    number_dropped = nrow(doc_mdls_added) - nrow(doc_approx_added),
+    n_rows = nrow(doc_approx_added),
+    order = 4
+  )
   
   
   # Clean up "greater than" values ------------------------------------------
@@ -211,22 +260,31 @@ harmonize_doc <- function(raw_doc, p_codes){
     )
   )
   
+  dropped_harmonization <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while harmonizing units",
+    short_reason = "Harmonize units",
+    number_dropped = nrow(doc_approx_added) - nrow(doc_harmonized_units),
+    n_rows = nrow(doc_harmonized_units),
+    order = 5
+  )
+  
   
   # Investigate depth -------------------------------------------------------
   
   # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(sample_depth_unit = c('cm', 'feet', 'ft', 'in',
-                                                         'm', 'meters'),
+  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
+                                                                                  'm', 'meters'),
                                    depth_conversion = c(1 / 100, 0.3048, 0.3048,
                                                         0.0254, 1, 1)) 
   # Join depth lookup table to doc data
   doc_harmonized_depth <- inner_join(x = doc_harmonized_units,
                                      y = depth_conversion_table,
-                                     by = c('sample_depth_unit')) %>%
+                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
     # Some depth measurements have negative values (assume that is just preference)
     # I also added .01 meters because many samples have depth of zero assuming they were
     # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(sample_depth) * depth_conversion) + .01)
+    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
   
   # We lose lots of data by keeping only data with depth measurements
   print(
@@ -332,9 +390,9 @@ harmonize_doc <- function(raw_doc, p_codes){
                                             "Persulfate-UV/Heated Persulfate Oxidation+IR") ~ "Restrictive",
                              grouped == "Combustion+IR" ~ "Narrowed",
                              grouped %in% c("Ambiguous", "Carbonaceous Analyzer") ~ "Inclusive")) 
-  # KW: no longer filter out any of the tiers
-  doc_filter_tiers <- doc_tiered # %>%
-  #filter(tiers %in% c("Narrowed", "Restrictive",))
+  
+  doc_filter_tiers <- doc_tiered %>%
+    filter(tiers != "Inclusive")
   
   # How many records removed due to methods?
   print(
@@ -344,6 +402,15 @@ harmonize_doc <- function(raw_doc, p_codes){
     )
   )
   
+  dropped_methods <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while aggregating analytical methods",
+    short_reason = "Analytical methods",
+    number_dropped = nrow(doc_harmonized_units) - nrow(doc_filter_tiers),
+    n_rows = nrow(doc_filter_tiers),
+    order = 6
+  )
+  
   
   # Filter fractions --------------------------------------------------------
   
@@ -351,15 +418,15 @@ harmonize_doc <- function(raw_doc, p_codes){
   doc_harmonized <- doc_filter_tiers %>%
     mutate(
       harmonized_fraction = case_when(
-        fraction %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
-                        'Filtered, field') ~ "Dissolved",
-        fraction %in% c('Total', 'Total Recovrble', 'Total Recoverable',
-                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
-                        "Non-Filterable (Particle)") ~ "Total",
-        fraction %in% c('Fixed') ~ "Fixed",
-        fraction %in% c('Non-Filterable (Particle)') ~ 'Particle',
-        is.na(fraction) | fraction %in% c(" ", "Field", "Bed Sediment",
-                                          "Inorganic", "Organic") ~ "Ambiguous")
+        ResultSampleFractionText %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
+                                        'Filtered, field') ~ "Dissolved",
+        ResultSampleFractionText %in% c('Total', 'Total Recovrble', 'Total Recoverable',
+                                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
+                                        "Non-Filterable (Particle)") ~ "Total",
+        ResultSampleFractionText %in% c('Fixed') ~ "Fixed",
+        ResultSampleFractionText %in% c('Non-Filterable (Particle)') ~ 'Particle',
+        is.na(ResultSampleFractionText) | ResultSampleFractionText %in% c(" ", "Field", "Bed Sediment",
+                                                                          "Inorganic", "Organic") ~ "Ambiguous")
     ) %>%
     # Filter to dissolved fraction
     filter(harmonized_fraction == "Dissolved")
@@ -372,14 +439,34 @@ harmonize_doc <- function(raw_doc, p_codes){
     )
   )
   
+  dropped_fractions <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while filtering fraction types",
+    short_reason = "Fraction types",
+    number_dropped = nrow(doc_filter_tiers) - nrow(doc_harmonized),
+    n_rows = nrow(doc_harmonized),
+    order = 7
+  )
+  
   
   # Export ------------------------------------------------------------------
   
+  
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_fails,
+                                dropped_fractions, dropped_harmonization,
+                                dropped_mdls, dropped_media, dropped_methods)
+  
+  documented_drops_out_path <- "3_harmonize/out/harmonize_doc_dropped_metadata.csv"
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
   # Export in memory-friendly way
-  out_path <- "3_harmonize/out/harmonized_doc.feather"
+  data_out_path <- "3_harmonize/out/harmonized_doc.feather"
   
   write_feather(doc_harmonized,
-                out_path)
+                data_out_path)
   
   # Final dataset length:
   print(
@@ -389,6 +476,8 @@ harmonize_doc <- function(raw_doc, p_codes){
     )
   )
   
-  return(out_path)
+  return(list(
+    harmonized_doc_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))  
   
 }

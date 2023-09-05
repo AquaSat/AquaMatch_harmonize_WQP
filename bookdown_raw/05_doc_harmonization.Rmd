@@ -7,7 +7,7 @@ params:
 always_allow_html: true
 ---
 
-# TSS harmonization process (strict version)
+# DOC harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops
@@ -26,7 +26,7 @@ step_data <- documented_drops %>%
                              ":  ",
                              round((n_rows / 1000000), 1),
                              " M rows")) %>%
-  filter(step == "tss harmonization") 
+  filter(step == "doc harmonization") 
 ```
 
 
@@ -41,7 +41,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the preharmonization process the tss-only WQP dataset contains `r step_0_rows` rows.
+After the preharmonization process the DOC-only WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -84,7 +84,7 @@ step_1_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-The first step in TSS harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
+The first step in DOC harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -158,7 +158,6 @@ step_data %>%
 
 <br>
 
-
 ### Clean MDLs
 
 ```{r echo = FALSE}
@@ -207,7 +206,6 @@ step_data %>%
 ```
 
 <br>
-
 
 ### Clean approximate values
 
@@ -261,7 +259,7 @@ step_data %>%
 
 <br>
 
-### Clean values with "greater than" data
+### Harmonize record units
 
 ```{r echo = FALSE}
 step_5_rows <- filter(step_data,
@@ -273,19 +271,27 @@ step_5_rows <- filter(step_data,
 
 step_5_dropped <- filter(step_data,
                          order == 5) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
+
 ```
 
-Step 5 is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
-  2. The original column text contained a number
-  3. The original column text contained a `>`
-  
-We then use the "greater than" value (without `>`) as the record's value moving forward.
+The next step in doc harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into milligrams/L:
 
-This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
+```{r echo=FALSE}
+tibble(units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+                 'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
+       conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
+                      1000000, 0.000001, 60.080000)) %>%
+  kable() %>%
+  kable_paper() %>%
+  kable_styling(full_width = FALSE)
+```
+
+We also limit values to less than 50 mg/L to ensure realistic data. `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
+
 
 ```{r echo = FALSE}
 step_data %>%
@@ -312,8 +318,7 @@ step_data %>%
 
 <br>
 
-
-### Harmonize record units
+### Filter based on analytical method
 
 ```{r echo = FALSE}
 step_6_rows <- filter(step_data,
@@ -325,29 +330,15 @@ step_6_rows <- filter(step_data,
 
 step_6_dropped <- filter(step_data,
                          order == 6) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
+  mutate(mil_dropped = number_dropped / 1000) %>%
+  pull(mil_dropped) %>%
   round(digits = 2) %>%
-  paste0(., " thousand")
-
+  paste0(., " million")
 ```
 
-The next step in TSS harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into milligrams/L:
+Our next step is to aggregate doc analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were `NA` or were grouped as `"Ambiguous"` or `"Carbonaceous Analyzer"` are dropped.
 
-```{r echo=FALSE}
-tibble(
-  units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-            'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L',
-            'g/l'),
-  conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,
-                 1000, 1000000, 0.000001, 60.080000, 1000000)
-) %>%
-  kable() %>%
-  kable_paper() %>%
-  kable_styling(full_width = FALSE)
-```
-
-We also limit values to less than 1000 mg/L to ensure realistic data. `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
+This process drops `r step_6_dropped` rows leaving `r step_6_rows` remaining.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -374,11 +365,11 @@ step_data %>%
 
 <br>
 
-### Filter based on analytical method
+### Filter based on fraction type
 
 ```{r echo = FALSE}
 step_7_rows <- filter(step_data,
-                      order == 7) %>%
+                       order == 7) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
@@ -386,15 +377,15 @@ step_7_rows <- filter(step_data,
 
 step_7_dropped <- filter(step_data,
                          order == 7) %>%
-  mutate(mil_dropped = number_dropped / 1000) %>%
-  pull(mil_dropped) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
   round(digits = 2) %>%
-  paste0(., " million")
+  paste0(., " thousand")
 ```
 
-Our next step is to aggregate TSS analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were grouped as `"Ambiguous"` or `"Unlikely"` are dropped.
+The final step in our doc harmonization is filtering based on the `ResultSampleFractionText` column. We keep records with the following values in this column: `"Dissolved"`, `"Filtered, lab"`, `"Filterable"`, `"Filtered, field"`.
 
-This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining.
+This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining in the final harmonized doc dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -412,53 +403,6 @@ step_data %>%
   xlab("Step number") +
   ylab(NULL) +
   scale_fill_manual(values = viridis(n = 11, direction = -1)[8:1]) +
-  scale_x_discrete(drop = F) +
-  coord_flip() +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        legend.position = "none")
-```
-
-<br>
-
-### Filter based on fraction type
-
-```{r echo = FALSE}
-step_8_rows <- filter(step_data,
-                       order == 8) %>%
-  mutate(mil_row = n_rows / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-
-step_8_dropped <- filter(step_data,
-                         order == 8) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
-```
-
-The final step in our TSS harmonization is filtering based on the `ResultSampleFractionText` column. We **drop** records with the following values in this column: `"Fixed`", `"Volatile"`, `"Dissolved"`, or `"Acid Soluble"`.
-
-This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining in the final harmonized TSS dataset.
-
-```{r echo = FALSE}
-step_data %>%
-  filter(order %in% 0:8) %>%
-  ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
-           stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
-                  bg.color = "white", bg.r = 0.15,
-                  point.size = NA,
-                  xlim = c(-Inf, Inf),
-                  ylim =  c(-Inf, Inf),
-                  nudge_x = 0.1,
-                  hjust = "left") +
-  xlab("Step number") +
-  ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[9:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +

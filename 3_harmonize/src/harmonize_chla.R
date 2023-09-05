@@ -1,10 +1,20 @@
 
 harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = "chla harmonization",
+    reason = "Starting dataset",
+    short_reason = "Start",
+    number_dropped = 0,
+    n_rows = nrow(raw_chla),
+    order = 0
+  )
+  
   # Minor data prep ---------------------------------------------------------
   
   # First step is to read in the data and do basic formatting and filtering
-  raw_chla <- raw_chla %>%
+  chla <- raw_chla %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = "parm_cd") %>%
     filter(
@@ -13,10 +23,23 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     # to track a unique record
     rowid_to_column(., "index")
   
+  # Record info on any dropped rows  
+  dropped_media <- tibble(
+    step = "chla harmonization",
+    reason = "Filtered for only water media",
+    short_reason = "Water media",
+    number_dropped = nrow(raw_chla) - nrow(chla),
+    n_rows = nrow(chla),
+    order = 1
+  )
+  
+  rm(raw_chla)
+  gc()
+  
   
   # Parameter name selection ------------------------------------------------
   
-  chla_param_filter <- raw_chla %>%
+  chla_param_filter <- chla %>%
     filter(
       orig_parameter %in% c('Chlorophyll a', 'Chlorophyll a (probe relative fluorescence)',
                             'Chlorophyll a, corrected for pheophytin', 'Chlorophyll a (probe)',
@@ -26,8 +49,17 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   print(
     paste0(
       "Rows removed due to non-target parameter names: ",
-      nrow(raw_chla) - nrow(chla_param_filter)
+      nrow(chla) - nrow(chla_param_filter)
     )
+  )
+  
+  dropped_parameters <- tibble(
+    step = "chla harmonization",
+    reason = "Filtered for specific chlorophyll parameters",
+    short_reason = "Chla params",
+    number_dropped = nrow(chla) - nrow(chla_param_filter),
+    n_rows = nrow(chla_param_filter),
+    order = 2
   )
   
   
@@ -100,6 +132,14 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     )
   )
   
+  dropped_fails <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows indicating fails, missing data, etc.",
+    short_reason = "Fails, etc.",
+    number_dropped = nrow(chla_param_filter) - nrow(chla_fails_removed),
+    n_rows = nrow(chla_fails_removed),
+    order = 3)
+  
   
   # Clean up MDLs -----------------------------------------------------------
   
@@ -152,6 +192,15 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
+  dropped_mdls <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while cleaning MDLs",
+    short_reason = "Clean MDLs",
+    number_dropped = nrow(chla_fails_removed) - nrow(chla_mdls_added),
+    n_rows = nrow(chla_mdls_added),
+    order = 4
+  )
+  
   
   # Clean up approximated values --------------------------------------------
   
@@ -195,6 +244,16 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
                                         'Value identified as "approximated" by organization.',
                                         harmonized_comments))
   
+  dropped_approximates <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while cleaning approximate values",
+    short_reason = "Clean approximates",
+    number_dropped = nrow(chla_mdls_added) - nrow(chla_approx_added),
+    n_rows = nrow(chla_approx_added),
+    order = 5
+  )
+  
+  
   # Clean up "greater than" values ------------------------------------------
   
   greater_vals <- chla_approx_added %>%
@@ -230,8 +289,18 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
                                         'Value identified as being greater than listed value.',
                                         harmonized_comments))
   
+  dropped_greater_than <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while cleaning 'greater than' values",
+    short_reason = "Greater thans",
+    number_dropped = nrow(chla_approx_added) - nrow(chla_harmonized_values),
+    n_rows = nrow(chla_harmonized_values),
+    order = 6
+  )
+  
+  
   # Free up memory
-  rm(raw_chla)
+  rm(chla)
   gc()
   
   
@@ -264,17 +333,26 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     )
   )
   
+  dropped_harmonization <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while harmonizing units",
+    short_reason = "Harmonize units",
+    number_dropped = nrow(chla_harmonized_values) - nrow(converted_units_chla),
+    n_rows = nrow(converted_units_chla),
+    order = 7
+  )
+  
   
   # Clean up depths ---------------------------------------------------------
   
   # As with value col, check for entries with potential salvageable data. But don't
   # create a flag column for this one
   salvage_depths <- converted_units_chla %>%
-    filter(grepl(x = sample_depth, pattern = "-|>|<|=")) %>%
-    count(sample_depth)
+    filter(grepl(x = ActivityDepthHeightMeasure.MeasureValue, pattern = "-|>|<|=")) %>%
+    count(ActivityDepthHeightMeasure.MeasureValue)
   
   salvage_depth_units <- converted_units_chla %>%
-    count(sample_depth_unit)
+    count(ActivityDepthHeightMeasure.MeasureUnitCode)
   
   depth_unit_conversion_table <- tibble(
     depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
@@ -283,17 +361,17 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   
   converted_depth_units_chla <- converted_units_chla %>%
     left_join(x = .,
-               y = depth_unit_conversion_table,
-               by = c("sample_depth_unit" = "depth_units")) %>%
-    mutate(harmonized_depth_value = as.numeric(sample_depth) * depth_conversion,
+              y = depth_unit_conversion_table,
+              by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(harmonized_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion,
            harmonized_depth_unit = "m") %>%
     # Surface limits - for the time being using two columns for this. Make sure
     # numeric value is within +/-2m OR the raw character version indicates something
     # similar:
     filter(abs(harmonized_depth_value) <= 2 |
-             sample_depth %in% c("0-2", "0-0.5")|
+             ActivityDepthHeightMeasure.MeasureValue %in% c("0-2", "0-0.5")|
              # Don't want to lose all the NA depth records
-             is.na(sample_depth))
+             is.na(ActivityDepthHeightMeasure.MeasureValue))
   
   # How many records removed due to limits on depth?
   print(
@@ -301,6 +379,15 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
       "Rows removed due to non-target depths: ",
       nrow(converted_units_chla) - nrow(converted_depth_units_chla)
     )
+  )
+  
+  dropped_depths <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while cleaning depths",
+    short_reason = "Clean depths",
+    number_dropped = nrow(converted_units_chla) - nrow(converted_depth_units_chla),
+    n_rows = nrow(converted_depth_units_chla),
+    order = 8
   )
   
   
@@ -335,18 +422,27 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     )
   )
   
+  dropped_methods <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while aggregating analytical methods",
+    short_reason = "Analytical methods",
+    number_dropped = nrow(converted_depth_units_chla) - nrow(grouped_analytical_methods_chla),
+    n_rows = nrow(grouped_analytical_methods_chla),
+    order = 9
+  )
+  
   
   # Filter fractions --------------------------------------------------------
   
-  # Now count the fraction column
+  # Now count the ResultSampleFractionText column
   fraction_counts <- grouped_analytical_methods_chla %>%
-    count(fraction) %>%
+    count(ResultSampleFractionText) %>%
     arrange(desc(n))
   
-  # Create a column to lump things that do/don't make sense for the fraction column
+  # Create a column to lump things that do/don't make sense for the ResultSampleFractionText column
   grouped_fractions_chla <- grouped_analytical_methods_chla %>%
     mutate(aquasat_fraction = if_else(
-      condition = fraction %in% c("Non-Filterable (Particle)", "Suspended",
+      condition = ResultSampleFractionText %in% c("Non-Filterable (Particle)", "Suspended",
                                   "Non-filterable", "<Blank>", "Acid Soluble"),
       true = "Unlikely",
       false = "Makes sense")) %>%
@@ -358,6 +454,15 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
       "Rows removed due to unlikely fraction type: ",
       nrow(grouped_analytical_methods_chla) - nrow(grouped_fractions_chla)
     )
+  )
+  
+  dropped_fractions <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while filtering fraction types",
+    short_reason = "Fraction types",
+    number_dropped = nrow(grouped_analytical_methods_chla) - nrow(grouped_fractions_chla),
+    n_rows = nrow(grouped_fractions_chla),
+    order = 10
   )
   
   
@@ -387,6 +492,17 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   
   # Export ------------------------------------------------------------------
   
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
+                                dropped_fractions, dropped_greater_than, dropped_harmonization, 
+                                dropped_mdls, dropped_media, dropped_methods, dropped_parameters)
+  
+  documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
+  
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/harmonized_chla.feather"
   
@@ -401,6 +517,7 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     )
   )
   
-  return(data_out_path)
-  
+  return(list(
+    harmonized_chla_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))  
 }

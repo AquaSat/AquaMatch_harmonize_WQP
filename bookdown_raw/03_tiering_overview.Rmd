@@ -1,0 +1,30 @@
+---
+output:
+  github_document:
+    html_preview: false
+# params:
+#   documented_drops: NA
+always_allow_html: true
+---
+
+# Data tiering overview
+
+The WQP contains many columns, which also vary greatly in their level of completion record-by-record. In response to this we have developed a data tiering system in AquaMatch for quick filtering of methods by level of completion and method quality.
+
+We have standardized the columns used in the data tiering process. The process, which is outlined below, provides the end user with two columns of tiering flags. These are `methods_tier` (relating to analytical method) and `field_tier` (relating to field collection method).
+
+## Analytical methods tiers
+
+Tier 1: Data are likely comparable across sites and times
+
+Tier 2: Data are potentially comparable across sites and times
+
+Tier 3: Data are unlikely to be comparable across sites and times
+
+## Field tiers
+
+Tier 1: Sample was filtered and has a depth measurement and units provided
+
+Tier 2: Depth data is either absent or incomplete for the sample but the sample was filtered
+
+Tier 3: Depth data is either absent or incomplete and the sample was not filtered

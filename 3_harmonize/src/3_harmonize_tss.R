@@ -1,4 +1,4 @@
-harmonize_tss_strict <- function(raw_tss, p_codes){
+harmonize_tss <- function(raw_tss, p_codes){
   
   # Starting values for dataset
   starting_data <- tibble(
@@ -292,7 +292,7 @@ harmonize_tss_strict <- function(raw_tss, p_codes){
   )
   
   tss_harmonized_units <- tss_harmonized_values %>%
-    # Drop nonsensical units using an inner join
+    # Drop unlikely units using an inner join
     inner_join(unit_conversion_table, by = 'units') %>%
     # To avoid editing the tss_lookup, I'm converting ug/l to mg/l here:
     mutate(harmonized_value = (harmonized_value * conversion) / 1000,
@@ -321,18 +321,18 @@ harmonize_tss_strict <- function(raw_tss, p_codes){
   # Investigate depth -------------------------------------------------------
   
   # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(sample_depth_unit = c('cm', 'feet', 'ft', 'in',
-                                                         'm', 'meters'),
+  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
+                                                                                  'm', 'meters'),
                                    depth_conversion = c(1 / 100, 0.3048, 0.3048,
                                                         0.0254, 1, 1)) 
   # Join depth lookup table to tss data
   tss_harmonized_depth <- inner_join(x = tss_harmonized_units,
                                      y = depth_conversion_table,
-                                     by = c('sample_depth_unit')) %>%
+                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
     # Some depth measurements have negative values (assume that is just preference)
     # I also added .01 meters because many samples have depth of zero assuming they were
     # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(sample_depth) * depth_conversion) + .01)
+    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
   
   # We lose lots of data by keeping only data with depth measurements
   print(
@@ -444,7 +444,7 @@ harmonize_tss_strict <- function(raw_tss, p_codes){
   # many of the remaining fractions are open to interpretation, and doesn't want to 
   # filter them out
   tss_remove_fractions <- tss_filter_aggregates %>%
-    filter(!fraction %in% c('Fixed', 'Volatile', 'Dissolved', 'Acid Soluble'))
+    filter(!ResultSampleFractionText %in% c('Fixed', 'Volatile', 'Dissolved', 'Acid Soluble'))
   
   # How many records removed due to fraction?
   print(
@@ -467,17 +467,18 @@ harmonize_tss_strict <- function(raw_tss, p_codes){
   # Export ------------------------------------------------------------------
   
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_fails, dropped_fractions, 
-                                dropped_greater_than, dropped_harmonization, dropped_mdls, 
-                                dropped_media, dropped_methods)
+  compiled_dropped <- bind_rows(starting_data, dropped_approximates,
+                                dropped_fails, dropped_fractions, 
+                                dropped_greater_than, dropped_harmonization,
+                                dropped_mdls, dropped_media, dropped_methods)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_tss_strict_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/harmonize_tss_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_tss_strict.feather"
+  data_out_path <- "3_harmonize/out/harmonized_tss.feather"
   
   write_feather(tss_remove_fractions,
                 data_out_path)

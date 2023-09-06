@@ -327,49 +327,6 @@ p2_targets_list <- list(
     summarize_wqp_download(p1_wqp_inventory_summary_csv, p2_wqp_data_aoi,
                            "2_download/log/summary_wqp_data.csv"),
     format = "file"
-  ),
-  
-  # Download the original AquaSat raw data for ingestion into this pipeline:
-  tar_target(
-    p2_raw_original_aq,
-    {
-      in_path <- "data/in/aq_wqp_raw.zip"
-      
-      download(url = "https://figshare.com/ndownloader/files/15169262",
-               destfile = in_path)
-      
-      unzip(zipfile = in_path, exdir = "data/in/")
-      
-      # Return the unzipped folder's path
-      "data/in/wqp_raw/"
-    },
-    packages = "downloader"
-  ),
-  
-  # Read in original AquaSat's raw chlorophyll
-  tar_file_read(
-    p2_raw_orig_chl,
-    paste0(p2_raw_original_aq, "all_raw_chlorophyll.csv"),
-    read = read_csv(!!.x)
-  ),
-  
-  tar_file_read(
-    p2_raw_orig_doc,
-    paste0(p2_raw_original_aq, "all_raw_doc.csv"),
-    read = read_csv(!!.x)
-  ),
-  
-  tar_file_read(
-    p2_raw_orig_sdd,
-    paste0(p2_raw_original_aq, "all_raw_secchi.csv"),
-    read = read_csv(!!.x)
-  ),
-  
-  tar_file_read(
-    p2_raw_orig_tss,
-    paste0(p2_raw_original_aq, "all_raw_tss.csv"),
-    read = read_csv(!!.x)
   )
-  
 
 )

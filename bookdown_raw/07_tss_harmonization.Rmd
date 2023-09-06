@@ -7,7 +7,7 @@ params:
 always_allow_html: true
 ---
 
-# Secchi harmonization process (strict version)
+# TSS harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops
@@ -26,7 +26,7 @@ step_data <- documented_drops %>%
                              ":  ",
                              round((n_rows / 1000000), 1),
                              " M rows")) %>%
-  filter(step == "sdd harmonization") 
+  filter(step == "tss harmonization") 
 ```
 
 
@@ -41,7 +41,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the preharmonization process the secchi-only WQP dataset contains `r step_0_rows` rows.
+After the preharmonization process the tss-only WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -68,7 +68,6 @@ step_data %>%
 
 <br>
 
-
 ### Filter for water media
 
 ```{r echo = FALSE}
@@ -85,7 +84,7 @@ step_1_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-The first step in secchi harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The row count after this is `r step_1_rows`.
+The first step in TSS harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -130,7 +129,7 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-In this step we filter out records based on indications that they have failed data for some reason. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue`. Examples of text that results in a dropped record includes (but is not limited to): `"fail"`, `"suspect"`, `"error"`, `"beyond accept"`, `"interference"`, `"questionable"`, `"problem"`, `"violation"`, `"rejected"`, `"no secchi"`. Specific target text varies by column. 
+In this step we filter out records based on indications that they have failed data for some reason. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultMeasureValue`, and `ResultDetectionConditionText`. Examples of text that results in a dropped record includes (but is not limited to): `"fail"`, `"suspect"`, `"error"`, `"beyond accept"`, `"interference"`, `"questionable"`, `"problem"`, `"violation"`, `"rejected"`, `"no data"`. Specific target text varies by column. 
 
 `r step_2_dropped` rows are removed and `r step_2_rows` rows remain.
 
@@ -182,7 +181,7 @@ If non-detect language exists then we use the `DetectionQuantitationLimitMeasure
 
 We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
 
-This should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The row count after this is `r step_3_rows`.
+This should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -209,6 +208,7 @@ step_data %>%
 
 <br>
 
+
 ### Clean approximate values
 
 ```{r echo = FALSE}
@@ -225,15 +225,16 @@ step_4_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
+
 Step 4 involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-
-1. Numeric-only version of the column is still `NA` after MDL cleaning
-2. The original column text contained a number
-3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
-
+  
+  1. Numeric-only version of the column is still `NA` after MDL cleaning
+  2. The original column text contained a number
+  3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
+  
 We then use the approximate value as the record's value moving forward.
 
-This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The row count after this is `r step_4_rows`.
+This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -258,6 +259,7 @@ step_data %>%
         legend.position = "none")
 ```
 
+<br>
 
 ### Clean values with "greater than" data
 
@@ -276,14 +278,14 @@ step_5_dropped <- filter(step_data,
 ```
 
 Step 5 is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-
-1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
-2. The original column text contained a number
-3. The original column text contained a `>`
-
+  
+  1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
+  2. The original column text contained a number
+  3. The original column text contained a `>`
+  
 We then use the "greater than" value (without `>`) as the record's value moving forward.
 
-This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The row count after this is `r step_5_rows`.
+This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -310,6 +312,7 @@ step_data %>%
 
 <br>
 
+
 ### Harmonize record units
 
 ```{r echo = FALSE}
@@ -322,23 +325,29 @@ step_6_rows <- filter(step_data,
 
 step_6_dropped <- filter(step_data,
                          order == 6) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
+
 ```
 
-The next step in secchi harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into meters:
+The next step in TSS harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into milligrams/L:
 
 ```{r echo=FALSE}
 tibble(
-  units = c("m", "ft", "cm", "in", "mm", "mi"),
-  conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 1609.34)
+  units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+            'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L',
+            'g/l'),
+  conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,
+                 1000, 1000000, 0.000001, 60.080000, 1000000)
 ) %>%
   kable() %>%
   kable_paper() %>%
   kable_styling(full_width = FALSE)
 ```
 
-We also limit values to less than 15m to ensure realistic data. `r step_6_dropped` rows are removed. The row count after this is `r step_6_rows`.
+We also limit values to less than 1000 mg/L to ensure realistic data. `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -377,11 +386,13 @@ step_7_rows <- filter(step_data,
 
 step_7_dropped <- filter(step_data,
                          order == 7) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+  mutate(mil_dropped = number_dropped / 1000) %>%
+  pull(mil_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
 ```
 
-Our next step is to aggregate secchi analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. We accomplish this using an external match table `csv` file that is joined to the dataset. Methods that are coded `"unlikely"` to be accurate methods are dropped.
+Our next step is to aggregate TSS analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were grouped as `"Ambiguous"` or `"Unlikely"` are dropped.
 
 This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining.
 
@@ -428,9 +439,9 @@ step_8_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The next step in our secchi harmonization is filtering based on the `ResultSampleFractionText` column. We assign fractions into two categories based on whether the fraction text makes sense or not and then retain only those records that have a fraction with `"Makes sense"`. Fractions included in this are `NA`, `"Total"`, `" "`, `"None"`, `"Unfiltered"`, `"Field"`.
+The final step in our TSS harmonization is filtering based on the `ResultSampleFractionText` column. We **drop** records with the following values in this column: `"Fixed`", `"Volatile"`, `"Dissolved"`, or `"Acid Soluble"`.
 
-This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining in the dataset.
+This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining in the final harmonized TSS dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -455,98 +466,3 @@ step_data %>%
         legend.position = "none")
 ```
 
-<br>
-
-### Filter based on sample method
-
-```{r echo = FALSE}
-step_9_rows <- filter(step_data,
-                       order == 9) %>%
-  mutate(mil_row = n_rows / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-
-step_9_dropped <- filter(step_data,
-                         order == 9) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
-```
-
-We next filter based on the sample method, or `SampleCollectionMethod.MethodName` column. As with analytical methods, we accomplish this using an external match table `csv` file that is joined to the dataset. Methods that are coded `"unlikely"` to be accurate methods are dropped.
-
-This process drops `r step_9_dropped` rows leaving `r step_9_rows` remaining.
-
-```{r echo = FALSE}
-step_data %>%
-  filter(order %in% 0:9) %>%
-  ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
-           stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
-                  bg.color = "white", bg.r = 0.15,
-                  point.size = NA,
-                  xlim = c(-Inf, Inf),
-                  ylim =  c(-Inf, Inf),
-                  nudge_x = 0.1,
-                  hjust = "left") +
-  xlab("Step number") +
-  ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[10:1]) +
-  scale_x_discrete(drop = F) +
-  coord_flip() +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        legend.position = "none")
-```
-
-<br>
-
-### Filter based on collection equipment
-
-```{r echo = FALSE}
-step_10_rows <- filter(step_data,
-                       order == 10) %>%
-  mutate(mil_row = n_rows / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-
-step_10_dropped <- filter(step_data,
-                         order == 10) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
-```
-
-Finally, we examine the collection equipment (`SampleCollectionEquipmentName`) column to check for equipment that indicates non-secchi measurements. Once again we use an external match table `csv` file that is joined to the dataset. Equipment types that are coded `"unlikely"` to be accurate to secchi are dropped.
-
-This process drops `r step_10_dropped` rows leaving `r step_10_rows` remaining.
-
-```{r echo = FALSE}
-step_data %>%
-  filter(order %in% 0:10) %>%
-  ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
-           stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
-                  bg.color = "white", bg.r = 0.15,
-                  point.size = NA,
-                  xlim = c(-Inf, Inf),
-                  ylim =  c(-Inf, Inf),
-                  nudge_x = 0.1,
-                  hjust = "left") +
-  xlab("Step number") +
-  ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[11:1]) +
-  scale_x_discrete(drop = F) +
-  coord_flip() +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        legend.position = "none")
-```
-
-<br>

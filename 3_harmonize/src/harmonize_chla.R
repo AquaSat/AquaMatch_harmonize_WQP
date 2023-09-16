@@ -394,7 +394,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
-  # Aggregate analytical methods --------------------------------------------
+  # Aggregate and tier analytical methods -----------------------------------
   
   # Get an idea of how many analytical methods exist:
   print(
@@ -547,7 +547,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   dropped_methods <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while aggregating analytical methods",
+    reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
     number_dropped = nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla),
     n_rows = nrow(cleaned_tiered_methods_chla),
@@ -555,61 +555,26 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
-  # Filter fractions --------------------------------------------------------
+  # Tier field methods ------------------------------------------------------
   
-  # Now count the ResultSampleFractionText column
-  fraction_counts <- cleaned_tiered_methods_chla %>%
-    count(ResultSampleFractionText) %>%
-    arrange(desc(n))
-  
-  # Create a column to lump things that do/don't make sense for the ResultSampleFractionText column
-  grouped_fractions_chla <- cleaned_tiered_methods_chla %>%
-    mutate(aquasat_fraction = if_else(
-      condition = ResultSampleFractionText %in% c("Non-Filterable (Particle)", "Suspended",
-                                                  "Non-filterable", "<Blank>", "Acid Soluble"),
-      true = "Unlikely",
-      false = "Makes sense")) %>%
-    filter(aquasat_fraction == "Makes sense")
+  # Function to build tiers based on the fraction and depth data
+  field_tiers_chla <- assign_field_tier(dataset = cleaned_tiered_methods_chla)
   
   # How many records removed due to unlikely fraction types?
   print(
     paste0(
-      "Rows removed due to unlikely fraction type: ",
-      nrow(cleaned_tiered_methods_chla) - nrow(grouped_fractions_chla)
+      "Rows removed while assigning field tiers: ",
+      nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla)
     )
   )
   
-  dropped_fractions <- tibble(
+  dropped_field <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while filtering fraction types",
-    short_reason = "Fraction types",
-    number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(grouped_fractions_chla),
-    n_rows = nrow(grouped_fractions_chla),
+    reason = "Dropped rows while assigning field tiers",
+    short_reason = "Field tiers",
+    number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla),
+    n_rows = nrow(field_tiers_chla),
     order = 10
-  )
-  
-  
-  # Aggregate sample methods ------------------------------------------------
-  
-  # Get an idea of how many sample methods exist:
-  print(
-    paste0(
-      "Number of chla sample methods present in raw dataset: ",
-      length(unique(grouped_fractions_chla$sample_method)),
-      ". Skipping due to length."
-    )
-  )
-  
-  
-  # Aggregate collection equipment ------------------------------------------
-  
-  # Get an idea of how many equipment types exist:
-  print(
-    paste0(
-      "Number of chla equipment types present in raw dataset: ",
-      length(unique(grouped_fractions_chla$collection_equipment)),
-      ". Skipping due to length."
-    )
   )
   
   
@@ -617,7 +582,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
-                                dropped_fractions, dropped_greater_than, dropped_harmonization, 
+                                dropped_field, dropped_greater_than, dropped_harmonization, 
                                 dropped_mdls, dropped_media, dropped_methods, dropped_parameters)
   
   documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
@@ -629,14 +594,14 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/harmonized_chla.feather"
   
-  write_feather(grouped_fractions_chla,
+  write_feather(field_tiers_chla,
                 data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(grouped_fractions_chla)
+      nrow(field_tiers_chla)
     )
   )
   

@@ -83,13 +83,7 @@ p3_targets_list <- list(
                 command = "data/in/sdd_collection_equipment_matchup.csv",
                 read = read_csv(file = !!.x),
                 cue = tar_cue("always")),
-  
-  # Chla depth method matchup table
-  tar_file_read(name = p3_chla_analytical_method_matchup,
-                command = "data/in/chla_analytical_method_matchup.csv",
-                read = read_csv(file = !!.x),
-                cue = tar_cue("always")),
-  
+
   
   # Harmonization process ---------------------------------------------------
   
@@ -104,6 +98,11 @@ p3_targets_list <- list(
                               filter(parameter == "chlorophyll"),
                             p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "feather")),
+  
+  tar_file_read(name = p3_chla_tiering_record,
+                command = p3_harmonized_chla$chla_tiering_record_path,
+                read = read_csv(file = !!.x),
+                cue = tar_cue("always")),
   
   tar_target(p3_harmonized_sdd,
              harmonize_sdd(raw_sdd = p3_cleaned_wqp_data %>%
@@ -135,7 +134,8 @@ p3_targets_list <- list(
              {
                # Read in the exported harmonized datasets
                
-               map_df(.x = c(p3_harmonized_chla, p3_harmonized_doc,
+               map_df(.x = c(p3_harmonized_chla$harmonized_chla_path,
+                             p3_harmonized_doc,
                              p3_harmonized_tss, p3_harmonized_sdd),
                       .f = ~ read_feather(.x) %>%
                         select(SiteID, date, lat, lon,

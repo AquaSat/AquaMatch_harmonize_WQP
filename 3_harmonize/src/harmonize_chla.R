@@ -1,5 +1,5 @@
 
-harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
+harmonize_chla <- function(raw_chla, p_codes){
   
   # Starting values for dataset
   starting_data <- tibble(
@@ -41,9 +41,12 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   
   chla_param_filter <- chla %>%
     filter(
-      orig_parameter %in% c('Chlorophyll a', 'Chlorophyll a (probe relative fluorescence)',
-                            'Chlorophyll a, corrected for pheophytin', 'Chlorophyll a (probe)',
-                            'Chlorophyll a, free of pheophytin', 'Chlorophyll a - Phytoplankton (suspended)'))
+      orig_parameter %in% c('Chlorophyll a',
+                            'Chlorophyll a (probe relative fluorescence)',
+                            'Chlorophyll a, corrected for pheophytin',
+                            'Chlorophyll a (probe)',
+                            'Chlorophyll a, free of pheophytin',
+                            'Chlorophyll a - Phytoplankton (suspended)'))
   
   # How many records removed due to fails, missing data, etc.?
   print(
@@ -391,7 +394,7 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   )
   
   
-  # Aggregate analytical methods --------------------------------------------
+  # Aggregate and tier analytical methods -----------------------------------
   
   # Get an idea of how many analytical methods exist:
   print(
@@ -401,92 +404,177 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
     )
   )
   
-  analytical_counts <- converted_depth_units_chla %>%
-    count(analytical_method) %>%
-    arrange(desc(n))
+  # Below we'll implement a tiering system in two stages.
+  # The first stage tags each record with an identifier based on the contents
+  # of the analytical method column:
+  #   - ⁠HPLC
+  #   - ⁠fluorometer
+  #   - ⁠spectrophotometer
+  #   - ⁠other: another method than the previous three ones (e.g., an in situ method)
+  #   - undefined: no information provided or not enough to determine the method
+  #     from the content of this column alone
+  #   - unrelated: a method seemingly unrelated to chlorophyll a
   
-  # Add a new column aggregating the analytical methods groups, then filter out
-  # unlikely ones
-  grouped_analytical_methods_chla <- converted_depth_units_chla %>%
-    left_join(x = .,
-              y = chla_analytical_method_matchup,
-              by = c("analytical_method")) %>%
-    filter(!is.na(analytical_method_grouping),
-           analytical_method_grouping != "unlikely")
+  # The second stage assigns coarser tiers based on the tags:
+  #   - Restrictive (HPLC)
+  #   - Narrowed (fluorometer, Spectrophotometer)
+  #   - Inclusive (undefined, other)
+  #   - Remove (unrelated) - these will be filtered out of the dataset
+  
+  # Define patterns to search when tagging chlorophyll a analytical methods
+  fluorometer_text <- paste0(c("445", "fluor", "Welshmeyer", "fld"),
+                             collapse = "|")
+  hplc_text <- paste0(c("447", "chromatography", "hplc"),
+                      collapse = "|") 
+  spectrophotometer_text <- paste0(c("10200", "446", "trichromatic",
+                                     "spectrophoto", "monochrom", "monchrom",
+                                     # spec not as part of a word
+                                     "(?<!\\w)spec"),
+                                   collapse = "|")
+  other_text <- paste0(c("Seabird CTD", "probe", "in situ", "oxygen demand",
+                         # Find the text "ysi" but not part of, e.g., "analysis"
+                         "\\bysi\\b", "\\bysi\\d+", "\\d+ysi\\b",
+                         "WETStar"),
+                       collapse = "|")
+  unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
+                             "plasma", "turbidity", "coliform", "carbon",
+                             "2540", "conductance", "nitrate", "nitrite",
+                             "nitrogen", "alkalin", "zooplankton",
+                             "phosphorus", "periphyton", "peri",
+                             "10300", "biomass", "temperature",
+                             # Methods 10200 F & G
+                             "10200[ -]?[fg]",
+                             "elemental analyzer", "2320"),
+                           collapse = "|")
+  undefined_text <- paste0(c("unkn", "not specified", "unspecified",
+                             "not available", "n/a"),
+                           collapse = "|")
+  
+  # Create a separate column for each method tag
+  tagged_methods_chla <- converted_depth_units_chla %>%
+    rowwise() %>%
+    mutate(
+      hplc_tag = grepl(pattern = hplc_text,
+                       x = analytical_method,
+                       ignore.case = TRUE),
+      fluoro_tag = grepl(pattern = fluorometer_text,
+                         x = analytical_method,
+                         ignore.case = TRUE),
+      spectro_tag = grepl(pattern = spectrophotometer_text,
+                          x = analytical_method,
+                          ignore.case = TRUE,
+                          perl = TRUE),
+      other_tag = grepl(pattern = other_text,
+                        x = analytical_method,
+                        ignore.case = TRUE,
+                        perl = TRUE),
+      unrelated_tag = grepl(pattern = unrelated_text,
+                            x = analytical_method,
+                            ignore.case = TRUE),
+      # Undefined is more complicated
+      undefined_tag = case_when(
+        grepl(pattern = undefined_text,
+              x = analytical_method,
+              ignore.case = TRUE) ~ TRUE,
+        # NAs = undefined
+        is.na(analytical_method) ~ TRUE,
+        # If there's a non-undefined tag then it's not undefined
+        any(c(hplc_tag, fluoro_tag, spectro_tag,
+              other_tag, unrelated_tag)) ~ FALSE,
+        # If there's more than one tag in the other columns then it's undefined
+        sum(c(hplc_tag, fluoro_tag, spectro_tag,
+              other_tag, unrelated_tag)) > 1 ~ TRUE,
+        # Defaults everything else to undefined
+        .default = TRUE)) 
+  
+  # Now tier based on the tags above
+  tiered_methods_chla <- tagged_methods_chla %>%
+    rowwise() %>%
+    mutate(
+      # If a lower tiered method is also mentioned in the same string then don't
+      # assign it to restrictive tier. There are some with multiple mentioned
+      restrictive_tier = if_else(condition = (hplc_tag == TRUE) &
+                                   (fluoro_tag != TRUE) &
+                                   (spectro_tag != TRUE) &
+                                   (other_tag != TRUE) &
+                                   (unrelated_tag != TRUE) &
+                                   (undefined_tag != TRUE),
+                                 true = TRUE,
+                                 false = FALSE),
+      narrowed_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag),
+                              true = TRUE,
+                              false = FALSE),
+      inclusive_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag,
+                                               other_tag, undefined_tag),
+                               true = TRUE,
+                               false = FALSE),
+      # If undef/unrelat/other, then cannot be restrictive or narrowed. Fixes any
+      # with, e.g., multiple tags
+      across(c(restrictive_tier, narrowed_tier),
+             .fns = ~if_else(any(undefined_tag, unrelated_tag, other_tag), FALSE, .x)),
+      # If unrelated, then cannot be inclusive either
+      inclusive_tier = if_else(condition = unrelated_tag,
+                               true = FALSE,
+                               false = inclusive_tier)
+    ) %>%
+    ungroup()
+  
+  # Export a record of how methods were tiered and their respective row counts
+  tiering_record <- tiered_methods_chla %>%
+    add_count(analytical_method) %>%
+    select(analytical_method, n, contains("_tag"), contains("_tier")) %>%
+    arrange(desc(n)) %>%
+    distinct() 
+  
+  tiering_record_out_path <- "3_harmonize/out/chla_tiering_record.csv"
+  
+  write_csv(x = tiering_record, file = tiering_record_out_path)
+  
+  # Filter and slim the tiered product
+  cleaned_tiered_methods_chla <- tiered_methods_chla %>%
+    # No unrelated methods
+    filter(unrelated_tag == FALSE) %>%
+    # Drop tag columns - these are recorded and exported in tiering_record
+    select(-contains("_tag"))
   
   # How many records removed due to limits on analytical method?
   print(
     paste0(
-      "Rows removed due to unlikely analytical methods: ",
-      nrow(converted_depth_units_chla) - nrow(grouped_analytical_methods_chla)
+      "Rows removed due to unrelated analytical methods: ",
+      nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla)
     )
   )
   
   dropped_methods <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while aggregating analytical methods",
+    reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(converted_depth_units_chla) - nrow(grouped_analytical_methods_chla),
-    n_rows = nrow(grouped_analytical_methods_chla),
+    number_dropped = nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla),
+    n_rows = nrow(cleaned_tiered_methods_chla),
     order = 9
   )
   
   
-  # Filter fractions --------------------------------------------------------
+  # Tier field methods ------------------------------------------------------
   
-  # Now count the ResultSampleFractionText column
-  fraction_counts <- grouped_analytical_methods_chla %>%
-    count(ResultSampleFractionText) %>%
-    arrange(desc(n))
-  
-  # Create a column to lump things that do/don't make sense for the ResultSampleFractionText column
-  grouped_fractions_chla <- grouped_analytical_methods_chla %>%
-    mutate(aquasat_fraction = if_else(
-      condition = ResultSampleFractionText %in% c("Non-Filterable (Particle)", "Suspended",
-                                  "Non-filterable", "<Blank>", "Acid Soluble"),
-      true = "Unlikely",
-      false = "Makes sense")) %>%
-    filter(aquasat_fraction == "Makes sense")
+  # Function to build tiers based on the fraction and depth data
+  field_tiers_chla <- assign_field_tier(dataset = cleaned_tiered_methods_chla)
   
   # How many records removed due to unlikely fraction types?
   print(
     paste0(
-      "Rows removed due to unlikely fraction type: ",
-      nrow(grouped_analytical_methods_chla) - nrow(grouped_fractions_chla)
+      "Rows removed while assigning field tiers: ",
+      nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla)
     )
   )
   
-  dropped_fractions <- tibble(
+  dropped_field <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while filtering fraction types",
-    short_reason = "Fraction types",
-    number_dropped = nrow(grouped_analytical_methods_chla) - nrow(grouped_fractions_chla),
-    n_rows = nrow(grouped_fractions_chla),
+    reason = "Dropped rows while assigning field tiers",
+    short_reason = "Field tiers",
+    number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla),
+    n_rows = nrow(field_tiers_chla),
     order = 10
-  )
-  
-  
-  # Aggregate sample methods ------------------------------------------------
-  
-  # Get an idea of how many sample methods exist:
-  print(
-    paste0(
-      "Number of chla sample methods present in raw dataset: ",
-      length(unique(grouped_fractions_chla$sample_method)),
-      ". Skipping due to length."
-    )
-  )
-  
-  
-  # Aggregate collection equipment ------------------------------------------
-  
-  # Get an idea of how many equipment types exist:
-  print(
-    paste0(
-      "Number of chla equipment types present in raw dataset: ",
-      length(unique(grouped_fractions_chla$collection_equipment)),
-      ". Skipping due to length."
-    )
   )
   
   
@@ -494,7 +582,7 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
-                                dropped_fractions, dropped_greater_than, dropped_harmonization, 
+                                dropped_field, dropped_greater_than, dropped_harmonization, 
                                 dropped_mdls, dropped_media, dropped_methods, dropped_parameters)
   
   documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
@@ -506,18 +594,19 @@ harmonize_chla <- function(raw_chla, p_codes, chla_analytical_method_matchup){
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/harmonized_chla.feather"
   
-  write_feather(grouped_fractions_chla,
+  write_feather(field_tiers_chla,
                 data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(grouped_fractions_chla)
+      nrow(field_tiers_chla)
     )
   )
   
   return(list(
     harmonized_chla_path = data_out_path,
-    compiled_drops_path = documented_drops_out_path))  
+    compiled_drops_path = documented_drops_out_path,
+    chla_tiering_record_path = tiering_record_out_path))  
 }

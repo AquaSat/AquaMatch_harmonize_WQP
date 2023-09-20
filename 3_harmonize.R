@@ -19,11 +19,6 @@ p3_targets_list <- list(
     format = "feather"
   ),
   
-  # Creates a match table with column names from WQP and shorter names to use
-  # in renaming them
-  tar_target(p3_wqp_col_match,
-             create_match_table()),
-  
   # Cleaning steps before breaking out by parameter: 
   # Remove duplicates, ensure meaningful results present, check data status,
   # check media, remove white spaces
@@ -32,7 +27,7 @@ p3_targets_list <- list(
                             char_names_crosswalk = p1_char_names_crosswalk,
                             # Convert list of sites by param to single df
                             site_data = bind_rows(p2_site_counts),
-                            match_table = p3_wqp_col_match, 
+                            # match_table = p3_wqp_col_match, 
                             wqp_metadata = p1_wqp_inventory_aoi),
              packages = c("tidyverse", "lubridate", "feather")),
   
@@ -83,7 +78,7 @@ p3_targets_list <- list(
                 command = "data/in/sdd_collection_equipment_matchup.csv",
                 read = read_csv(file = !!.x),
                 cue = tar_cue("always")),
-
+  
   
   # Harmonization process ---------------------------------------------------
   
@@ -138,9 +133,9 @@ p3_targets_list <- list(
                              p3_harmonized_doc,
                              p3_harmonized_tss, p3_harmonized_sdd),
                       .f = ~ read_feather(.x) %>%
-                        select(SiteID, date, lat, lon,
-                               harmonized_parameter = parameter, orig_parameter,
-                               analytical_method))
+                        select(MonitoringLocationIdentifier, ActivityStartDate, lat, lon,
+                               harmonized_parameter = parameter, CharacteristicName,
+                               ResultAnalyticalMethod.MethodName))
              },
              packages = c("tidyverse", "feather"))
   

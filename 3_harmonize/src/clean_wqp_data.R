@@ -37,7 +37,7 @@
 clean_wqp_data <- function(wqp_data,
                            char_names_crosswalk,
                            site_data,
-                           match_table,
+                           # match_table,
                            wqp_metadata,
                            commenttext_missing = c('analysis lost', 'not analyzed',
                                                    'not recorded', 'not collected',
@@ -164,7 +164,7 @@ clean_wqp_data <- function(wqp_data,
   rm(wqp_data_pass_status)
   gc()
   
-  # Remove white space and rename with short names before export
+  # Remove white space before export
   wqp_data_clean <- wqp_data_pass_media %>%
     # Temp fix to remove Facility sites; do this eventually in the WQP data pull
     semi_join(x = .,
@@ -174,10 +174,10 @@ clean_wqp_data <- function(wqp_data,
               by = c("OrganizationIdentifier",
                      "MonitoringLocationIdentifier",
                      "lat", "lon")) %>%
-    rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
-                .cols = match_table$wqp_name) %>%
-    mutate(year = year(date),
-           units = trimws(units))
+    # rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
+    #             .cols = match_table$wqp_name) %>%
+    mutate(year = year(ActivityStartDate),
+           ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
   
   data_out_path <- "3_harmonize/out/wqp_data_aoi_ready.feather"
   

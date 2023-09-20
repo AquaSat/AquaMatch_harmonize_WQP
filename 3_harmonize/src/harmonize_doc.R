@@ -15,10 +15,10 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   doc <- raw_doc %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
-    left_join(x = ., y = p_codes, by = "parm_cd") %>%
+    left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
       # Water only
-      media %in% c("Water","water"))  %>%
+      ActivityMediaName %in% c("Water","water"))  %>%
     # Index for being able to track each sample
     rowid_to_column(.,"index")
   
@@ -49,9 +49,9 @@ harmonize_doc <- function(raw_doc, p_codes){
       "instrument down", "no result", "time exceed", "not accept",
       "QC EXCEEDED"),
       collapse = "|"),
-      x = field_comments,
+      x = ActivityCommentText,
       ignore.case = T) |
-        is.na(field_comments),
+        is.na(ActivityCommentText),
       # No failure-related lab comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -61,9 +61,9 @@ harmonize_doc <- function(raw_doc, p_codes){
           "not accept", "QC EXCEEDED", "not ice", "ice melt",
           "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
         collapse = "|"),
-        lab_comments,
+        ResultLaboratoryCommentText,
         ignore.case = T) |
-        is.na(lab_comments),
+        is.na(ResultLaboratoryCommentText),
       # no failure-related result comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -73,9 +73,9 @@ harmonize_doc <- function(raw_doc, p_codes){
           "not accept", "QC EXCEEDED", "not ice", "ice melt",
           "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
         collapse = "|"),
-        result_comments,
+        ResultCommentText,
         ignore.case = T) |
-        is.na(result_comments),
+        is.na(ResultCommentText),
       # no failure-related value comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -86,9 +86,9 @@ harmonize_doc <- function(raw_doc, p_codes){
           "PAST HOLDING TIME", "not done", "no reading", 
           "not reported", "no data"),
         collapse = "|"),
-        value,
+        ResultMeasureValue_original,
         ignore.case = T) |
-        is.na(value),
+        is.na(ResultMeasureValue_original),
       # no failure-related detection comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -124,24 +124,24 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Find MDLs and make them usable as numeric data
   mdl_updates <- doc_fails_removed %>%
     # only want NAs and character value data:
-    filter(is.na(value_numeric)) %>%
+    filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(value) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", lab_comments, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", result_comments, ignore.case = TRUE) |
+      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
+                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
                                      grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
                           #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", value, ignore.case = TRUE),
+                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
                         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
                         yes = DetectionQuantitationLimitMeasure.MeasureValue,
                         # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", value) & grepl("<", value),
+                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
                                     # ... use that number as the MDL
-                                    yes = str_replace_all(value, c("\\<"="", "\\*" = "", "\\=" = "" )),
+                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
                                     no = NA)),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, units),
+      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -165,8 +165,8 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Replace "harmonized_value" field with these new values
   doc_mdls_added <- doc_fails_removed %>%
     left_join(x = ., y = mdl_updates, by = "index") %>%
-    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, value_numeric),
-           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, units),
+    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
+           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
@@ -190,15 +190,15 @@ harmonize_doc <- function(raw_doc, p_codes){
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
            # Then select fields where the numeric value column is NA....
-           is.na(value_numeric) & 
+           is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", lab_comments, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", result_comments, ignore.case = T )|
+             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
+                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
                 grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
   
-  doc_approx$approx_value <- as.numeric(str_replace_all(doc_approx$value, c("\\*" = "")))
+  doc_approx$approx_value <- as.numeric(str_replace_all(doc_approx$ResultMeasureValue_original, c("\\*" = "")))
   doc_approx$approx_value[is.nan(doc_approx$approx_value)] <- NA
   
   # Keep important data
@@ -240,14 +240,14 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Harmonize value units ---------------------------------------------------
   
   # Set up a lookup table so that final units are all in ug/L. 
-  unit_conversion_table <- tibble(units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+  unit_conversion_table <- tibble(ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
                                             'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
                                   conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                                                  1000000, 0.000001, 60.080000))
   
   doc_harmonized_units <- doc_approx_added %>%
-    inner_join(unit_conversion_table, by = 'units') %>%
-    mutate(harmonized_value = (value_numeric * conversion) / 1000,
+    inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
+    mutate(harmonized_value = (ResultMeasureValue * conversion) / 1000,
            harmonized_unit = 'mg/L') %>%
     # MR limit
     filter(harmonized_value < 50)
@@ -300,7 +300,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Aggregate and tier analytical methods -----------------------------------
   
   doc_aggregated_methods <- doc_harmonized_units %>%
-    # KW: includes more phrases that are nonsensical
+    # Includes more phrases that are unrelated
     filter(!grepl(
       paste0(
         c("Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation",
@@ -309,7 +309,7 @@ harmonize_doc <- function(raw_doc, p_codes){
           "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)",
           "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water"),
         collapse = "|"),
-      x = analytical_method,
+      x = ResultAnalyticalMethod.MethodName,
       ignore.case = TRUE)) %>%
     mutate(method_status = case_when(
       
@@ -320,7 +320,7 @@ harmonize_doc <- function(raw_doc, p_codes){
           DOC, combustion, NDIR (SM5310B)|TOC, combustion & CO2 detection|415.1|TOC, wu, combustion (5310B;DDEC)|
           SM185310B|DOC, wf, combustion (5310B;DDEC)|EPA Method 415.1 for Total Organic Carbon in aqueous matrices|
           SM 5310 B v20|DOC, 0.45u silver, persulfate IR",
-            analytical_method,ignore.case = T) ~ "5310B + EPA 415.1 - Combustion + IR",
+            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310B + EPA 415.1 - Combustion + IR",
       
       grepl("5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method|UV OR HEATED PERSULFATE OXIDATION|
           DOC, UV/persulfate (NYWSC; ALSC)|415.2|DOC, persulfate oxidation & IR|
@@ -332,20 +332,20 @@ harmonize_doc <- function(raw_doc, p_codes){
           5310 C ~ Total Organic Carbon by High-Temperature Combustion Method|415.2 M ~ Total Organic Carbon in Water|
           SM 5310 C, EPA 415.3|5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method|
           DOC, wu, persulfate (SM5310C;CO)", 
-            analytical_method,ignore.case = T) ~ "5310C + USGS O-1122-92 + EPA 415.2 - Persulfate-UV/Heated Persulfate Oxidation + IR",
+            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310C + USGS O-1122-92 + EPA 415.2 - Persulfate-UV/Heated Persulfate Oxidation + IR",
       
       grepl("TOC, wet oxidation|WET OXIDATION METHOD|DOC,0.45um cap,acid,persulfateIR|
     5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method|DOC, wf, 0.45 um cap, combust IR|415.3|
     Determination of Total Organic Carbon and Specific UV Absorbance at 254 nm in Source Water and Drinking Water|
     EPA 415.3|SM 5310 D|O-3100 ~ Total Organic Carbon in Water", 
-            analytical_method,ignore.case = T) ~ "5310D + EPA 415.3 + USGS O-3100 - Wet Oxidation + Persulfate + IR",
+            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310D + EPA 415.3 + USGS O-3100 - Wet Oxidation + Persulfate + IR",
       
       grepl("440 W  ~ Determination of Carbon and Nitrogen", 
-            analytical_method,ignore.case = T) ~ "EPA 440.0",
+            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "EPA 440.0",
       
       grepl("9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
           EPA 9060|EPA 9060A",
-            analytical_method,ignore.case = T) ~ "EPA 9060A - Carbonaceous Analyzer",
+            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "EPA 9060A - Carbonaceous Analyzer",
       (!grepl("5310 B ~ Total Organic Carbon by Combustion-Infrared Method|Total Organic Carbon by Combustion|
           5310 B ~ Total Organic Carbon by High-Temperature Combustion Method|SM5310B|
           Organic-C, combustion-IR method|EPA 415.1|SM 5310 B|EPA 415.1M|TOC, combustion (SM5310B,COWSC)|
@@ -367,7 +367,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     EPA 415.3|SM 5310 D|O-3100 ~ Total Organic Carbon in Water|9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
           EPA 9060|EPA 9060A",
               # KW: include NA values in the "Ambiguous" method lump
-              analytical_method,ignore.case = T) & !is.na(analytical_method)) | is.na(analytical_method) ~ "Ambiguous"))
+              ResultAnalyticalMethod.MethodName,ignore.case = T) & !is.na(ResultAnalyticalMethod.MethodName)) | is.na(ResultAnalyticalMethod.MethodName) ~ "Ambiguous"))
   
   doc_grouped_more <- doc_aggregated_methods %>% 
     mutate(grouped = case_when(grepl(pattern = "5310B", 

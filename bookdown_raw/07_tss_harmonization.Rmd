@@ -336,7 +336,7 @@ The next step in TSS harmonization is working with the units of the WQP records.
 
 ```{r echo=FALSE}
 tibble(
-  units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+  ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
             'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L',
             'g/l'),
   conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,

@@ -153,27 +153,35 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Clean up MDLs -----------------------------------------------------------
   
+  non_detect_text <- "non-detect|not detect|non detect|undetect|below"
+  
   # Find MDLs and make them usable as numeric data
   mdl_updates <- chla_fails_removed %>%
     # only want NAs and character value data:
     filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
-                                     grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
-                          #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
-                        #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
-                        yes = DetectionQuantitationLimitMeasure.MeasureValue,
-                        # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
-                                    # ... use that number as the MDL
-                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
-                                    no = NA)),
+      mdl_vals = ifelse(
+        test = (is.na(ResultMeasureValue_original) & 
+                  (grepl(non_detect_text, ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                     grepl(non_detect_text, ResultCommentText, ignore.case = TRUE) |
+                     grepl(non_detect_text, ResultDetectionConditionText, ignore.case = TRUE))) |
+          #.... OR, there is non-detect language in the value column itself....
+          grepl(non_detect_text, ResultMeasureValue_original, ignore.case = TRUE),
+        #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
+        yes = DetectionQuantitationLimitMeasure.MeasureValue,
+        # if there is a `<` and a number in the values column...
+        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) &
+                      grepl("<", ResultMeasureValue_original),
+                    # ... use that number as the MDL
+                    yes = str_replace_all(string = ResultMeasureValue_original,
+                                          pattern = c("\\<"="", "\\*" = "", "\\=" = "" )),
+                    no = NA)
+      ),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
+      mdl_units = ifelse(!is.na(mdl_vals), 
+                         DetectionQuantitationLimitMeasure.MeasureUnitCode, 
+                         ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -218,6 +226,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # approach to our MDL detection, we can identify value fields that are labelled
   # as being approximated.
   
+  approx_text <- "result approx|RESULT IS APPROX|value approx"
+  
   chla_approx <- chla_mdls_added %>%
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
@@ -226,9 +236,9 @@ harmonize_chla <- function(raw_chla, p_codes){
              # ... AND the original value column has numeric characters...
              grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
-                grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
+             (grepl(approx_text, ResultLaboratoryCommentText, ignore.case = T)|
+                grepl(approx_text, ResultCommentText, ignore.case = T )|
+                grepl(approx_text, ResultDetectionConditionText, ignore.case = T)))
   
   chla_approx$approx_value <- as.numeric(str_replace_all(chla_approx$ResultMeasureValue_original, c("\\*" = "")))
   chla_approx$approx_value[is.nan(chla_approx$approx_value)] <- NA
@@ -275,8 +285,10 @@ harmonize_chla <- function(raw_chla, p_codes){
              #... AND a `>` symbol
              grepl(">", ResultMeasureValue_original))
   
-  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$ResultMeasureValue_original,
-                                                           c("\\>" = "", "\\*" = "", "\\=" = "" )))
+  greater_vals$greater_value <- as.numeric(
+    str_replace_all(
+      greater_vals$ResultMeasureValue_original,
+      c("\\>" = "", "\\*" = "", "\\=" = "" )))
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
   
   # Keep important data

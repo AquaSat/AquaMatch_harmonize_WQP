@@ -37,9 +37,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   gc()
   
   
-  # Parameter name selection ------------------------------------------------
+  # Character name selection ------------------------------------------------
   
-  chla_param_filter <- chla %>%
+  chla_char_filter <- chla %>%
     filter(
       CharacteristicName %in% c('Chlorophyll a',
                                 'Chlorophyll a (probe relative fluorescence)',
@@ -51,95 +51,102 @@ harmonize_chla <- function(raw_chla, p_codes){
   # How many records removed due to fails, missing data, etc.?
   print(
     paste0(
-      "Rows removed due to non-target parameter names: ",
-      nrow(chla) - nrow(chla_param_filter)
+      "Rows removed due to non-target CharacteristicNames: ",
+      nrow(chla) - nrow(chla_char_filter)
     )
   )
   
-  dropped_parameters <- tibble(
+  dropped_chars <- tibble(
     step = "chla harmonization",
-    reason = "Filtered for specific chlorophyll parameters",
-    short_reason = "Chla params",
-    number_dropped = nrow(chla) - nrow(chla_param_filter),
-    n_rows = nrow(chla_param_filter),
+    reason = "Filtered for specific chlorophyll CharacteristicNames",
+    short_reason = "Chla characteristics",
+    number_dropped = nrow(chla) - nrow(chla_char_filter),
+    n_rows = nrow(chla_char_filter),
     order = 2
   )
   
   
-  # Remove fails ------------------------------------------------------------
+  # Document and remove fail language ---------------------------------------
   
-  chla_fails_removed <- chla_param_filter %>%
+  # The values that will be considered fails for each column:
+  fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "violation", "reject", "no data"
+  )
+  
+  # Now get counts of string detections for each column:
+  fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                      "ResultCommentText", "ResultMeasureValue_original") %>%
+    # Set list item names equal to each item in the list so that map will return
+    # a named list
+    set_names() %>%
+    map(
+      .x = .,
+      .f = ~ {
+        # Pass column name into the next map()
+        col_name <- .x
+        
+        # Check each string pattern separately and count instances
+        map_df(.x = fail_text,
+               .f = ~{
+                 hit_count <- chla_char_filter %>%
+                   filter(grepl(pattern = .x,
+                                x = !!sym(col_name),
+                                ignore.case = TRUE)) %>%
+                   nrow()
+                 
+                 # Return two-col df
+                 tibble(
+                   word = .x,
+                   record_count = hit_count
+                 )
+               }) %>%
+          # Ignore patterns that weren't detected
+          filter(record_count > 0)
+      }) %>%
+    # If there's any data frames with 0 rows (i.e., no fails detected) then
+    # drop them to avoid errors in the next step. This has happened with
+    # ResultMeasureValue in the past
+    keep(~nrow(.) > 0)
+  
+  
+  # Plot and export the plots as png files
+  walk2(.x = fail_counts,
+        .y = names(fail_counts),
+        .f = ~ ggsave(filename = paste0("3_harmonize/out/chla_",
+                                        .y,
+                                        "_fail_pie.png"),
+                      plot = plot_fail_pie(dataset = .x, col_name = .y),
+                      width = 6, height = 6, units = "in", device = "png"))
+  
+  
+  # Now that the fails have been documented, remove them:
+  chla_fails_removed <- chla_char_filter %>%
     filter(
-      # REMOVE failure-related field comments, slightly different list of words
-      # than lab and result list (not including things that could be used
-      # to describe field conditions like "warm", "ice", etc.)
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "violation", "invalid", "unable", "no test", "cancelled",
-            "instrument down", "no result", "time exceed", "not accept",
-            "QC EXCEEDED"),
-          collapse = "|"),
-        x = ActivityCommentText,
-        ignore.case = T
-      ) |
-        is.na(ActivityCommentText),
-      # Remove failure-related lab (What about controls comments?):
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
-          collapse = "|"),
-        x = ResultLaboratoryCommentText,
-        ignore.case = T
-      ) |
-        is.na(ResultLaboratoryCommentText),
-      # Remove failure-related result comments
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
-          collapse = "|"),
-        x = ResultCommentText,
-        ignore.case = T
-      ) | is.na(ResultCommentText),
-      # No failure-related values
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "not done", "no reading", "not reported",
-            "no data"),
-          collapse = "|"),
-        x = ResultMeasureValue_original,
-        ignore.case = T
-      ) | is.na(ResultMeasureValue_original))
+      if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
   
-  # How many records removed due to fails, missing data, etc.?
+  # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fails, missing data, etc.: ",
-      nrow(chla_param_filter) - nrow(chla_fails_removed)
+      "Rows removed due to fail-related language: ",
+      nrow(chla_char_filter) - nrow(chla_fails_removed)
     )
   )
   
   dropped_fails <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows indicating fails, missing data, etc.",
+    reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
-    number_dropped = nrow(chla_param_filter) - nrow(chla_fails_removed),
+    number_dropped = nrow(chla_char_filter) - nrow(chla_fails_removed),
     n_rows = nrow(chla_fails_removed),
     order = 3)
   
@@ -316,7 +323,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb",
-              "mg/cm3", "ug/ml", "mg/ml", "ppt"),
+                                      "mg/cm3", "ug/ml", "mg/ml", "ppt"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                    1000000, 1000000))
   
@@ -584,7 +591,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
                                 dropped_field, dropped_greater_than, dropped_harmonization, 
-                                dropped_mdls, dropped_media, dropped_methods, dropped_parameters)
+                                dropped_mdls, dropped_media, dropped_methods, dropped_chars)
   
   documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
   

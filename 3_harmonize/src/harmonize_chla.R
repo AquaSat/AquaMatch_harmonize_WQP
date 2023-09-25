@@ -424,153 +424,114 @@ harmonize_chla <- function(raw_chla, p_codes){
     )
   )
   
-  # Below we'll implement a tiering system in two stages.
-  # The first stage tags each record with an identifier based on the contents
-  # of the analytical method column:
-  #   - ⁠HPLC
-  #   - ⁠fluorometer
-  #   - ⁠spectrophotometer
-  #   - ⁠other: another method than the previous three ones (e.g., an in situ method)
-  #   - undefined: no information provided or not enough to determine the method
-  #     from the content of this column alone
-  #   - unrelated: a method seemingly unrelated to chlorophyll a
-  
-  # The second stage assigns coarser tiers based on the tags:
-  #   - Restrictive (HPLC)
-  #   - Narrowed (fluorometer, Spectrophotometer)
-  #   - Inclusive (undefined, other)
-  #   - Remove (unrelated) - these will be filtered out of the dataset
-  
-  # Define patterns to search when tagging chlorophyll a analytical methods
-  fluorometer_text <- paste0(c("445", "fluor", "Welshmeyer", "fld"),
-                             collapse = "|")
-  hplc_text <- paste0(c("447", "chromatography", "hplc"),
-                      collapse = "|") 
-  spectrophotometer_text <- paste0(c("10200", "446", "trichromatic",
-                                     "spectrophoto", "monochrom", "monchrom",
-                                     # spec not as part of a word
-                                     "(?<!\\w)spec"),
-                                   collapse = "|")
-  other_text <- paste0(c("Seabird CTD", "probe", "in situ", "oxygen demand",
-                         # Find the text "ysi" but not part of, e.g., "analysis"
-                         "\\bysi\\b", "\\bysi\\d+", "\\d+ysi\\b",
-                         "WETStar"),
-                       collapse = "|")
+  # Before creating analytical tiers remove any records that have unrelated
+  # data based on their method:
   unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
                              "plasma", "turbidity", "coliform", "carbon",
                              "2540", "conductance", "nitrate", "nitrite",
                              "nitrogen", "alkalin", "zooplankton",
                              "phosphorus", "periphyton", "peri",
-                             "10300", "biomass", "temperature",
-                             # Methods 10200 F & G
-                             "10200[ -]?[fg]",
-                             "elemental analyzer", "2320"),
-                           collapse = "|")
-  undefined_text <- paste0(c("unkn", "not specified", "unspecified",
-                             "not available", "n/a"),
+                             "biomass", "temperature", "elemental analyzer",
+                             "2320"),
                            collapse = "|")
   
-  # Create a separate column for each method tag
-  tagged_methods_chla <- converted_depth_units_chla %>%
-    rowwise() %>%
-    mutate(
-      hplc_tag = grepl(pattern = hplc_text,
-                       x = ResultAnalyticalMethod.MethodName,
-                       ignore.case = TRUE),
-      fluoro_tag = grepl(pattern = fluorometer_text,
-                         x = ResultAnalyticalMethod.MethodName,
-                         ignore.case = TRUE),
-      spectro_tag = grepl(pattern = spectrophotometer_text,
-                          x = ResultAnalyticalMethod.MethodName,
-                          ignore.case = TRUE,
-                          perl = TRUE),
-      other_tag = grepl(pattern = other_text,
-                        x = ResultAnalyticalMethod.MethodName,
-                        ignore.case = TRUE,
-                        perl = TRUE),
-      unrelated_tag = grepl(pattern = unrelated_text,
+  chla_relevant <- converted_depth_units_chla %>%
+    filter(!grepl(pattern = unrelated_text,
+                  x = ResultAnalyticalMethod.MethodName,
+                  ignore.case = TRUE))
+  
+  # How many records removed due to irrelevant analytical method?
+  print(
+    paste0(
+      "Rows removed due to unrelated analytical methods: ",
+      nrow(converted_depth_units_chla) - nrow(chla_relevant)
+    )
+  )
+  
+  
+  # 1.1 HPLC detection
+  
+  # Create a new column indicating detection of HPLC-related methods text: T or F
+  hplc_text <- paste0(c("447", "chromatography", "hplc"),
+                      collapse = "|") 
+  
+  chla_tag_hplc <- chla_relevant %>%
+    mutate(hplc_tag = grepl(pattern = hplc_text,
                             x = ResultAnalyticalMethod.MethodName,
-                            ignore.case = TRUE),
-      # Undefined is more complicated
-      undefined_tag = case_when(
-        grepl(pattern = undefined_text,
-              x = ResultAnalyticalMethod.MethodName,
-              ignore.case = TRUE) ~ TRUE,
-        # NAs = undefined
-        is.na(ResultAnalyticalMethod.MethodName) ~ TRUE,
-        # If there's a non-undefined tag then it's not undefined
-        any(c(hplc_tag, fluoro_tag, spectro_tag,
-              other_tag, unrelated_tag)) ~ FALSE,
-        # If there's more than one tag in the other columns then it's undefined
-        sum(c(hplc_tag, fluoro_tag, spectro_tag,
-              other_tag, unrelated_tag)) > 1 ~ TRUE,
-        # Defaults everything else to undefined
-        .default = TRUE)) 
+                            ignore.case = TRUE))
   
-  # Now tier based on the tags above
-  tiered_methods_chla <- tagged_methods_chla %>%
-    rowwise() %>%
-    mutate(
-      # If a lower tiered method is also mentioned in the same string then don't
-      # assign it to restrictive tier. There are some with multiple mentioned
-      restrictive_tier = if_else(condition = (hplc_tag == TRUE) &
-                                   (fluoro_tag != TRUE) &
-                                   (spectro_tag != TRUE) &
-                                   (other_tag != TRUE) &
-                                   (unrelated_tag != TRUE) &
-                                   (undefined_tag != TRUE),
-                                 true = TRUE,
-                                 false = FALSE),
-      narrowed_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag),
-                              true = TRUE,
-                              false = FALSE),
-      inclusive_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag,
-                                               other_tag, undefined_tag),
-                               true = TRUE,
-                               false = FALSE),
-      # If undef/unrelat/other, then cannot be restrictive or narrowed. Fixes any
-      # with, e.g., multiple tags
-      across(c(restrictive_tier, narrowed_tier),
-             .fns = ~if_else(any(undefined_tag, unrelated_tag, other_tag), FALSE, .x)),
-      # If unrelated, then cannot be inclusive either
-      inclusive_tier = if_else(condition = unrelated_tag,
-                               true = FALSE,
-                               false = inclusive_tier)
-    ) %>%
-    ungroup()
+  # 1.2 Spec/Fluor detection - new column
+  
+  # Create a new column indicating detection of non-HPLC lab-analyzed methods: T or F
+  spec_fluor_text <- paste0(c("445", "fluor", "Welshmeyer", "fld", "10200",
+                              "446", "trichromatic", "spectrophoto", "monochrom",
+                              "monchrom",
+                              # spec not as part of a word
+                              "(?<!\\w)spec"),
+                            collapse = "|")
+  
+  chla_tag_spec_fluor <- chla_tag_hplc %>%
+    mutate(spec_fluor_tag = grepl(pattern = spec_fluor_text,
+                                  x = ResultAnalyticalMethod.MethodName,
+                                  ignore.case = TRUE,
+                                  perl = TRUE))
+  
+  # 1.3 Correction for pheo detection - new column
+  
+  # Create a new column indicating whether the lab-analyzed chla data for spec
+  # and fluor have been corrected for pheophytin
+  chla_tag_pheo <- chla_tag_spec_fluor %>%
+    mutate(pheo_corr_tag = 
+             case_when(
+               # If correction or correction-related methods mentioned in
+               # analytical method OR...
+               grepl(pattern = "correct|445|446|in presence",
+                     x = ResultAnalyticalMethod.MethodName,
+                     ignore.case = TRUE) ~ TRUE,
+               # The characteristic name mentions correction
+               grepl(pattern = "corrected for pheophytin|free of pheophytin",
+                     x = CharacteristicName,
+                     ignore.case = TRUE) ~ TRUE,
+               .default = FALSE))
+  
+  # 1.4 Create tiers
+  tiered_methods_chla <- chla_tag_pheo %>%
+    mutate(analytical_tier = case_when(
+      # Top tier is HPLC = TRUE
+      hplc_tag ~ 0,
+      # Narrowed tier is non-HPLC lab analyzed AND corrected
+      spec_fluor_tag & pheo_corr_tag ~ 1,
+      # Everything else is inclusive tier
+      .default = 2
+    ))
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_chla %>%
-    add_count(ResultAnalyticalMethod.MethodName) %>%
-    select(ResultAnalyticalMethod.MethodName, n, contains("_tag"), contains("_tier")) %>%
-    arrange(desc(n)) %>%
-    distinct() 
+    count(CharacteristicName, ResultAnalyticalMethod.MethodName,
+          hplc_tag, spec_fluor_tag, pheo_corr_tag, analytical_tier) %>%
+    arrange(desc(n)) 
   
-  tiering_record_out_path <- "3_harmonize/out/chla_tiering_record.csv"
+  tiering_record_out_path <- "3_harmonize/out/chla_analytical_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
   # Filter and slim the tiered product
   cleaned_tiered_methods_chla <- tiered_methods_chla %>%
-    # No unrelated methods
-    filter(unrelated_tag == FALSE) %>%
-    # Drop tag columns - these are recorded and exported in tiering_record
+    # Drop tag columns - these are recorded and exported in tiering_record. We
+    # keep only the final tier
     select(-contains("_tag"))
   
-  # How many records removed due to limits on analytical method?
-  print(
-    paste0(
-      "Rows removed due to unrelated analytical methods: ",
-      nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla)
-    )
-  )
+  # Confirm that no rows were lost during tiering
+  if(nrow(chla_relevant) != nrow(cleaned_tiered_methods_chla)){
+    stop("Rows were lost during analytical method tiering. This is not expected.")
+  }  
   
   dropped_methods <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while tiering analytical methods",
+    reason = "Dropped rows while cleaning analytical methods",
     short_reason = "Analytical methods",
     number_dropped = nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla),
-    n_rows = nrow(cleaned_tiered_methods_chla),
+    n_rows = nrow(chla_relevant),
     order = 9
   )
   

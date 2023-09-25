@@ -13,10 +13,10 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   tss <- raw_tss %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
-    left_join(x = ., y = p_codes, by = "parm_cd") %>%
+    left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
       # Water only
-      media %in% c("Water","water"))  %>%
+      ActivityMediaName %in% c("Water","water"))  %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(.,"index")
@@ -48,9 +48,9 @@ harmonize_tss <- function(raw_tss, p_codes){
       "instrument down", "no result", "time exceed", "not accept",
       "QC EXCEEDED"),
       collapse = "|"),
-      x = field_comments,
+      x = ActivityCommentText,
       ignore.case = T) |
-        is.na(field_comments),
+        is.na(ActivityCommentText),
       # No failure-related lab comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -60,9 +60,9 @@ harmonize_tss <- function(raw_tss, p_codes){
           "not accept", "QC EXCEEDED", "not ice", "ice melt",
           "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
         collapse = "|"),
-        lab_comments,
+        ResultLaboratoryCommentText,
         ignore.case = T) |
-        is.na(lab_comments),
+        is.na(ResultLaboratoryCommentText),
       # no failure-related result comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -72,9 +72,9 @@ harmonize_tss <- function(raw_tss, p_codes){
           "not accept", "QC EXCEEDED", "not ice", "ice melt",
           "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
         collapse = "|"),
-        result_comments,
+        ResultCommentText,
         ignore.case = T) |
-        is.na(result_comments),
+        is.na(ResultCommentText),
       # no failure-related value comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -85,9 +85,9 @@ harmonize_tss <- function(raw_tss, p_codes){
           "PAST HOLDING TIME", "not done", "no reading", 
           "not reported", "no data"),
         collapse = "|"),
-        value,
+        ResultMeasureValue_original,
         ignore.case = T) |
-        is.na(value),
+        is.na(ResultMeasureValue_original),
       # no failure-related detection comments:
       !grepl(paste0(
         c("fail", "suspect", "error", "beyond accept", "interference",
@@ -123,24 +123,24 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Find MDLs and make them usable as numeric data
   mdl_updates <- tss_fails_removed %>%
     # only want NAs and character value data:
-    filter(is.na(value_numeric)) %>%
+    filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(value) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", lab_comments, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", result_comments, ignore.case = TRUE) |
+      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
+                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
                                      grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
                           #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", value, ignore.case = TRUE),
+                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
                         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
                         yes = DetectionQuantitationLimitMeasure.MeasureValue,
                         # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", value) & grepl("<", value),
+                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
                                     # ... use that number as the MDL
-                                    yes = str_replace_all(value, c("\\<"="", "\\*" = "", "\\=" = "" )),
+                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
                                     no = NA)),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, units),
+      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -164,8 +164,8 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Replace "harmonized_value" field with these new values
   tss_mdls_added <- tss_fails_removed %>%
     left_join(x = ., y = mdl_updates, by = "index") %>%
-    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, value_numeric),
-           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, units),
+    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
+           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
@@ -189,15 +189,15 @@ harmonize_tss <- function(raw_tss, p_codes){
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
            # Then select fields where the numeric value column is NA....
-           is.na(value_numeric) & 
+           is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", lab_comments, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", result_comments, ignore.case = T )|
+             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
+                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
                 grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
   
-  tss_approx$approx_value <- as.numeric(str_replace_all(tss_approx$value, c("\\*" = "")))
+  tss_approx$approx_value <- as.numeric(str_replace_all(tss_approx$ResultMeasureValue_original, c("\\*" = "")))
   tss_approx$approx_value[is.nan(tss_approx$approx_value)] <- NA
   
   # Keep important data
@@ -236,13 +236,13 @@ harmonize_tss <- function(raw_tss, p_codes){
   greater_vals <- tss_approx_added %>%
     filter((!index %in% mdl_updates$index) & (!index %in% tss_approx$index)) %>%
     # Then select fields where the NUMERIC value column is NA....
-    filter(is.na(value_numeric) & 
+    filter(is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              #... AND a `>` symbol
-             grepl(">", value))
+             grepl(">", ResultMeasureValue_original))
   
-  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$value,
+  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$ResultMeasureValue_original,
                                                            c("\\>" = "", "\\*" = "", "\\=" = "" )))
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
   
@@ -284,7 +284,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Set up a lookup table so that final units are all in ug/L... 
   unit_conversion_table <- tibble(
-    units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
               'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L',
               'g/l'),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,
@@ -293,8 +293,8 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   tss_harmonized_units <- tss_harmonized_values %>%
     # Drop unlikely units using an inner join
-    inner_join(unit_conversion_table, by = 'units') %>%
-    # To avoid editing the tss_lookup, I'm converting ug/l to mg/l here:
+    inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
+    # To avoid editing the tss_lookup, we convert ug/l to mg/l here:
     mutate(harmonized_value = (harmonized_value * conversion) / 1000,
            harmonized_unit = 'mg/L') %>%
     # MR limit
@@ -351,16 +351,16 @@ harmonize_tss <- function(raw_tss, p_codes){
   print(
     paste0(
       "Number of tss analytical methods present: ",
-      length(unique(tss_harmonized_units$analytical_method))
+      length(unique(tss_harmonized_units$ResultAnalyticalMethod.MethodName))
     )
   )
   
   # Group together TSS methods into useful categories
   tss_aggregated_methods <- tss_harmonized_units %>%
     mutate(method_status = case_when(
-      # "Gold standard" method mostly via analytical_method field:
+      # "Gold standard" method mostly via analytical method field:
       grepl("2540D|2540 D|105|103|160.2",
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) |
         # ... also use USGS p-codes to identify the data performed with "gold standard" method:
         grepl(paste0(c("Suspended solids, water, unfiltered, milligrams per liter",
@@ -375,16 +375,16 @@ harmonize_tss <- function(raw_tss, p_codes){
             ignore.case = T) ~ "TSS USGS 110",
       # This one may be appropriate to still consider:
       grepl("2540 F|Settlable Solids|Settleable",
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Settleable Solids ",
       grepl("2540C|2540 C|Total Dissolved|160.1|TDS|TOTAL FILTRATABLE RESIDUE",
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Unlikely",
       grepl("160.4|2540 E|Ashing|Volatile Residue",
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Unlikely", 
       grepl("Percent Solids|Total Solids|2540B|Total, Fixed and Volatile",
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Unlikely",
       # Clearly TSS, but not exactly sure how it was performed
       grepl(paste0(c("Nonfilterable Solids", "Non-filterable Residue by Filtration and Drying",
@@ -394,20 +394,20 @@ harmonize_tss <- function(raw_tss, p_codes){
                      "Suspended-Sediment in Water", "Residue Non- filterable (TSS)", "TSS",
                      "Residue by Evaporation and Gravimetric"),
                    collapse = "|"),
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Ambiguous TSS",
       grepl(paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Coliform",
                      "Carbon", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS",
                      "Nutrient", "Turbidity", "Temperature", "Nitrate", "Conductance",
                      "Conductivity", "Alkalinity", "Chlorophyll", "SM ", "EPA ", "2540 G"),
                    collapse = "|"),
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Unlikely",
       grepl(paste0(c("UNKOWN", "SSC by filtration (D3977;WI WSC)",
                      "Sediment conc by evaporation", "Historic", "Filterable Residue - TDS",
                      "Cheyenne River Sioux Tribe Quality Assurance Procedures"),
                    collapse = "|"),
-            analytical_method,
+            ResultAnalyticalMethod.MethodName,
             ignore.case = T) ~ "Unlikely",
       # This fills the rest as ambiguous. Should include things like local
       # SOPs, not known, etc.

@@ -18,10 +18,10 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   
   # First step is to read in the data and do basic formatting and filtering
   sdd <- raw_sdd %>%
-    left_join(x = ., y = p_codes, by = "parm_cd") %>%
+    left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     # Remove trailing white space in labels (Is this still necessary?)
     filter(
-      media %in% c("Water", "water")) %>%
+      ActivityMediaName %in% c("Water", "water")) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -55,10 +55,10 @@ harmonize_sdd <- function(raw_sdd, p_codes,
             "instrument down", "no result", "time exceed", "not accept",
             "QC EXCEEDED"),
           collapse = "|"),
-        x = field_comments,
+        x = ActivityCommentText,
         ignore.case = T
       ) |
-        is.na(field_comments),
+        is.na(ActivityCommentText),
       # Remove failure-related lab (What about controls comments?):
       !grepl(
         pattern = paste0(
@@ -69,10 +69,10 @@ harmonize_sdd <- function(raw_sdd, p_codes,
             "not accept", "QC EXCEEDED", "not ice", "ice melt",
             "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
           collapse = "|"),
-        x = lab_comments,
+        x = ResultLaboratoryCommentText,
         ignore.case = T
       ) |
-        is.na(lab_comments),
+        is.na(ResultLaboratoryCommentText),
       # Remove failure-related result comments
       !grepl(
         pattern = paste0(
@@ -83,9 +83,9 @@ harmonize_sdd <- function(raw_sdd, p_codes,
             "not accept", "QC EXCEEDED", "not ice", "ice melt",
             "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
           collapse = "|"),
-        x = result_comments,
+        x = ResultCommentText,
         ignore.case = T
-      ) | is.na(result_comments),
+      ) | is.na(ResultCommentText),
       # No failure-related values
       !grepl(
         pattern = paste0(
@@ -97,9 +97,9 @@ harmonize_sdd <- function(raw_sdd, p_codes,
             "PAST HOLDING TIME", "not done", "no reading", "no secchi",
             "not reported", "no data"),
           collapse = "|"),
-        x = value,
+        x = ResultMeasureValue_original,
         ignore.case = T
-      ) | is.na(value))
+      ) | is.na(ResultMeasureValue_original))
   
   # How many records removed due to fails, missing data, etc.?
   print(
@@ -123,24 +123,24 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   # Find MDLs and make them usable as numeric data
   mdl_updates <- sdd_fails_removed %>%
     # only want NAs and character value data:
-    filter(is.na(value_numeric)) %>%
+    filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(value) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", lab_comments, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", result_comments, ignore.case = TRUE) |
+      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
+                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
                                      grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
                           #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", value, ignore.case = TRUE),
+                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
                         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
                         yes = DetectionQuantitationLimitMeasure.MeasureValue,
                         # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", value) & grepl("<", value),
+                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
                                     # ... use that number as the MDL
-                                    yes = str_replace_all(value, c("\\<"="", "\\*" = "", "\\=" = "" )),
+                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
                                     no = NA)),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, units),
+      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -164,8 +164,8 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   # Replace "harmonized_value" field with these new values
   sdd_mdls_added <- sdd_fails_removed %>%
     left_join(x = ., y = mdl_updates, by = "index") %>%
-    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, value_numeric),
-           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, units),
+    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
+           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
@@ -189,15 +189,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
            # Then select fields where the numeric value column is NA....
-           is.na(value_numeric) & 
+           is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", lab_comments, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", result_comments, ignore.case = T )|
+             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
+                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
                 grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
   
-  sdd_approx$approx_value <- as.numeric(str_replace_all(sdd_approx$value, c("\\*" = "")))
+  sdd_approx$approx_value <- as.numeric(str_replace_all(sdd_approx$ResultMeasureValue_original, c("\\*" = "")))
   sdd_approx$approx_value[is.nan(sdd_approx$approx_value)] <- NA
   
   # Keep important data
@@ -236,13 +236,13 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   greater_vals <- sdd_approx_added %>%
     filter((!index %in% mdl_updates$index) & (!index %in% sdd_approx$index)) %>%
     # Then select fields where the NUMERIC value column is NA....
-    filter(is.na(value_numeric) & 
+    filter(is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              #... AND a `>` symbol
-             grepl(">", value))
+             grepl(">", ResultMeasureValue_original))
   
-  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$value,
+  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$ResultMeasureValue_original,
                                                            c("\\>" = "", "\\*" = "", "\\=" = "" )))
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
   
@@ -284,19 +284,19 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   
   # Now count the units column: 
   unit_counts <- sdd_harmonized_values %>%
-    count(units) %>%
+    count(ResultMeasure.MeasureUnitCode) %>%
     arrange(desc(n))
   
   unit_conversion_table <- tibble(
-    units = c("m", "ft", "cm", "in", "mm", "mi"),
+    ResultMeasure.MeasureUnitCode = c("m", "ft", "cm", "in", "mm", "mi"),
     conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 1609.34)
   )
   
   converted_units_sdd <- sdd_harmonized_values %>%
     inner_join(x = .,
                y = unit_conversion_table,
-               by = "units") %>%
-    mutate(harmonized_value = value_numeric * conversion,
+               by = "ResultMeasure.MeasureUnitCode") %>%
+    mutate(harmonized_value = ResultMeasureValue * conversion,
            harmonized_unit = "m") %>%
     # MR limit
     filter(abs(harmonized_value) < 15)
@@ -325,19 +325,19 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   print(
     paste0(
       "Number of secchi analytical methods present: ",
-      length(unique(converted_units_sdd$analytical_method))
+      length(unique(converted_units_sdd$ResultAnalyticalMethod.MethodName))
     )
   )
   
   analytical_counts <- converted_units_sdd %>%
-    count(analytical_method) %>%
+    count(ResultAnalyticalMethod.MethodName) %>%
     arrange(desc(n))
   
   # Add a new column aggregating the analytical methods groups
   grouped_analytical_methods_sdd <- converted_units_sdd %>%
     left_join(x = .,
               y = sdd_analytical_method_matchup,
-              by = c("analytical_method")) %>%
+              by = c("ResultAnalyticalMethod.MethodName" = "analytical_method")) %>%
     filter(analytical_method_grouping != "unlikely")
   
   # How many records removed due to limits on analytical method?
@@ -393,16 +393,16 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   
   # Aggregate sample methods ------------------------------------------------
   
-  # Now count the sample_method column:
+  # Now count the sample method column:
   sample_counts <- grouped_fractions_sdd %>%
-    count(sample_method) %>%
+    count(SampleCollectionMethod.MethodName) %>%
     arrange(desc(n))
   
-  # Add a new column describing the sample_method group:
+  # Add a new column describing the sample method group:
   grouped_sample_methods_sdd <- grouped_fractions_sdd %>%
     left_join(x = .,
               y = sdd_sample_method_matchup,
-              by = c("sample_method")) %>%
+              by = c("SampleCollectionMethod.MethodName" = "sample_method")) %>%
     filter(sample_method_grouping != "unlikely")
   
   # How many records removed due to unlikely sample methods?
@@ -424,15 +424,15 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   
   # Aggregate collection equipment ------------------------------------------
   
-  # Now count the collection_equipment column:
+  # Now count the collection equipment column:
   equipment_counts <- grouped_sample_methods_sdd %>%
-    count(collection_equipment) %>%
+    count(SampleCollectionEquipmentName) %>%
     arrange(desc(n))
   
   grouped_equipment_sdd <- grouped_sample_methods_sdd %>%
     left_join(x = .,
               y = sdd_equipment_matchup,
-              by = c("collection_equipment")) %>%
+              by = c("SampleCollectionEquipmentName" = "collection_equipment")) %>%
     filter(equipment_grouping != "unlikely")
   
   # How many records removed due to unlikely sample methods?

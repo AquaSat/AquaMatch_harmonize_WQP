@@ -330,7 +330,7 @@ The next step in secchi harmonization is working with the units of the WQP recor
 
 ```{r echo=FALSE}
 tibble(
-  units = c("m", "ft", "cm", "in", "mm", "mi"),
+  ResultMeasure.MeasureUnitCode = c("m", "ft", "cm", "in", "mm", "mi"),
   conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 1609.34)
 ) %>%
   kable() %>%

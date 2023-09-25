@@ -16,9 +16,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   # First step is to read in the data and do basic formatting and filtering
   chla <- raw_chla %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
-    left_join(x = ., y = p_codes, by = "parm_cd") %>%
+    left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
-      media %in% c("Water", "water")) %>%
+      ActivityMediaName %in% c("Water", "water")) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -41,12 +41,12 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   chla_param_filter <- chla %>%
     filter(
-      orig_parameter %in% c('Chlorophyll a',
-                            'Chlorophyll a (probe relative fluorescence)',
-                            'Chlorophyll a, corrected for pheophytin',
-                            'Chlorophyll a (probe)',
-                            'Chlorophyll a, free of pheophytin',
-                            'Chlorophyll a - Phytoplankton (suspended)'))
+      CharacteristicName %in% c('Chlorophyll a',
+                                'Chlorophyll a (probe relative fluorescence)',
+                                'Chlorophyll a, corrected for pheophytin',
+                                'Chlorophyll a (probe)',
+                                'Chlorophyll a, free of pheophytin',
+                                'Chlorophyll a - Phytoplankton (suspended)'))
   
   # How many records removed due to fails, missing data, etc.?
   print(
@@ -81,10 +81,10 @@ harmonize_chla <- function(raw_chla, p_codes){
             "instrument down", "no result", "time exceed", "not accept",
             "QC EXCEEDED"),
           collapse = "|"),
-        x = field_comments,
+        x = ActivityCommentText,
         ignore.case = T
       ) |
-        is.na(field_comments),
+        is.na(ActivityCommentText),
       # Remove failure-related lab (What about controls comments?):
       !grepl(
         pattern = paste0(
@@ -95,10 +95,10 @@ harmonize_chla <- function(raw_chla, p_codes){
             "not accept", "QC EXCEEDED", "not ice", "ice melt",
             "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
           collapse = "|"),
-        x = lab_comments,
+        x = ResultLaboratoryCommentText,
         ignore.case = T
       ) |
-        is.na(lab_comments),
+        is.na(ResultLaboratoryCommentText),
       # Remove failure-related result comments
       !grepl(
         pattern = paste0(
@@ -109,9 +109,9 @@ harmonize_chla <- function(raw_chla, p_codes){
             "not accept", "QC EXCEEDED", "not ice", "ice melt",
             "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
           collapse = "|"),
-        x = result_comments,
+        x = ResultCommentText,
         ignore.case = T
-      ) | is.na(result_comments),
+      ) | is.na(ResultCommentText),
       # No failure-related values
       !grepl(
         pattern = paste0(
@@ -123,9 +123,9 @@ harmonize_chla <- function(raw_chla, p_codes){
             "PAST HOLDING TIME", "not done", "no reading", "not reported",
             "no data"),
           collapse = "|"),
-        x = value,
+        x = ResultMeasureValue_original,
         ignore.case = T
-      ) | is.na(value))
+      ) | is.na(ResultMeasureValue_original))
   
   # How many records removed due to fails, missing data, etc.?
   print(
@@ -149,24 +149,24 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Find MDLs and make them usable as numeric data
   mdl_updates <- chla_fails_removed %>%
     # only want NAs and character value data:
-    filter(is.na(value_numeric)) %>%
+    filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(value) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", lab_comments, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", result_comments, ignore.case = TRUE) |
+      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
+                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
                                      grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
                           #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", value, ignore.case = TRUE),
+                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
                         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
                         yes = DetectionQuantitationLimitMeasure.MeasureValue,
                         # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", value) & grepl("<", value),
+                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
                                     # ... use that number as the MDL
-                                    yes = str_replace_all(value, c("\\<"="", "\\*" = "", "\\=" = "" )),
+                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
                                     no = NA)),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, units),
+      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -190,8 +190,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Replace "harmonized_value" field with these new values
   chla_mdls_added <- chla_fails_removed %>%
     left_join(x = ., y = mdl_updates, by = "index") %>%
-    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, value_numeric),
-           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, units),
+    mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
+           harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
            harmonized_comments = ifelse(index %in% mdl_updates$index,
                                         "Approximated using the EPA's MDL method.", NA))
   
@@ -215,15 +215,15 @@ harmonize_chla <- function(raw_chla, p_codes){
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
            # Then select fields where the numeric value column is NA....
-           is.na(value_numeric) & 
+           is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", lab_comments, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", result_comments, ignore.case = T )|
+             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
+                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
                 grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
   
-  chla_approx$approx_value <- as.numeric(str_replace_all(chla_approx$value, c("\\*" = "")))
+  chla_approx$approx_value <- as.numeric(str_replace_all(chla_approx$ResultMeasureValue_original, c("\\*" = "")))
   chla_approx$approx_value[is.nan(chla_approx$approx_value)] <- NA
   
   # Keep important data
@@ -262,13 +262,13 @@ harmonize_chla <- function(raw_chla, p_codes){
   greater_vals <- chla_approx_added %>%
     filter((!index %in% mdl_updates$index) & (!index %in% chla_approx$index)) %>%
     # Then select fields where the NUMERIC value column is NA....
-    filter(is.na(value_numeric) & 
+    filter(is.na(ResultMeasureValue) & 
              # ... AND the original value column has numeric characters...
-             grepl("[0-9]", value) &
+             grepl("[0-9]", ResultMeasureValue_original) &
              #... AND a `>` symbol
-             grepl(">", value))
+             grepl(">", ResultMeasureValue_original))
   
-  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$value,
+  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$ResultMeasureValue_original,
                                                            c("\\>" = "", "\\*" = "", "\\=" = "" )))
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
   
@@ -311,19 +311,20 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Now count the units column: 
   unit_counts <- chla_harmonized_values %>%
-    count(units) %>%
+    count(ResultMeasure.MeasureUnitCode) %>%
     arrange(desc(n))
   
   unit_conversion_table <- tibble(
-    units = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb", "mg/cm3", "ug/ml", "mg/ml", "ppt"),
-    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000, 1000000, 1000000)
-  )
+    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb",
+              "mg/cm3", "ug/ml", "mg/ml", "ppt"),
+    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
+                   1000000, 1000000))
   
   converted_units_chla <- chla_harmonized_values %>%
     inner_join(x = .,
                y = unit_conversion_table,
-               by = "units") %>%
-    mutate(harmonized_value = value_numeric * conversion,
+               by = "ResultMeasure.MeasureUnitCode") %>%
+    mutate(harmonized_value = ResultMeasureValue * conversion,
            harmonized_unit = "ug/L") %>%
     # MR limit 
     filter(harmonized_value < 1000)
@@ -400,7 +401,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Number of chla analytical methods present: ",
-      length(unique(converted_depth_units_chla$analytical_method))
+      length(unique(converted_depth_units_chla$ResultAnalyticalMethod.MethodName))
     )
   )
   
@@ -455,29 +456,29 @@ harmonize_chla <- function(raw_chla, p_codes){
     rowwise() %>%
     mutate(
       hplc_tag = grepl(pattern = hplc_text,
-                       x = analytical_method,
+                       x = ResultAnalyticalMethod.MethodName,
                        ignore.case = TRUE),
       fluoro_tag = grepl(pattern = fluorometer_text,
-                         x = analytical_method,
+                         x = ResultAnalyticalMethod.MethodName,
                          ignore.case = TRUE),
       spectro_tag = grepl(pattern = spectrophotometer_text,
-                          x = analytical_method,
+                          x = ResultAnalyticalMethod.MethodName,
                           ignore.case = TRUE,
                           perl = TRUE),
       other_tag = grepl(pattern = other_text,
-                        x = analytical_method,
+                        x = ResultAnalyticalMethod.MethodName,
                         ignore.case = TRUE,
                         perl = TRUE),
       unrelated_tag = grepl(pattern = unrelated_text,
-                            x = analytical_method,
+                            x = ResultAnalyticalMethod.MethodName,
                             ignore.case = TRUE),
       # Undefined is more complicated
       undefined_tag = case_when(
         grepl(pattern = undefined_text,
-              x = analytical_method,
+              x = ResultAnalyticalMethod.MethodName,
               ignore.case = TRUE) ~ TRUE,
         # NAs = undefined
-        is.na(analytical_method) ~ TRUE,
+        is.na(ResultAnalyticalMethod.MethodName) ~ TRUE,
         # If there's a non-undefined tag then it's not undefined
         any(c(hplc_tag, fluoro_tag, spectro_tag,
               other_tag, unrelated_tag)) ~ FALSE,
@@ -521,8 +522,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_chla %>%
-    add_count(analytical_method) %>%
-    select(analytical_method, n, contains("_tag"), contains("_tier")) %>%
+    add_count(ResultAnalyticalMethod.MethodName) %>%
+    select(ResultAnalyticalMethod.MethodName, n, contains("_tag"), contains("_tier")) %>%
     arrange(desc(n)) %>%
     distinct() 
   

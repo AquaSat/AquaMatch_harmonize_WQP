@@ -281,7 +281,7 @@ step_5_dropped <- filter(step_data,
 The next step in doc harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into milligrams/L:
 
 ```{r echo=FALSE}
-tibble(units = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+tibble(ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
                  'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
        conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                       1000000, 0.000001, 60.080000)) %>%

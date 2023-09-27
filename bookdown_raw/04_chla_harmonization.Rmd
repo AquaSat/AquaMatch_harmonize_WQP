@@ -166,7 +166,7 @@ step_data %>%
 
 <br>
 
-### Remove fails
+### Document and remove fails
 
 ```{r echo = FALSE}
 step_3_rows <- filter(step_data,

@@ -366,7 +366,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
-  # Clean up depths ---------------------------------------------------------
+  # Clean and flag depth data -----------------------------------------------
   
   # As with value col, check for entries with potential salvageable data. But don't
   # create a flag column for this one

@@ -37,9 +37,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   gc()
   
   
-  # Parameter name selection ------------------------------------------------
+  # Characteristic name selection ------------------------------------------------
   
-  chla_param_filter <- chla %>%
+  chla_char_filter <- chla %>%
     filter(
       CharacteristicName %in% c('Chlorophyll a',
                                 'Chlorophyll a (probe relative fluorescence)',
@@ -51,100 +51,109 @@ harmonize_chla <- function(raw_chla, p_codes){
   # How many records removed due to fails, missing data, etc.?
   print(
     paste0(
-      "Rows removed due to non-target parameter names: ",
-      nrow(chla) - nrow(chla_param_filter)
+      "Rows removed due to non-target CharacteristicNames: ",
+      nrow(chla) - nrow(chla_char_filter)
     )
   )
   
-  dropped_parameters <- tibble(
+  dropped_chars <- tibble(
     step = "chla harmonization",
-    reason = "Filtered for specific chlorophyll parameters",
-    short_reason = "Chla params",
-    number_dropped = nrow(chla) - nrow(chla_param_filter),
-    n_rows = nrow(chla_param_filter),
+    reason = "Filtered for specific chlorophyll CharacteristicNames",
+    short_reason = "Chla characteristics",
+    number_dropped = nrow(chla) - nrow(chla_char_filter),
+    n_rows = nrow(chla_char_filter),
     order = 2
   )
   
   
-  # Remove fails ------------------------------------------------------------
+  # Document and remove fail language ---------------------------------------
   
-  chla_fails_removed <- chla_param_filter %>%
+  # The values that will be considered fails for each column:
+  fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "violation", "reject", "no data"
+  )
+  
+  # Now get counts of fail-related string detections for each column: 
+  fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                      "ResultCommentText", "ResultMeasureValue_original") %>%
+    # Set list item names equal to each item in the list so that map will return
+    # a named list
+    set_names() %>%
+    map(
+      .x = .,
+      .f = ~ {
+        # Pass column name into the next map()
+        col_name <- .x
+        
+        # Check each string pattern separately and count instances
+        map_df(.x = fail_text,
+               .f = ~{
+                 hit_count <- chla_char_filter %>%
+                   filter(grepl(pattern = .x,
+                                x = !!sym(col_name),
+                                ignore.case = TRUE)) %>%
+                   nrow()
+                 
+                 # Return two-col df
+                 tibble(
+                   word = .x,
+                   record_count = hit_count
+                 )
+               }) %>%
+          # Ignore patterns that weren't detected
+          filter(record_count > 0)
+      }) %>%
+    # If there's any data frames with 0 rows (i.e., no fails detected) then
+    # drop them to avoid errors in the next step. This has happened with
+    # ResultMeasureValue in the past
+    keep(~nrow(.) > 0)
+  
+  
+  # Plot and export the plots as png files
+  walk2(.x = fail_counts,
+        .y = names(fail_counts),
+        .f = ~ ggsave(filename = paste0("3_harmonize/out/chla_",
+                                        .y,
+                                        "_fail_pie.png"),
+                      plot = plot_fail_pie(dataset = .x, col_name = .y),
+                      width = 6, height = 6, units = "in", device = "png"))
+  
+  
+  # Now that the fails have been documented, remove them:
+  chla_fails_removed <- chla_char_filter %>%
     filter(
-      # REMOVE failure-related field comments, slightly different list of words
-      # than lab and result list (not including things that could be used
-      # to describe field conditions like "warm", "ice", etc.)
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "violation", "invalid", "unable", "no test", "cancelled",
-            "instrument down", "no result", "time exceed", "not accept",
-            "QC EXCEEDED"),
-          collapse = "|"),
-        x = ActivityCommentText,
-        ignore.case = T
-      ) |
-        is.na(ActivityCommentText),
-      # Remove failure-related lab (What about controls comments?):
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
-          collapse = "|"),
-        x = ResultLaboratoryCommentText,
-        ignore.case = T
-      ) |
-        is.na(ResultLaboratoryCommentText),
-      # Remove failure-related result comments
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
-          collapse = "|"),
-        x = ResultCommentText,
-        ignore.case = T
-      ) | is.na(ResultCommentText),
-      # No failure-related values
-      !grepl(
-        pattern = paste0(
-          c("fail", "suspect", "error", "beyond accept", "interference",
-            "questionable", "outside of accept", "problem", "contaminat",
-            "improper", "warm", "violation", "invalid", "unable", "no test",
-            "cancelled", "instrument down", "no result", "time exceed",
-            "not accept", "QC EXCEEDED", "not ice", "ice melt",
-            "PAST HOLDING TIME", "not done", "no reading", "not reported",
-            "no data"),
-          collapse = "|"),
-        x = ResultMeasureValue_original,
-        ignore.case = T
-      ) | is.na(ResultMeasureValue_original))
+      if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
   
-  # How many records removed due to fails, missing data, etc.?
+  # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fails, missing data, etc.: ",
-      nrow(chla_param_filter) - nrow(chla_fails_removed)
+      "Rows removed due to fail-related language: ",
+      nrow(chla_char_filter) - nrow(chla_fails_removed)
     )
   )
   
   dropped_fails <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows indicating fails, missing data, etc.",
+    reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
-    number_dropped = nrow(chla_param_filter) - nrow(chla_fails_removed),
+    number_dropped = nrow(chla_char_filter) - nrow(chla_fails_removed),
     n_rows = nrow(chla_fails_removed),
     order = 3)
   
   
   # Clean up MDLs -----------------------------------------------------------
+  
+  non_detect_text <- "non-detect|not detect|non detect|undetect|below"
   
   # Find MDLs and make them usable as numeric data
   mdl_updates <- chla_fails_removed %>%
@@ -152,21 +161,27 @@ harmonize_chla <- function(raw_chla, p_codes){
     filter(is.na(ResultMeasureValue)) %>%
     # if the value is na BUT there is non detect language in the comments...  
     mutate(
-      mdl_vals = ifelse(test = (is.na(ResultMeasureValue_original) & 
-                                  (grepl("non-detect|not detect|non detect|undetect|below", ResultLaboratoryCommentText, ignore.case = TRUE) | 
-                                     grepl("non-detect|not detect|non detect|undetect|below", ResultCommentText, ignore.case = TRUE) |
-                                     grepl("non-detect|not detect|non detect|undetect|below", ResultDetectionConditionText, ignore.case = TRUE))) |
-                          #.... OR, there is non-detect language in the value column itself....
-                          grepl("non-detect|not detect|non detect|undetect|below", ResultMeasureValue_original, ignore.case = TRUE),
-                        #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
-                        yes = DetectionQuantitationLimitMeasure.MeasureValue,
-                        # if there is a `<` and a number in the values column...
-                        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
-                                    # ... use that number as the MDL
-                                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
-                                    no = NA)),
+      mdl_vals = ifelse(
+        test = (is.na(ResultMeasureValue_original) & 
+                  (grepl(non_detect_text, ResultLaboratoryCommentText, ignore.case = TRUE) | 
+                     grepl(non_detect_text, ResultCommentText, ignore.case = TRUE) |
+                     grepl(non_detect_text, ResultDetectionConditionText, ignore.case = TRUE))) |
+          #.... OR, there is non-detect language in the value column itself....
+          grepl(non_detect_text, ResultMeasureValue_original, ignore.case = TRUE),
+        #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
+        yes = DetectionQuantitationLimitMeasure.MeasureValue,
+        # if there is a `<` and a number in the values column...
+        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) &
+                      grepl("<", ResultMeasureValue_original),
+                    # ... use that number as the MDL
+                    yes = str_replace_all(string = ResultMeasureValue_original,
+                                          pattern = c("\\<"="", "\\*" = "", "\\=" = "" )),
+                    no = NA)
+      ),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
+      mdl_units = ifelse(!is.na(mdl_vals), 
+                         DetectionQuantitationLimitMeasure.MeasureUnitCode, 
+                         ResultMeasure.MeasureUnitCode),
       # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
@@ -211,6 +226,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # approach to our MDL detection, we can identify value fields that are labelled
   # as being approximated.
   
+  approx_text <- "result approx|RESULT IS APPROX|value approx"
+  
   chla_approx <- chla_mdls_added %>%
     # First, remove the samples that we've already approximated using the EPA method:
     filter(!index %in% mdl_updates$index,
@@ -219,9 +236,9 @@ harmonize_chla <- function(raw_chla, p_codes){
              # ... AND the original value column has numeric characters...
              grepl("[0-9]", ResultMeasureValue_original) &
              # ...AND any of the comment fields have approximation language...
-             (grepl("result approx|RESULT IS APPROX|value approx", ResultLaboratoryCommentText, ignore.case = T)|
-                grepl("result approx|RESULT IS APPROX|value approx", ResultCommentText, ignore.case = T )|
-                grepl("result approx|RESULT IS APPROX|value approx", ResultDetectionConditionText, ignore.case = T)))
+             (grepl(approx_text, ResultLaboratoryCommentText, ignore.case = T)|
+                grepl(approx_text, ResultCommentText, ignore.case = T )|
+                grepl(approx_text, ResultDetectionConditionText, ignore.case = T)))
   
   chla_approx$approx_value <- as.numeric(str_replace_all(chla_approx$ResultMeasureValue_original, c("\\*" = "")))
   chla_approx$approx_value[is.nan(chla_approx$approx_value)] <- NA
@@ -268,8 +285,10 @@ harmonize_chla <- function(raw_chla, p_codes){
              #... AND a `>` symbol
              grepl(">", ResultMeasureValue_original))
   
-  greater_vals$greater_value <- as.numeric(str_replace_all(greater_vals$ResultMeasureValue_original,
-                                                           c("\\>" = "", "\\*" = "", "\\=" = "" )))
+  greater_vals$greater_value <- as.numeric(
+    str_replace_all(
+      greater_vals$ResultMeasureValue_original,
+      c("\\>" = "", "\\*" = "", "\\=" = "" )))
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
   
   # Keep important data
@@ -316,7 +335,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb",
-              "mg/cm3", "ug/ml", "mg/ml", "ppt"),
+                                      "mg/cm3", "ug/ml", "mg/ml", "ppt"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                    1000000, 1000000))
   
@@ -584,7 +603,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
                                 dropped_field, dropped_greater_than, dropped_harmonization, 
-                                dropped_mdls, dropped_media, dropped_methods, dropped_parameters)
+                                dropped_mdls, dropped_media, dropped_methods, dropped_chars)
   
   documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
   

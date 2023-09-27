@@ -166,7 +166,7 @@ step_data %>%
 
 <br>
 
-### Remove fails
+### Document and remove fails
 
 ```{r echo = FALSE}
 step_3_rows <- filter(step_data,
@@ -184,7 +184,7 @@ step_3_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-In this step we filter out records based on indications that they have failed data for some reason. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue`. Records with text that matches one of the following patterns are removed: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data"
+In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason provided by the data provider. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue`. Records with text that matches one of the following patterns are removed: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data"
 
 Below are pie charts breaking down the number of fail detections by column:
 

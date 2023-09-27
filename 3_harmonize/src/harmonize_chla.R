@@ -37,7 +37,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   gc()
   
   
-  # Character name selection ------------------------------------------------
+  # Characteristic name selection ------------------------------------------------
   
   chla_char_filter <- chla %>%
     filter(
@@ -76,7 +76,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     "questionable", "suspect", "unable", "violation", "reject", "no data"
   )
   
-  # Now get counts of string detections for each column:
+  # Now get counts of fail-related string detections for each column: 
   fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
                       "ResultCommentText", "ResultMeasureValue_original") %>%
     # Set list item names equal to each item in the list so that map will return

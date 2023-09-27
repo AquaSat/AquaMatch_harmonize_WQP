@@ -37,7 +37,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   gc()
   
   
-  # Character name selection ------------------------------------------------
+  # Characteristic name selection ------------------------------------------------
   
   chla_char_filter <- chla %>%
     filter(

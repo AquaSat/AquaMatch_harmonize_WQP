@@ -368,39 +368,96 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Clean and flag depth data -----------------------------------------------
   
-  # As with value col, check for entries with potential salvageable data. But don't
-  # create a flag column for this one
-  salvage_depths <- converted_units_chla %>%
-    filter(grepl(x = ActivityDepthHeightMeasure.MeasureValue, pattern = "-|>|<|=")) %>%
-    count(ActivityDepthHeightMeasure.MeasureValue)
-  
-  salvage_depth_units <- converted_units_chla %>%
-    count(ActivityDepthHeightMeasure.MeasureUnitCode)
-  
+  # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
     depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
     depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
   )
   
+  # There are four columns with potential depth data that we need to convert
+  # into meters:
   converted_depth_units_chla <- converted_units_chla %>%
+    # 1. Activity depth col
     left_join(x = .,
               y = depth_unit_conversion_table,
               by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
-    mutate(harmonized_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion,
-           harmonized_depth_unit = "m") %>%
-    # Surface limits - for the time being using two columns for this. Make sure
-    # numeric value is within +/-2m OR the raw character version indicates something
-    # similar:
-    filter(abs(harmonized_depth_value) <= 2 |
-             ActivityDepthHeightMeasure.MeasureValue %in% c("0-2", "0-0.5")|
-             # Don't want to lose all the NA depth records
-             is.na(ActivityDepthHeightMeasure.MeasureValue))
+    mutate(
+      harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    # Drop conversion col to avoid interfering with next join
+    select(-depth_conversion) %>%
+    # 2. Result depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    select(-depth_conversion) %>%
+    # 3. Activity top depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_top_depth_unit = "m"
+    ) %>%
+    select(-depth_conversion) %>%
+    # 4. Activity bottom depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_bottom_depth_unit = "m"
+    )
   
-  # How many records removed due to limits on depth?
+  # Now combine the two columns with single point depth data into one, which
+  # has NAs from activity depth backfilled with values from result depth when
+  # possible
+  harmonized_depth_chla <- converted_depth_units_chla %>%
+    mutate(
+      harmonized_discrete_depth_value = if_else(
+        # If converted ActivityDepthHeightMeasure.MeasureValue is NA...
+        condition = is.na(harmonized_activity_depth_value),
+        # then fill with converted ResultDepthHeightMeasure.MeasureValue
+        true = harmonized_result_depth_value,
+        false = harmonized_activity_depth_value
+      ),
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    # These columns are no longer necessary since the harmonization is done
+    select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+              depth_conversion))
+  
+  # Create a flag system based on depth data presence/completion
+  flagged_depth_chla <- harmonized_depth_chla %>%
+    mutate(depth_flag = case_when(
+      # Integrated depths
+      !is.na(harmonized_top_depth_value) &
+        !is.na(harmonized_bottom_depth_value) &
+        is.na(harmonized_discrete_depth_value) ~ 2,
+      # Discrete depth available, incl those with discrete
+      # + top and/or bottom
+      !is.na(harmonized_discrete_depth_value) ~ 1,
+      # No depths, incomplete depths
+      is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value) ~ 0,
+      (is.na(harmonized_discrete_depth_value) &
+         !is.na(harmonized_top_depth_value) &
+         is.na(harmonized_bottom_depth_value)) |
+        (is.na(harmonized_discrete_depth_value) &
+           is.na(harmonized_top_depth_value) &
+           !is.na(harmonized_bottom_depth_value)) ~ 0,
+      .default = 0
+    ))
+  
+  # Have any records been removed while processing depths?
   print(
     paste0(
       "Rows removed due to non-target depths: ",
-      nrow(converted_units_chla) - nrow(converted_depth_units_chla)
+      nrow(converted_units_chla) - nrow(flagged_depth_chla)
     )
   )
   
@@ -408,8 +465,8 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while cleaning depths",
     short_reason = "Clean depths",
-    number_dropped = nrow(converted_units_chla) - nrow(converted_depth_units_chla),
-    n_rows = nrow(converted_depth_units_chla),
+    number_dropped = nrow(converted_units_chla) - nrow(flagged_depth_chla),
+    n_rows = nrow(flagged_depth_chla),
     order = 8
   )
   
@@ -420,7 +477,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Number of chla analytical methods present: ",
-      length(unique(converted_depth_units_chla$ResultAnalyticalMethod.MethodName))
+      length(unique(flagged_depth_chla$ResultAnalyticalMethod.MethodName))
     )
   )
   
@@ -435,7 +492,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                              "2320"),
                            collapse = "|")
   
-  chla_relevant <- converted_depth_units_chla %>%
+  chla_relevant <- flagged_depth_chla %>%
     filter(!grepl(pattern = unrelated_text,
                   x = ResultAnalyticalMethod.MethodName,
                   ignore.case = TRUE))
@@ -444,7 +501,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Rows removed due to unrelated analytical methods: ",
-      nrow(converted_depth_units_chla) - nrow(chla_relevant)
+      nrow(flagged_depth_chla) - nrow(chla_relevant)
     )
   )
   
@@ -530,7 +587,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while cleaning analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla),
+    number_dropped = nrow(flagged_depth_chla) - nrow(cleaned_tiered_methods_chla),
     n_rows = nrow(chla_relevant),
     order = 9
   )

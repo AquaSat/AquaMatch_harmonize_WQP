@@ -668,25 +668,63 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
-  # Tier field methods ------------------------------------------------------
+  # Flag field methods ------------------------------------------------------
   
-  # Function to build tiers based on the fraction and depth data
-  field_tiers_chla <- assign_field_tier(dataset = cleaned_tiered_methods_chla)
+  # Strings to use in determining sampling procedure
+  in_vitro_pattern <- paste0(c("grab", "bottle", "vessel", "bucket", "jar", "composite",
+                               "integrate", "UHL001", "surface", "filter", "filtrat",
+                               "1060B", "kemmerer", "collect", "rosette", "equal width",
+                               "vertical", "van dorn", "bail", "sample",
+                               "sampling",
+                               # "lab" not in the middle of another word
+                               "\\blab", 
+                               # G on its own for "grab"
+                               "^g$"),
+                             collapse = "|")
+  
+  in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
+                            collapse = "|")
+  
+  # Create a temporary tag column for use when comparing to methods
+  tagged_sampling_chla <- cleaned_tiered_methods_chla %>%
+    mutate(field_tag = case_when(
+      grepl(pattern = in_vitro_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in vitro",
+      grepl(pattern = in_situ_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in situ",
+      .default = "unknown"
+    )) 
+  
+  # Now flag whether the sampling method makes sense with the analytical method
+  field_flagged_chla <- tagged_sampling_chla %>% 
+    mutate(field_flag = case_when(
+      # HPLC or other lab analysis + in vitro = expected methods
+      analytical_tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
+      # HPLC or other lab analysis + in situ = UNexpected methods
+      analytical_tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
+      # The inclusive analytical tier is flexible
+      analytical_tier == 2 ~ 0
+    )) %>%
+    select(-field_tag)
   
   # How many records removed due to unlikely fraction types?
   print(
     paste0(
-      "Rows removed while assigning field tiers: ",
-      nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla)
+      "Rows removed while assigning field flags: ",
+      nrow(cleaned_tiered_methods_chla) - nrow(field_flagged_chla)
     )
   )
   
   dropped_field <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while assigning field tiers",
-    short_reason = "Field tiers",
-    number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(field_tiers_chla),
-    n_rows = nrow(field_tiers_chla),
+    reason = "Dropped rows while assigning field flags",
+    short_reason = "Field flagging",
+    number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(field_flagged_chla),
+    n_rows = nrow(field_flagged_chla),
     order = 10
   )
   
@@ -707,14 +745,14 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/harmonized_chla.feather"
   
-  write_feather(field_tiers_chla,
+  write_feather(field_flagged_chla,
                 data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(field_tiers_chla)
+      nrow(field_flagged_chla)
     )
   )
   

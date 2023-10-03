@@ -367,7 +367,19 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   
   # Clean and flag depth data -----------------------------------------------
-  
+
+    # Recode any error-related character values to NAs
+  recode_depth_na_chla <- converted_units_chla %>%
+    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                            ResultDepthHeightMeasure.MeasureValue,
+                            ActivityTopDepthHeightMeasure.MeasureValue,
+                            ActivityBottomDepthHeightMeasure.MeasureValue),
+                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                        "9999", "-9999", "-99",
+                                                        "NaN"),
+                                  true = NA_character_,
+                                  false = .x)))
+                                  
   # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
     depth_units = c("in", "ft", "feet", "cm", "m", "meters"),

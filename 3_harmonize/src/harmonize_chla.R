@@ -388,7 +388,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # There are four columns with potential depth data that we need to convert
   # into meters:
-  converted_depth_units_chla <- converted_units_chla %>%
+  converted_depth_units_chla <- recode_depth_na_chla %>%
     # 1. Activity depth col
     left_join(x = .,
               y = depth_unit_conversion_table,

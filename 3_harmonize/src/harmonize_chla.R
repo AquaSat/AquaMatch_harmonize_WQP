@@ -532,8 +532,7 @@ harmonize_chla <- function(raw_chla, p_codes){
         harmonized_bottom_depth_value <= 5 ~ "<=5m",
       depth_flag == 2 &
         harmonized_bottom_depth_value > 5 ~ ">5m",
-      depth_flag == 0 ~ "None",
-      .default = "Other"
+      .default = "No or inconsistent depth"
     ))
   
   depth_counts_out_path <- "3_harmonize/out/chla_depth_counts.csv"

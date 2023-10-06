@@ -366,41 +366,213 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
-  # Clean up depths ---------------------------------------------------------
+  # Clean and flag depth data -----------------------------------------------
   
-  # As with value col, check for entries with potential salvageable data. But don't
-  # create a flag column for this one
-  salvage_depths <- converted_units_chla %>%
-    filter(grepl(x = ActivityDepthHeightMeasure.MeasureValue, pattern = "-|>|<|=")) %>%
-    count(ActivityDepthHeightMeasure.MeasureValue)
+  # Recode any error-related character values to NAs
+  recode_depth_na_chla <- converted_units_chla %>%
+    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                            ResultDepthHeightMeasure.MeasureValue,
+                            ActivityTopDepthHeightMeasure.MeasureValue,
+                            ActivityBottomDepthHeightMeasure.MeasureValue),
+                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                        "9999", "-9999", "-99",
+                                                        "NaN"),
+                                  true = NA_character_,
+                                  false = .x)))
   
-  salvage_depth_units <- converted_units_chla %>%
-    count(ActivityDepthHeightMeasure.MeasureUnitCode)
-  
+  # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
     depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
     depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
   )
   
-  converted_depth_units_chla <- converted_units_chla %>%
+  # There are four columns with potential depth data that we need to convert
+  # into meters:
+  converted_depth_units_chla <- recode_depth_na_chla %>%
+    # 1. Activity depth col
     left_join(x = .,
               y = depth_unit_conversion_table,
               by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
-    mutate(harmonized_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion,
-           harmonized_depth_unit = "m") %>%
-    # Surface limits - for the time being using two columns for this. Make sure
-    # numeric value is within +/-2m OR the raw character version indicates something
-    # similar:
-    filter(abs(harmonized_depth_value) <= 2 |
-             ActivityDepthHeightMeasure.MeasureValue %in% c("0-2", "0-0.5")|
-             # Don't want to lose all the NA depth records
-             is.na(ActivityDepthHeightMeasure.MeasureValue))
+    mutate(
+      harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    # Drop conversion col to avoid interfering with next join
+    select(-depth_conversion) %>%
+    # 2. Result depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    select(-depth_conversion) %>%
+    # 3. Activity top depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_top_depth_unit = "m"
+    ) %>%
+    select(-depth_conversion) %>%
+    # 4. Activity bottom depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_bottom_depth_unit = "m"
+    )
   
-  # How many records removed due to limits on depth?
+  # Now combine the two columns with single point depth data into one and clean
+  # up values generally:
+  harmonized_depth_chla <- converted_depth_units_chla %>%
+    rowwise() %>%
+    mutate(
+      # 1. New harmonized discrete column:
+      harmonized_discrete_depth_value = case_when(
+        # Use activity depth mainly
+        !is.na(harmonized_activity_depth_value) &
+          is.na(harmonized_result_depth_value) ~ harmonized_activity_depth_value,
+        # Missing activity depth but not result depth
+        is.na(harmonized_activity_depth_value) &
+          !is.na(harmonized_result_depth_value) ~ harmonized_result_depth_value,
+        # Disagreeing activity and result depths
+        (!is.na(harmonized_activity_depth_value) &
+           !is.na(harmonized_result_depth_value)) &
+          harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+            c(harmonized_activity_depth_value, harmonized_result_depth_value)),
+        # Both agree
+        harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
+        # Defaults to NA otherwise
+        .default = NA_real_
+      ),
+      # Indicate depth unit going along with this column
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    ungroup()
+  
+  # Create a flag system based on depth data presence/completion
+  flagged_depth_chla <- harmonized_depth_chla %>%
+    mutate(
+      depth_flag = case_when(
+        # No depths (including because of recoding above)
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 0,
+        # All columns present
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value) ~ 3,
+        # Integrated depths
+        (!is.na(harmonized_top_depth_value) |
+           !is.na(harmonized_bottom_depth_value)) &
+          is.na(harmonized_discrete_depth_value) ~ 2,
+        # Discrete depths
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 1,
+        # Discrete and integrated present
+        # Note that here using the non-combined discrete col since part of
+        # the combination process above was to create NAs when the discrete
+        # values disagree
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_top_depth_value)) |
+          ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+             !is.na(harmonized_bottom_depth_value)) ~ 3,
+        .default = NA_real_
+      )) %>%
+    # These columns are no longer necessary since the harmonization is done
+    select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+              depth_conversion))
+  
+  # Sanity check that flags are matching up with their intended qualities:
+  depth_check_table <- flagged_depth_chla %>%
+    mutate(
+      # Everything present
+      three_cols_present = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only discrete present
+      only_discrete = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only top present
+      only_top = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only bottom present
+      only_bottom = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Full integrated present
+      fully_integrated = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # No depths present
+      no_depths = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Discrete and one of the integrated
+      discrete_partial_integ = if_else(
+        (!is.na(harmonized_discrete_depth_value) &
+           !is.na(harmonized_top_depth_value) &
+           is.na(harmonized_bottom_depth_value)) |
+          (!is.na(harmonized_discrete_depth_value) &
+             is.na(harmonized_top_depth_value) &
+             !is.na(harmonized_bottom_depth_value)),
+        true = 1, false = 0)
+    ) %>%
+    count(three_cols_present, only_discrete, discrete_partial_integ,
+          only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+    arrange(depth_flag)
+  
+  depth_check_out_path <- "3_harmonize/out/chla_depth_check_table.csv"
+  
+  write_csv(x = depth_check_table,
+            file = depth_check_out_path)
+  
+  # Depth category counts:
+  depth_counts <- flagged_depth_chla %>%
+    # Using a temporary flag to aggregate depth values for count output
+    mutate(depth_agg_flag = case_when(
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 1 ~ "<=1m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 5 ~ "<=5m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value > 5 ~ ">5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 1 ~ "<=1m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 5 ~ "<=5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value > 5 ~ ">5m",
+      .default = "No or inconsistent depth"
+    )) %>%
+    count(depth_agg_flag)
+  
+  depth_counts_out_path <- "3_harmonize/out/chla_depth_counts.csv"
+  
+  write_csv(x = depth_counts, file = depth_counts_out_path)
+  
+  # Have any records been removed while processing depths?
   print(
     paste0(
       "Rows removed due to non-target depths: ",
-      nrow(converted_units_chla) - nrow(converted_depth_units_chla)
+      nrow(converted_units_chla) - nrow(flagged_depth_chla)
     )
   )
   
@@ -408,8 +580,8 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while cleaning depths",
     short_reason = "Clean depths",
-    number_dropped = nrow(converted_units_chla) - nrow(converted_depth_units_chla),
-    n_rows = nrow(converted_depth_units_chla),
+    number_dropped = nrow(converted_units_chla) - nrow(flagged_depth_chla),
+    n_rows = nrow(flagged_depth_chla),
     order = 8
   )
   
@@ -420,157 +592,118 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Number of chla analytical methods present: ",
-      length(unique(converted_depth_units_chla$ResultAnalyticalMethod.MethodName))
+      length(unique(flagged_depth_chla$ResultAnalyticalMethod.MethodName))
     )
   )
   
-  # Below we'll implement a tiering system in two stages.
-  # The first stage tags each record with an identifier based on the contents
-  # of the analytical method column:
-  #   - ⁠HPLC
-  #   - ⁠fluorometer
-  #   - ⁠spectrophotometer
-  #   - ⁠other: another method than the previous three ones (e.g., an in situ method)
-  #   - undefined: no information provided or not enough to determine the method
-  #     from the content of this column alone
-  #   - unrelated: a method seemingly unrelated to chlorophyll a
-  
-  # The second stage assigns coarser tiers based on the tags:
-  #   - Restrictive (HPLC)
-  #   - Narrowed (fluorometer, Spectrophotometer)
-  #   - Inclusive (undefined, other)
-  #   - Remove (unrelated) - these will be filtered out of the dataset
-  
-  # Define patterns to search when tagging chlorophyll a analytical methods
-  fluorometer_text <- paste0(c("445", "fluor", "Welshmeyer", "fld"),
-                             collapse = "|")
-  hplc_text <- paste0(c("447", "chromatography", "hplc"),
-                      collapse = "|") 
-  spectrophotometer_text <- paste0(c("10200", "446", "trichromatic",
-                                     "spectrophoto", "monochrom", "monchrom",
-                                     # spec not as part of a word
-                                     "(?<!\\w)spec"),
-                                   collapse = "|")
-  other_text <- paste0(c("Seabird CTD", "probe", "in situ", "oxygen demand",
-                         # Find the text "ysi" but not part of, e.g., "analysis"
-                         "\\bysi\\b", "\\bysi\\d+", "\\d+ysi\\b",
-                         "WETStar"),
-                       collapse = "|")
+  # Before creating analytical tiers remove any records that have unrelated
+  # data based on their method:
   unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
                              "plasma", "turbidity", "coliform", "carbon",
                              "2540", "conductance", "nitrate", "nitrite",
                              "nitrogen", "alkalin", "zooplankton",
                              "phosphorus", "periphyton", "peri",
-                             "10300", "biomass", "temperature",
-                             # Methods 10200 F & G
-                             "10200[ -]?[fg]",
-                             "elemental analyzer", "2320"),
-                           collapse = "|")
-  undefined_text <- paste0(c("unkn", "not specified", "unspecified",
-                             "not available", "n/a"),
+                             "biomass", "temperature", "elemental analyzer",
+                             "2320"),
                            collapse = "|")
   
-  # Create a separate column for each method tag
-  tagged_methods_chla <- converted_depth_units_chla %>%
-    rowwise() %>%
-    mutate(
-      hplc_tag = grepl(pattern = hplc_text,
-                       x = ResultAnalyticalMethod.MethodName,
-                       ignore.case = TRUE),
-      fluoro_tag = grepl(pattern = fluorometer_text,
-                         x = ResultAnalyticalMethod.MethodName,
-                         ignore.case = TRUE),
-      spectro_tag = grepl(pattern = spectrophotometer_text,
-                          x = ResultAnalyticalMethod.MethodName,
-                          ignore.case = TRUE,
-                          perl = TRUE),
-      other_tag = grepl(pattern = other_text,
-                        x = ResultAnalyticalMethod.MethodName,
-                        ignore.case = TRUE,
-                        perl = TRUE),
-      unrelated_tag = grepl(pattern = unrelated_text,
+  chla_relevant <- flagged_depth_chla %>%
+    filter(!grepl(pattern = unrelated_text,
+                  x = ResultAnalyticalMethod.MethodName,
+                  ignore.case = TRUE))
+  
+  # How many records removed due to irrelevant analytical method?
+  print(
+    paste0(
+      "Rows removed due to unrelated analytical methods: ",
+      nrow(flagged_depth_chla) - nrow(chla_relevant)
+    )
+  )
+  
+  
+  # 1.1 HPLC detection
+  
+  # Create a new column indicating detection of HPLC-related methods text: T or F
+  hplc_text <- paste0(c("447", "chromatography", "hplc"),
+                      collapse = "|") 
+  
+  chla_tag_hplc <- chla_relevant %>%
+    mutate(hplc_tag = grepl(pattern = hplc_text,
                             x = ResultAnalyticalMethod.MethodName,
-                            ignore.case = TRUE),
-      # Undefined is more complicated
-      undefined_tag = case_when(
-        grepl(pattern = undefined_text,
-              x = ResultAnalyticalMethod.MethodName,
-              ignore.case = TRUE) ~ TRUE,
-        # NAs = undefined
-        is.na(ResultAnalyticalMethod.MethodName) ~ TRUE,
-        # If there's a non-undefined tag then it's not undefined
-        any(c(hplc_tag, fluoro_tag, spectro_tag,
-              other_tag, unrelated_tag)) ~ FALSE,
-        # If there's more than one tag in the other columns then it's undefined
-        sum(c(hplc_tag, fluoro_tag, spectro_tag,
-              other_tag, unrelated_tag)) > 1 ~ TRUE,
-        # Defaults everything else to undefined
-        .default = TRUE)) 
+                            ignore.case = TRUE))
   
-  # Now tier based on the tags above
-  tiered_methods_chla <- tagged_methods_chla %>%
-    rowwise() %>%
-    mutate(
-      # If a lower tiered method is also mentioned in the same string then don't
-      # assign it to restrictive tier. There are some with multiple mentioned
-      restrictive_tier = if_else(condition = (hplc_tag == TRUE) &
-                                   (fluoro_tag != TRUE) &
-                                   (spectro_tag != TRUE) &
-                                   (other_tag != TRUE) &
-                                   (unrelated_tag != TRUE) &
-                                   (undefined_tag != TRUE),
-                                 true = TRUE,
-                                 false = FALSE),
-      narrowed_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag),
-                              true = TRUE,
-                              false = FALSE),
-      inclusive_tier = if_else(condition = any(hplc_tag, fluoro_tag, spectro_tag,
-                                               other_tag, undefined_tag),
-                               true = TRUE,
-                               false = FALSE),
-      # If undef/unrelat/other, then cannot be restrictive or narrowed. Fixes any
-      # with, e.g., multiple tags
-      across(c(restrictive_tier, narrowed_tier),
-             .fns = ~if_else(any(undefined_tag, unrelated_tag, other_tag), FALSE, .x)),
-      # If unrelated, then cannot be inclusive either
-      inclusive_tier = if_else(condition = unrelated_tag,
-                               true = FALSE,
-                               false = inclusive_tier)
-    ) %>%
-    ungroup()
+  # 1.2 Spec/Fluor detection - new column
+  
+  # Create a new column indicating detection of non-HPLC lab-analyzed methods: T or F
+  spec_fluor_text <- paste0(c("445", "fluor", "Welshmeyer", "fld", "10200",
+                              "446", "trichromatic", "spectrophoto", "monochrom",
+                              "monchrom",
+                              # spec not as part of a word
+                              "(?<!\\w)spec"),
+                            collapse = "|")
+  
+  chla_tag_spec_fluor <- chla_tag_hplc %>%
+    mutate(spec_fluor_tag = grepl(pattern = spec_fluor_text,
+                                  x = ResultAnalyticalMethod.MethodName,
+                                  ignore.case = TRUE,
+                                  perl = TRUE))
+  
+  # 1.3 Correction for pheo detection - new column
+  
+  # Create a new column indicating whether the lab-analyzed chla data for spec
+  # and fluor have been corrected for pheophytin
+  chla_tag_pheo <- chla_tag_spec_fluor %>%
+    mutate(pheo_corr_tag = 
+             case_when(
+               # If correction or correction-related methods mentioned in
+               # analytical method OR...
+               grepl(pattern = "correct|445|446|in presence",
+                     x = ResultAnalyticalMethod.MethodName,
+                     ignore.case = TRUE) ~ TRUE,
+               # The characteristic name mentions correction
+               grepl(pattern = "corrected for pheophytin|free of pheophytin",
+                     x = CharacteristicName,
+                     ignore.case = TRUE) ~ TRUE,
+               .default = FALSE))
+  
+  # 1.4 Create tiers
+  tiered_methods_chla <- chla_tag_pheo %>%
+    mutate(analytical_tier = case_when(
+      # Top tier is HPLC = TRUE
+      hplc_tag ~ 0,
+      # Narrowed tier is non-HPLC lab analyzed AND corrected
+      spec_fluor_tag & pheo_corr_tag ~ 1,
+      # Everything else is inclusive tier
+      .default = 2
+    ))
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_chla %>%
-    add_count(ResultAnalyticalMethod.MethodName) %>%
-    select(ResultAnalyticalMethod.MethodName, n, contains("_tag"), contains("_tier")) %>%
-    arrange(desc(n)) %>%
-    distinct() 
+    count(CharacteristicName, ResultAnalyticalMethod.MethodName,
+          hplc_tag, spec_fluor_tag, pheo_corr_tag, analytical_tier) %>%
+    arrange(desc(n)) 
   
-  tiering_record_out_path <- "3_harmonize/out/chla_tiering_record.csv"
+  tiering_record_out_path <- "3_harmonize/out/chla_analytical_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
   # Filter and slim the tiered product
   cleaned_tiered_methods_chla <- tiered_methods_chla %>%
-    # No unrelated methods
-    filter(unrelated_tag == FALSE) %>%
-    # Drop tag columns - these are recorded and exported in tiering_record
+    # Drop tag columns - these are recorded and exported in tiering_record. We
+    # keep only the final tier
     select(-contains("_tag"))
   
-  # How many records removed due to limits on analytical method?
-  print(
-    paste0(
-      "Rows removed due to unrelated analytical methods: ",
-      nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla)
-    )
-  )
+  # Confirm that no rows were lost during tiering
+  if(nrow(chla_relevant) != nrow(cleaned_tiered_methods_chla)){
+    stop("Rows were lost during analytical method tiering. This is not expected.")
+  }  
   
   dropped_methods <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while tiering analytical methods",
+    reason = "Dropped rows while cleaning analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(converted_depth_units_chla) - nrow(cleaned_tiered_methods_chla),
-    n_rows = nrow(cleaned_tiered_methods_chla),
+    number_dropped = nrow(flagged_depth_chla) - nrow(cleaned_tiered_methods_chla),
+    n_rows = nrow(chla_relevant),
     order = 9
   )
   

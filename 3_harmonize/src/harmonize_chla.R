@@ -367,8 +367,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   
   # Clean and flag depth data -----------------------------------------------
-
-    # Recode any error-related character values to NAs
+  
+  # Recode any error-related character values to NAs
   recode_depth_na_chla <- converted_units_chla %>%
     mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
                             ResultDepthHeightMeasure.MeasureValue,
@@ -379,7 +379,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                                                         "NaN"),
                                   true = NA_character_,
                                   false = .x)))
-                                  
+  
   # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
     depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
@@ -426,9 +426,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Now combine the two columns with single point depth data into one and clean
   # up values generally:
-  harmonized_depth_chla <-converted_depth_units_chla %>%
+  harmonized_depth_chla <- converted_depth_units_chla %>%
+    rowwise() %>%
     mutate(
-      
       # 1. New harmonized discrete column:
       harmonized_discrete_depth_value = case_when(
         # Use activity depth mainly
@@ -440,81 +440,109 @@ harmonize_chla <- function(raw_chla, p_codes){
         # Disagreeing activity and result depths
         (!is.na(harmonized_activity_depth_value) &
            !is.na(harmonized_result_depth_value)) &
-          harmonized_activity_depth_value != harmonized_result_depth_value ~ NA_real_,
+          harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+            c(harmonized_activity_depth_value, harmonized_result_depth_value)),
         # Both agree
         harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
         # Defaults to NA otherwise
         .default = NA_real_
       ),
-      
-      harmonized_discrete_depth_unit = "m",
-      
-      # 2. Multiple cols, unless matching, result in NAs in harmonized version
-      harmonized_discrete_depth_value = if_else(
-        condition = (!is.na(harmonized_top_depth_value) & 
-                       !is.na(harmonized_discrete_depth_value) &
-                       (harmonized_discrete_depth_value != harmonized_top_depth_value)) |
-          (!is.na(harmonized_bottom_depth_value) & 
-             !is.na(harmonized_discrete_depth_value) &
-             (harmonized_discrete_depth_value != harmonized_top_depth_value)),
-        true = NA_real_,
-        false = harmonized_discrete_depth_value),
-      harmonized_top_depth_value = if_else(
-        condition = !is.na(harmonized_discrete_depth_value) & 
-          !is.na(harmonized_top_depth_value) &
-          (harmonized_top_depth_value != harmonized_discrete_depth_value),
-        true = NA_real_,
-        false = harmonized_top_depth_value),
-      harmonized_bottom_depth_value = if_else(
-        condition = !is.na(harmonized_discrete_depth_value) & 
-          !is.na(harmonized_bottom_depth_value) &
-          (harmonized_bottom_depth_value != harmonized_discrete_depth_value),
-        true = NA_real_,
-        false = harmonized_bottom_depth_value)
-    )
+      # Indicate depth unit going along with this column
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    ungroup()
   
   # Create a flag system based on depth data presence/completion
   flagged_depth_chla <- harmonized_depth_chla %>%
     mutate(
       depth_flag = case_when(
+        # No depths (including because of recoding above)
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 0,
+        # All columns present
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value) ~ 3,
         # Integrated depths
-        !is.na(harmonized_top_depth_value) &
-          !is.na(harmonized_bottom_depth_value) &
+        (!is.na(harmonized_top_depth_value) |
+           !is.na(harmonized_bottom_depth_value)) &
           is.na(harmonized_discrete_depth_value) ~ 2,
         # Discrete depths
         !is.na(harmonized_discrete_depth_value) &
           is.na(harmonized_top_depth_value) &
           is.na(harmonized_bottom_depth_value) ~ 1,
-        # Matching discrete + integrated
-        !is.na(harmonized_discrete_depth_value) &
-          !is.na(harmonized_top_depth_value) &
-          !is.na(harmonized_bottom_depth_value) &
-          ((harmonized_discrete_depth_value == harmonized_top_depth_value) &
-             (harmonized_discrete_depth_value == harmonized_bottom_depth_value)) ~ 1,
-        # Partial match with additional NA
-        ((!is.na(harmonized_discrete_depth_value) &
-            !is.na(harmonized_top_depth_value) &
-            is.na(harmonized_bottom_depth_value)) &
-           harmonized_discrete_depth_value == harmonized_top_depth_value) |
-          ((!is.na(harmonized_discrete_depth_value) &
-              !is.na(harmonized_bottom_depth_value) &
-              is.na(harmonized_top_depth_value)) &
-             harmonized_discrete_depth_value == harmonized_bottom_depth_value) ~ 1,
-        # Partial data
-        is.na(harmonized_discrete_depth_value) &
-          is.na(harmonized_top_depth_value) &
-          !is.na(harmonized_bottom_depth_value) |
-          is.na(harmonized_discrete_depth_value) &
-          !is.na(harmonized_top_depth_value) &
-          is.na(harmonized_bottom_depth_value) ~ 0,
-        # No depths (including because of recoding above)
-        is.na(harmonized_discrete_depth_value) &
-          is.na(harmonized_top_depth_value) &
-          is.na(harmonized_bottom_depth_value) ~ 0
+        # Discrete and integrated present
+        # Note that here using the non-combined discrete col since part of
+        # the combination process above was to create NAs when the discrete
+        # values disagree
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_top_depth_value)) |
+          ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+             !is.na(harmonized_bottom_depth_value)) ~ 3,
+        .default = NA_real_
       )) %>%
     # These columns are no longer necessary since the harmonization is done
     select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
               depth_conversion))
+  
+  # Sanity check that flags are matching up with their intended qualities:
+  depth_check_table <- flagged_depth_chla %>%
+    mutate(
+      # Everything present
+      three_cols_present = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only discrete present
+      only_discrete = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only top present
+      only_top = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only bottom present
+      only_bottom = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Full integrated present
+      fully_integrated = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # No depths present
+      no_depths = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Discrete and one of the integrated
+      discrete_partial_integ = if_else(
+        (!is.na(harmonized_discrete_depth_value) &
+           !is.na(harmonized_top_depth_value) &
+           is.na(harmonized_bottom_depth_value)) |
+          (!is.na(harmonized_discrete_depth_value) &
+             is.na(harmonized_top_depth_value) &
+             !is.na(harmonized_bottom_depth_value)),
+        true = 1, false = 0)
+    ) %>%
+    count(three_cols_present, only_discrete, discrete_partial_integ,
+          only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+    arrange(depth_flag)
+  
+  depth_check_out_path <- "3_harmonize/out/chla_depth_check_table.csv"
+  
+  write_csv(x = depth_check_table,
+            file = depth_check_out_path)
   
   # Depth category counts:
   depth_counts <- flagged_depth_chla %>%
@@ -533,7 +561,8 @@ harmonize_chla <- function(raw_chla, p_codes){
       depth_flag == 2 &
         harmonized_bottom_depth_value > 5 ~ ">5m",
       .default = "No or inconsistent depth"
-    ))
+    )) %>%
+    count(depth_agg_flag)
   
   depth_counts_out_path <- "3_harmonize/out/chla_depth_counts.csv"
   

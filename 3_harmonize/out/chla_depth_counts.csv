@@ -1,0 +1,5 @@
+depth_agg_flag,n
+<=1m,851899
+<=5m,285843
+>5m,99852
+No or inconsistent depth,729865

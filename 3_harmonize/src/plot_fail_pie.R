@@ -1,17 +1,19 @@
-# A function to streamline creation of pie charts for showing failure-related
-# grepl string detection counts
-
-# dataset = A data frame containing the columns `record_count` (numeric count of
-#           detections) and word (string containing the pattern used in grepl)
-# col_name = A string containing the name of the WQP column being checked for
-#           fail-related language
-#
-# Value
-# A ggplot object containing a pie chart
-# 
-# Adapted from
-# https://stackoverflow.com/questions/69715282/how-to-adjust-ggrepel-label-on-pie-chart
-
+#' @title Create pie charts for grepl string detections
+#' 
+#' @description
+#' A function to streamline creation of pie charts for showing failure-related
+#' grepl string detection counts
+#' 
+#' @param dataset A data frame containing the columns `record_count` (numeric
+#'  count of detections) and word (string containing the pattern used in grepl)
+#' @param dataset A data frame containing the columns `record_count` (numeric count of
+#' detections) and word (string containing the pattern used in grepl)
+#' @param col_name A string containing the name of the WQP column being checked
+#' for fail-related language 
+#' 
+#' @returns A ggplot object containing a pie chart
+#' 
+#' @note Adapted from https://stackoverflow.com/questions/69715282/how-to-adjust-ggrepel-label-on-pie-chart
 plot_fail_pie <- function(dataset, col_name, text_size = 3){
   
   # Prepare the position info needed for the pie chart

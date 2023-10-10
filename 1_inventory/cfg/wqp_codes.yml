@@ -13,19 +13,13 @@
   #   - "Colored dissolved organic matter (CDOM)"
     
   chlorophyll:
-    - "Chlorophyll"
-    - "Chlorophyll A"
     - "Chlorophyll a"
     - "Chlorophyll a (probe relative fluorescence)"
-    - "Chlorophyll a (probe)"
-    - "Chlorophyll a - Periphyton (attached)"
-    - "Chlorophyll a - Phytoplankton (suspended)"
     - "Chlorophyll a, corrected for pheophytin"
+    - "Chlorophyll a (probe)"
     - "Chlorophyll a, free of pheophytin"
     - "Chlorophyll a, uncorrected for pheophytin"
-    - "Chlorophyll b"
-    - "Chlorophyll c"
-    - "Chlorophyll/Pheophytin ratio"
+    - "Chlorophyll a - Phytoplankton (suspended)"
     
   # depth:
   #   - "Depth"

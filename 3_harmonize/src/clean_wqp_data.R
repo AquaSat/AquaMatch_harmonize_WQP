@@ -166,16 +166,6 @@ clean_wqp_data <- function(wqp_data,
   
   # Remove white space before export
   wqp_data_clean <- wqp_data_pass_media %>%
-    # Temp fix to remove Facility sites; do this eventually in the WQP data pull
-    semi_join(x = .,
-              y = wqp_metadata %>%
-                filter(ResolvedMonitoringLocationTypeName %in%
-                         c("Estuary", "Lake, Reservoir, Impoundment", "Stream")),
-              by = c("OrganizationIdentifier",
-                     "MonitoringLocationIdentifier",
-                     "lat", "lon")) %>%
-    # rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
-    #             .cols = match_table$wqp_name) %>%
     mutate(year = year(ActivityStartDate),
            ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
   

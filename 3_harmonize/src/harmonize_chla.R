@@ -717,8 +717,8 @@ harmonize_chla <- function(raw_chla, p_codes){
       analytical_tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
       # HPLC or other lab analysis + in situ = UNexpected methods
       analytical_tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
-      # The inclusive analytical tier is flexible
-      analytical_tier == 2 ~ 0
+      # The inclusive analytical tier is unknown
+      analytical_tier == 2 ~ 2
     )) %>%
     select(-field_tag)
   

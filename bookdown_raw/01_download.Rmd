@@ -19,44 +19,56 @@ options(tigris_use_cache = TRUE)
 
 ### Catalogue existing data
 
-The download process begins by cataloging the existing data that is available in the WQP. We start out using the characteristic names below (grouped by parameters) for retrieving data. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
+The download process begins by cataloging the existing data that is available in the WQP. To do this the user specifies parameters and their corresponding `characteristicNames` for retrieving data from the WQP. Below are the current parameters and their `characteristicNames` as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
 
-chlorophyll:
+```{r}
+yaml_contents <- yaml::read_yaml("1_inventory/cfg/wqp_codes.yml")
+names_yaml <- names(yaml::read_yaml("1_inventory/cfg/wqp_codes.yml"))
 
--   "Chlorophyll"
--   "Chlorophyll A"
--   "Chlorophyll a"
--   "Chlorophyll a (probe relative fluorescence)"
--   "Chlorophyll a (probe)"
--   "Chlorophyll a - Periphyton (attached)"
--   "Chlorophyll a - Phytoplankton (suspended)"
--   "Chlorophyll a, corrected for pheophytin"
--   "Chlorophyll a, free of pheophytin"
--   "Chlorophyll a, uncorrected for pheophytin"
--   "Chlorophyll b"
--   "Chlorophyll c"
--   "Chlorophyll/Pheophytin ratio"
+map(.x = names_yaml,
+    .f = ~yaml_contents[.x] %>%
+      as_tibble() %>%
+      kable() %>%
+      kable_material())
+```
 
-secchi:
 
--   "Depth, Secchi disk depth"
--   "Depth, Secchi disk depth (choice list)"
--   "Secchi Reading Condition (choice list)"
--   "Secchi depth"
--   "Water transparency, Secchi disc"
+<!-- chlorophyll: -->
 
-doc:
+<!-- -   "Chlorophyll" -->
+<!-- -   "Chlorophyll A" -->
+<!-- -   "Chlorophyll a" -->
+<!-- -   "Chlorophyll a (probe relative fluorescence)" -->
+<!-- -   "Chlorophyll a (probe)" -->
+<!-- -   "Chlorophyll a - Periphyton (attached)" -->
+<!-- -   "Chlorophyll a - Phytoplankton (suspended)" -->
+<!-- -   "Chlorophyll a, corrected for pheophytin" -->
+<!-- -   "Chlorophyll a, free of pheophytin" -->
+<!-- -   "Chlorophyll a, uncorrected for pheophytin" -->
+<!-- -   "Chlorophyll b" -->
+<!-- -   "Chlorophyll c" -->
+<!-- -   "Chlorophyll/Pheophytin ratio" -->
 
--   "Organic carbon"
--   "Total carbon"
--   "Hydrophilic fraction of organic carbon"
--   "Non-purgeable Organic Carbon (NPOC)"
+<!-- secchi: -->
 
-tss:
+<!-- -   "Depth, Secchi disk depth" -->
+<!-- -   "Depth, Secchi disk depth (choice list)" -->
+<!-- -   "Secchi Reading Condition (choice list)" -->
+<!-- -   "Secchi depth" -->
+<!-- -   "Water transparency, Secchi disc" -->
 
-- "Total suspended solids"
-- "Total Particulate Matter"
-- "Total Suspended Particulate Matter"
+<!-- doc: -->
+
+<!-- -   "Organic carbon" -->
+<!-- -   "Total carbon" -->
+<!-- -   "Hydrophilic fraction of organic carbon" -->
+<!-- -   "Non-purgeable Organic Carbon (NPOC)" -->
+
+<!-- tss: -->
+
+<!-- - "Total suspended solids" -->
+<!-- - "Total Particulate Matter" -->
+<!-- - "Total Suspended Particulate Matter" -->
 
 <br>
 

@@ -26,12 +26,12 @@ In order to control for some of this variation and provide end-users with someth
 + Depth flags
 
 ### Analytical method tiering
+The `ResultAnalyticalMethod.MethodName` column from the WQP is the primary indicator we used for determining which analytical methods tier records fall within. Each parameter's harmonization chapter in this {bookdown} document contains detail on which methods were sorted into which tiers.
+
 The primary concern of our analytical method tiering philosophy was determining the reliability and accuracy of each analytical method for each parameter in the AquaSat v2 dataset. This naturally varies for each parameter of interest and its corresponding `characteristicNames` in the WQP. We developed the following categories for this column, which is denoted as `analytical_tier` in the final dataset: 
 + **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable
 + **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers
 + **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter.
-
-The `ResultAnalyticalMethod.MethodName` column from the WQP is the primary indicator we used for determining which analytical methods tier records fall within. Each parameter's harmonization chapter in this {bookdown} document contains detail on which methods were sorted into which tiers.
 
 ### Field flags
 The `field_flag` column is used to check if the sample collection method (`SampleCollectionMethod.MethodName`) is reasonable (flag = 0), suspect (flag = 1), or inconclusive (flag = 2).  "Reasonable" flags mean that the sample collection method and the analytical method or tier are in harmony with one another. "Suspect" flags are assigned when the sample collection method description isn’t consistent with what would be expected given the `characteristicName` and the `ResultAnalyticalMethod.MethodName` for a given record. "Inconclusive" or unknown flags are assigned to records with "inclusive" analytical tiers because these tiers include values such as `NA`, where it's typically impossible to determine the appropriateness of a collection method for the sample record. The relationship between field flags and analytical tiers will vary by parameter and each harmonization chapter contains specific information for these different cases.

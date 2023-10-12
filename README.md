@@ -1,12 +1,16 @@
-## AquaSat2
+## AquaSat v2::AquaMatch
 
-AquaSat2 project built using the `targets` package. As of 2023-01-05 this workflow is a combination of code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) along with other code developed by members of [ROSS](https://github.com/rossyndicate).
+This repository is covered by the MIT use license. We request that all downstream uses of this work be available to the public when possible.
 
-Because of its origins, this targets pipeline currently uses a target list inside of `_targets.R` as well as ones inside `1_inventory.R`, `2_download.R`, and `3_harmonize.R`. These are all combined into a single pipeline inside of `_targets.R`. In the future the entire pipeline will be structured around numeric steps/scripts (i.e., `1_inventory.R`, `2_...`, etc.).
+This repository is part of an expansion of the original [AquaSat](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019WR024883) product, a dataset of 600k coincident field and satellite matchups. The new product, **AquaSat v2**, expands the amount of *in-situ* data included in the matching process, adds tiers describing data quality, and adds new satellites and spectral bands. This project repository ("AquaMatch") is dedicated to the processes of inventorying, downloading, and harmonizing *in-situ* data from sources such as the [Water Quality Portal (WQP)](waterqualitydata.us/). 
 
-Similarly, there is a `src/` folder in the project root directory that contains `functions.R` and `Rmd`s related to the items defined in `_targets.R`. The numbered R scripts have functions defined in their respective folders (e.g., `1_inventory/src/`, etc.).
+AquaMatch uses the {targets} workflow management R package to reimagine the [original AquaSat codebase](https://github.com/GlobalHydrologyLab/AquaSat). The framework for this workflow is based on code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) and has been further developed by members of the [ROSSyndicate](https://github.com/rossyndicate).
 
-The `docs/` folder in the project root contains report outputs from `Rmd` files as well as other project related files that are not scripts or input/output data. Report outputs are currently proof of concept placeholders composed mostly or entirely of figures that may end up in final versions of the report.
+Technical details on {targets} workflows are available in the  [{targets} User Manual](https://books.ropensci.org/targets/). {targets} workflows are built upon lists of "targets", which can be thought of as analytical steps written out in code. This workflow uses a targets list spread across multiple scripts in an effort to facilitate organization of the code. `_targets.R` serves as the main list and references the other lists, which are defined inside `1_inventory.R`, `2_download.R`, and `3_harmonize.R`. These are all combined into a single pipeline using `_targets.R`. 
+
+In general, `src/` folders in this repository contain source code for customized functions used by the {targets} pipeline. The numbered R scripts have functions defined in their respective folders (e.g., `1_inventory/src/`, etc.).
+
+The `_book/` folder in the project root contains {bookdown} style documentation for the pipeline, primarily focused on the data harmonization steps and decisions made in these steps. The {bookdown} document is the place to look for specifics on, e.g., how data pertaining to variables such as chlorophyll were handled, cleaned, aggregated, and tiered. 
 
 If the `run.R` script has been used to generate the current pipeline version, you can find an html file with the current network diagram for the pipeline in `docs/current_visnetwork.html`.
 

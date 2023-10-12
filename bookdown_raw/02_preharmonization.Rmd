@@ -12,6 +12,10 @@ params:
 documented_drops <- params$documented_drops
 ```
 
+## Justification 
+
+Following the completion of the download process described in the previous chapter, the pipeline contains raw data for a variety of potential parameters of interest. Before we begin to harmonize each individual parameter we run through a series of "pre-harmonization" steps, which together ensure that each parameter will enter its individual harmonization routine with a dataset that has been formatted identically to each other parameter in the pipeline.
+
 ```{r echo = FALSE}
 step_order_rev <- max(documented_drops$order):min(documented_drops$order)
 
@@ -40,7 +44,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the preharmonization process the WQP dataset contains `r step_0_rows` rows.
+At the start of the pre-harmonization process the WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -85,7 +89,7 @@ step_1_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The first filtering step is to remove any duplicated records present in the dataset. Duplicate records occur in the WQP database. The pipeline allows for the user to specify which columns to use when checking for duplicated information. WQP columns currently used to check for duplicates include: OrganizationIdentifier, MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time, CharacteristicName, and ResultSampleFractionText. This results in dropping `r step_1_dropped` rows for a record count of `r step_1_rows`.
+The first filtering step is to remove any duplicated records present in the dataset. Duplicate records occur in the WQP database. The pipeline allows for the user to specify which columns the `clean_wqp_data()` function should use when checking for duplicated information. By default these columns are: OrganizationIdentifier, MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time, CharacteristicName, and ResultSampleFractionText. This results in dropping `r step_1_dropped` rows for a record count of `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%

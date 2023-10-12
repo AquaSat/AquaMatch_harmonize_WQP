@@ -13,33 +13,3 @@ In general, `src/` folders in this repository contain source code for customized
 The `_book/` folder in the project root contains {bookdown} style documentation for the pipeline, primarily focused on the data harmonization steps and decisions made in these steps. The {bookdown} document is the place to look for specifics on, e.g., how data pertaining to variables such as chlorophyll were handled, cleaned, aggregated, and tiered. 
 
 If the `run.R` script has been used to generate the current pipeline version, you can find an html file with the current network diagram for the pipeline in `docs/current_visnetwork.html`.
-
-
-## Parameter-specific methods
-
-For Chl-a: 
-
-For DOC: it must be filtered (by characteristic name or ResultSampleFractionText) before going into the tiering strucutre
-- ResultSampleFractionText - dissolved, total, filtered
-
-
-## Tiering Philosophy
-
-Many columns related to the direct interoperability of data in the WQP are often filled with NAs specifically field and lab methodology columns and 
-explicit depth-related columns (provide some context of what proportion, maybe?). A purely restrictive filtering of WQP would result in very limited 
-data, in part, due to the inconsistent entry of data from data providers, therefore, we are building this dataset to resolve as many NAs as possible, 
-but to also include NAs as 'inclusive' data.
-
-Our philosophy focuses on the following columns from the WQP:
-ReusltAnalyticalMethod.MethodName - analytical method - first stop!
-SampleCollectionMethod.MethodName - field collection
-ActivityDepthHeightMeasure.MeasureValue - discrete depth for grab samples
-ActivityTopDepthHeightMeasure.MeasureValue, ActivityBottomDepthHeightMeasure.MeasureValue - for integrated samples
-
-Generally speaking, we only further resolve the flags/tiers if there is a persistent 1% of samples that make it 'worth it' to reclassify from inclusive tier.
-
-If an NA in analytical methods: inclusive, unless resolvable by another column USGSPCode, ResultLaboratoryCommentText, MethodDescriptionText, ResultCommentText. 
-
-If an NA in field comments: look in field comments ActivityCommentText
-
-

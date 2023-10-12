@@ -10,6 +10,7 @@ params:
 
 ```{r echo=FALSE}
 documented_drops <- params$documented_drops
+params_in_use <- params$params_in_use
 ```
 
 ## Justification 
@@ -44,7 +45,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the pre-harmonization process the WQP dataset contains `r step_0_rows` rows.
+At the start of the pre-harmonization process the WQP dataset contains the parameters `r params_in_use` and `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%

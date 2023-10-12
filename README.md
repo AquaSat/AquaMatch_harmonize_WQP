@@ -2,7 +2,11 @@
 
 This repository is covered by the MIT use license. We request that all downstream uses of this work be available to the public when possible.
 
+### Background
+
 This repository is part of an expansion of the original [AquaSat](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019WR024883) product, a dataset of 600k coincident field and satellite matchups. The new product, **AquaSat v2**, expands the amount of *in-situ* data included in the matching process, adds tiers describing data quality, and adds new satellites and spectral bands. This project repository ("AquaMatch") is dedicated to the processes of inventorying, downloading, and harmonizing *in-situ* data from sources such as the [Water Quality Portal (WQP)](waterqualitydata.us/). 
+
+### Technical details
 
 AquaMatch uses the {targets} workflow management R package to reimagine the [original AquaSat codebase](https://github.com/GlobalHydrologyLab/AquaSat). The framework for this workflow is based on code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) and has been further developed by members of the [ROSSyndicate](https://github.com/rossyndicate).
 
@@ -10,6 +14,6 @@ Technical details on {targets} workflows are available in the  [{targets} User M
 
 In general, `src/` folders in this repository contain source code for customized functions used by the {targets} pipeline. The numbered R scripts have functions defined in their respective folders (e.g., `1_inventory/src/`, etc.).
 
-The `_book/` folder in the project root contains {bookdown} style documentation for the pipeline, primarily focused on the data harmonization steps and decisions made in these steps. The {bookdown} document is the place to look for specifics on, e.g., how data pertaining to variables such as chlorophyll were handled, cleaned, aggregated, and tiered. 
+The `_book/` folder in the project root contains {bookdown} style documentation for the pipeline, primarily focused on the data harmonization steps and decisions made in these steps. The {bookdown} document is the place to look for specifics on, e.g., how data pertaining to variables such as chlorophyll were handled, cleaned, aggregated, and tiered. Additionally, it contains information on our overarching tiering philosophy and its application to specific parameters.
 
 If the `run.R` script has been used to generate the current pipeline version, you can find an html file with the current network diagram for the pipeline in `docs/current_visnetwork.html`.

@@ -48,7 +48,7 @@ Prior to assigning the `depth_flag` we complete a few pre-processing steps:
 1. Convert the following (character) values to an explicit `NA`: "NA", "999", "-999", "9999", "-9999", "-99", "NaN"
 2. Convert depths in all four columns to meters from the depth unit listed by the data provider
 3. Create a single "discrete" depth column using a combination of the `ActivityDepthHeightMeasure.MeasureValue` and `ResultDepthHeightMeasure.MeasureValue` columns. We use `ActivityDepth` value when `ResultDepth` value is missing, and `ResultDepth` when `ActivityDepth` is missing. If both columns have values but disagree we use an average of the two
-
+This pre-processing results in three "harmonized" columns reporting depth values in meters: `harmonized_discrete_depth_value`, `harmonized_top_depth_value`, `harmonized_bottom_depth_value`.
 Flags are assigned using the "harmonized" depth columns that come out of the pre-processing steps above. If the record has no depth listed it is designated `depth_flag` = 0. A record with only discrete depth is given a `depth_flag` = 1. A top and/or bottom depth, indicating an integrated sample, is assigned `depth_flag` = 2, and any combination of discrete + top and/or bottom depths is assigned `depth_flag` = 3. Included in the 0 flag are situations where there is a disagreement in discrete depth measurements once they are converted into shared units. These values are also recoded as an NA in our "harmonized" column. The majority of records with a 3 flag have disagreements in values between discrete and integrated columns and are therefore impossible to reconcile with certainty. 
 
 ### General note

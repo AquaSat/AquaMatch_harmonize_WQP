@@ -1,41 +1,19 @@
-## AquaSat2
+## AquaSat v2::AquaMatch
 
-AquaSat2 project built using the `targets` package. As of 2023-01-05 this workflow is a combination of code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) along with other code developed by members of [ROSS](https://github.com/rossyndicate).
+This repository is covered by the MIT use license. We request that all downstream uses of this work be available to the public when possible.
 
-Because of its origins, this targets pipeline currently uses a target list inside of `_targets.R` as well as ones inside `1_inventory.R`, `2_download.R`, and `3_harmonize.R`. These are all combined into a single pipeline inside of `_targets.R`. In the future the entire pipeline will be structured around numeric steps/scripts (i.e., `1_inventory.R`, `2_...`, etc.).
+### Background
 
-Similarly, there is a `src/` folder in the project root directory that contains `functions.R` and `Rmd`s related to the items defined in `_targets.R`. The numbered R scripts have functions defined in their respective folders (e.g., `1_inventory/src/`, etc.).
+This repository is part of an expansion and update of the original [AquaSat](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019WR024883) product, a dataset of ~600k coincident field and satellite matchups across four parameters: total suspended solids (TSS), dissolved organic carbon (DOC), chlorohpyll-_a_, and Secchi disc depth (SDD). The updated product, **AquaSat v2**, expands the number of parameters of *in situ* data included in the matching process, adds tiers describing data quality, and adds new satellites and spectral bands. This project repository ("AquaMatch") is dedicated to the processes of inventorying, downloading, and harmonizing *in-situ* data from the [Water Quality Portal (WQP)](waterqualitydata.us/). 
 
-The `docs/` folder in the project root contains report outputs from `Rmd` files as well as other project related files that are not scripts or input/output data. Report outputs are currently proof of concept placeholders composed mostly or entirely of figures that may end up in final versions of the report.
+### Technical details
+
+AquaMatch uses the {targets} workflow management R package to reimagine the [original AquaSat codebase](https://github.com/GlobalHydrologyLab/AquaSat). The framework for this workflow is based on code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) and has been further developed by members of the [ROSSyndicate](https://github.com/rossyndicate).
+
+Technical details on {targets} workflows are available in the  [{targets} User Manual](https://books.ropensci.org/targets/). {targets} workflows are built upon lists of "targets", which can be thought of as analytical steps written out in code. This workflow uses a targets list spread across multiple scripts in an effort to facilitate organization of the code. `_targets.R` serves as the main list of targets and references the other lists of targets, which are defined inside `1_inventory.R`, `2_download.R`, `3_harmonize.R`, and `create_bookdown.R`.
+
+In general, `src/` folders in this repository contain source code for customized functions used by the {targets} pipeline. The numbered R scripts have functions defined in their respective folders (e.g., `1_inventory/src/`, etc.).
+
+The `_book/` folder in the project root contains {bookdown} style documentation for the pipeline, primarily focused on the data harmonization steps and decisions made in these steps. The {bookdown} document is the place to look for specifics on, e.g., how chlorophyll data were handled, cleaned, aggregated, and tiered. Additionally, it contains information on our overarching tiering philosophy and its application to specific parameters.
 
 If the `run.R` script has been used to generate the current pipeline version, you can find an html file with the current network diagram for the pipeline in `docs/current_visnetwork.html`.
-
-
-## Parameter-specific methods
-
-For Chl-a: 
-
-For DOC: it must be filtered (by characteristic name or ResultSampleFractionText) before going into the tiering strucutre
-- ResultSampleFractionText - dissolved, total, filtered
-
-
-## Tiering Philosophy
-
-Many columns related to the direct interoperability of data in the WQP are often filled with NAs specifically field and lab methodology columns and 
-explicit depth-related columns (provide some context of what proportion, maybe?). A purely restrictive filtering of WQP would result in very limited 
-data, in part, due to the inconsistent entry of data from data providers, therefore, we are building this dataset to resolve as many NAs as possible, 
-but to also include NAs as 'inclusive' data.
-
-Our philosophy focuses on the following columns from the WQP:
-ReusltAnalyticalMethod.MethodName - analytical method - first stop!
-SampleCollectionMethod.MethodName - field collection
-ActivityDepthHeightMeasure.MeasureValue - discrete depth for grab samples
-ActivityTopDepthHeightMeasure.MeasureValue, ActivityBottomDepthHeightMeasure.MeasureValue - for integrated samples
-
-Generally speaking, we only further resolve the flags/tiers if there is a persistent 1% of samples that make it 'worth it' to reclassify from inclusive tier.
-
-If an NA in analytical methods: inclusive, unless resolvable by another column USGSPCode, ResultLaboratoryCommentText, MethodDescriptionText, ResultCommentText. 
-
-If an NA in field comments: look in field comments ActivityCommentText
-
-

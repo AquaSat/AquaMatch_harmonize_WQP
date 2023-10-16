@@ -315,7 +315,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = ResultMeasureValue * conversion,
-           harmonized_unit = "ug/L") %>%
+           harmonized_units = "ug/L") %>%
     # MR limit 
     filter(harmonized_value < 1000)
   
@@ -599,9 +599,14 @@ harmonize_chla <- function(raw_chla, p_codes){
                       collapse = "|") 
   
   chla_tag_hplc <- chla_relevant %>%
-    mutate(hplc_tag = grepl(pattern = hplc_text,
-                            x = ResultAnalyticalMethod.MethodName,
-                            ignore.case = TRUE))
+    # TRUE if methods contain HPLC-related text or if the correct USGS p code
+    mutate(hplc_tag = if_else(condition = grepl(pattern = hplc_text,
+                                                x = ResultAnalyticalMethod.MethodName,
+                                                ignore.case = TRUE) |
+                                USGSPCode %in% c(70951, 70953),
+                              true = TRUE,
+                              false = FALSE,
+                              missing = FALSE))
   
   # 1.2 Spec/Fluor detection - new column
   
@@ -632,7 +637,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                      x = ResultAnalyticalMethod.MethodName,
                      ignore.case = TRUE) ~ TRUE,
                # The characteristic name mentions correction
-               grepl(pattern = "corrected for pheophytin|free of pheophytin",
+               grepl(pattern = "\\bcorrected for pheophytin|free of pheophytin",
                      x = CharacteristicName,
                      ignore.case = TRUE) ~ TRUE,
                .default = FALSE))
@@ -644,13 +649,14 @@ harmonize_chla <- function(raw_chla, p_codes){
       hplc_tag ~ 0,
       # Narrowed tier is non-HPLC lab analyzed AND corrected
       spec_fluor_tag & pheo_corr_tag ~ 1,
+      USGSPCode == 32209 ~ 1,
       # Everything else is inclusive tier
       .default = 2
     ))
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_chla %>%
-    count(CharacteristicName, ResultAnalyticalMethod.MethodName,
+    count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
           hplc_tag, spec_fluor_tag, pheo_corr_tag, analytical_tier) %>%
     arrange(desc(n)) 
   

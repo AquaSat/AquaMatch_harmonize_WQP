@@ -50,7 +50,7 @@ bookdown_targets_list <- list(
       pre_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops,
-        params_in_use = unique(p3_wqp_data_aoi_formatted$parameter)),
+        params_in_use = names(p1_wqp_params)),
       output_file = "02_preharmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

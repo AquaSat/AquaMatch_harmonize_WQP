@@ -347,7 +347,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                             ActivityBottomDepthHeightMeasure.MeasureValue),
                   .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
                                                         "9999", "-9999", "-99",
-                                                        "NaN"),
+                                                        "99", "NaN"),
                                   true = NA_character_,
                                   false = .x)))
   

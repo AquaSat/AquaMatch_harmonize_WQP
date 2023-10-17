@@ -310,6 +310,11 @@ harmonize_chla <- function(raw_chla, p_codes){
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                    1000000, 1000000))
   
+  unit_table_out_path <- "3_harmonize/out/chla_unit_table.csv"
+  
+  write_csv(x = unit_conversion_table,
+            file = unit_table_out_path)
+  
   converted_units_chla <- chla_harmonized_values %>%
     inner_join(x = .,
                y = unit_conversion_table,

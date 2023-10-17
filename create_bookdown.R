@@ -78,7 +78,8 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       chla_harmonization_rmd,
       params = list(
-        documented_drops = p3_documented_drops),
+        documented_drops = p3_documented_drops,
+        chla_chars = p1_wqp_params$chlorophyll),
       output_file = "04_chla_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

@@ -307,9 +307,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = ResultMeasureValue * conversion,
-           harmonized_units = "m") %>%
-    # MR limit
-    filter(abs(harmonized_value) < 15)
+           harmonized_units = "m") 
   
   # How many records removed due to unit harmonization?
   print(

@@ -305,8 +305,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     arrange(desc(n))
   
   unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb",
-                                      "mg/cm3", "ug/ml", "mg/ml", "ppt"),
+    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
+                                      "mg/m3", "ppb", "mg/cm3", "ug/ml",
+                                      "mg/ml", "ppt"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                    1000000, 1000000))
   
@@ -320,9 +321,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = ResultMeasureValue * conversion,
-           harmonized_units = "ug/L") %>%
-    # MR limit 
-    filter(harmonized_value < 1000)
+           harmonized_units = "ug/L")
   
   # How many records removed due to limits on values?
   print(

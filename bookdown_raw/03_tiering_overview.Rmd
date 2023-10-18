@@ -11,21 +11,21 @@ always_allow_html: true
 The variety of data providers, parameters, and methods in the WQP inevitably results in a heterogenous dataset that requires quality control before rigorous analytical use.
 
 ## NA values
-Many columns related to the direct interoperability of data in the WQP often contain many `NA`s, specifically field and lab methodology and depth-related columns. A highly restrictive filtering of the WQP would result in very limited data, in part, due to the inconsistent entry of data from data providers. Therefore, we are building this dataset to resolve as many `NA`s as possible, but to also include `NA`s within an "inclusive" data.
+Columns related directly to the interoperability of data in the WQP, specifically field and lab methodology and depth-related columns, often contain many `NA`s. A highly restrictive filtering of the WQP would thus result in very limited data, in part, due to the inconsistent entry of data across data providers. Therefore, we are building this dataset to resolve as many `NA`s as possible, but to also include `NA`s within an "inclusive" data tier when necessary.
 
 ## Heterogenous data
 In addition to missing or `NA` values, WQP data can be heterogenous for reasons such as:
 
 + Having a variety of methods used across different organizations for the same parameter
 + Having a variety of names or descriptions of the same (e.g., analytical) method across different organizations
-+ Containing data for one parameter obtained by multiple methods of varying levels of reliability
++ Containing data for one parameter obtained by multiple methods with varying levels of reliability
 + Having information relevant to assessing data reliability or method choice spread across multiple columns
 
 In order to control for some of this variation and provide end-users with something more readily navigable we have incorporated several tiers and flagging systems into the AquaSat v2 dataset:
 
-+ Analytical method tiering
-+ Field flags
-+ Depth flags
++ **Analytical method tiering**: Tiers indicating the interoperability of data based on the analytical method used to acquire measurements
++ **Field flags**: Flags indicating whether the sample collection method is consistent with the analytical method
++ **Depth flags**: Flags indicating the completeness of the depth data associated with the measurement
 
 ### Analytical method tiering
 The `ResultAnalyticalMethod.MethodName` column from the WQP is the primary indicator we used for determining which analytical methods tier records fall within. Each parameter's harmonization chapter in this {bookdown} document contains detail on which methods were sorted into which tiers.
@@ -52,7 +52,9 @@ Prior to assigning the `depth_flag` we complete a few pre-processing steps:
 
 1. Convert the following (character) values to an explicit `NA`: "NA", "999", "-999", "9999", "-9999", "-99", "99", "NaN"
 2. Convert depths in all four columns to meters from the depth unit listed by the data provider
-3. Create a single "discrete" depth column using a combination of the `ActivityDepthHeightMeasure.MeasureValue` and `ResultDepthHeightMeasure.MeasureValue` columns. We use `ActivityDepth` value when `ResultDepth` value is missing, and `ResultDepth` when `ActivityDepth` is missing. If both columns have values but disagree we use an average of the two. This pre-processing results in three "harmonized" columns reporting depth values in meters: `harmonized_discrete_depth_value`, `harmonized_top_depth_value`, `harmonized_bottom_depth_value`. Flags are assigned using the harmonized depth columns that come out of the pre-processing steps above. If the record has no depth listed it is designated `depth_flag` = 0. A record with only discrete depth is given a `depth_flag` = 1. A top and/or bottom depth, indicating an integrated sample, is assigned `depth_flag` = 2, and any combination of discrete + top and/or bottom depths is assigned `depth_flag` = 3. Included in the 0 flag are situations where there is a disagreement in discrete depth measurements once they are converted into shared units. These values are also recoded as an `NA` in our harmonized column. The majority of records with a 3 flag have disagreements in values between discrete and integrated columns and are therefore impossible to reconcile with certainty. 
+3. Create a single "discrete" depth column using a combination of the `ActivityDepthHeightMeasure.MeasureValue` and `ResultDepthHeightMeasure.MeasureValue` columns. We use `ActivityDepth` value when `ResultDepth` value is missing, and `ResultDepth` when `ActivityDepth` is missing. If both columns have values but disagree we use an average of the two. This pre-processing results in three "harmonized" columns reporting depth values in meters: `harmonized_discrete_depth_value`, `harmonized_top_depth_value`, `harmonized_bottom_depth_value`. 
+
+Flags are assigned using the harmonized depth columns that come out of the pre-processing steps above. If the record has no depth listed it is designated `depth_flag` = 0. A record with only discrete depth is given a `depth_flag` = 1. A top and/or bottom depth, indicating an integrated sample, is assigned `depth_flag` = 2, and any combination of discrete + top and/or bottom depths is assigned `depth_flag` = 3. Included in the 0 flag are situations where there is a disagreement in discrete depth measurements once they are converted into shared units. These values are also recoded as an `NA` in our harmonized column. The majority of records with a 3 flag have disagreements in values between discrete and integrated columns and are therefore impossible to reconcile with certainty. 
 
 ### General note
 Generally speaking, we avoid further classification for any observation's parameter methodology, tier, or flag unless there are at least 1% of observations with the same unresolved text.

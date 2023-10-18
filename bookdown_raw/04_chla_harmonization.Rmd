@@ -136,7 +136,7 @@ step_2_dropped <- filter(step_data,
 
 In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures"). 
 
-After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue_original`columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we search for the same terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data".
+After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue_original`columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we search for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data".
 
 Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated and so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that the detection of one of the potential failure phrases is not mutually exclusive from other phrases showing up in the same record within the same column or one of the other three columns.
 
@@ -350,11 +350,13 @@ step_6_rows <- filter(step_data,
 
 step_6_dropped <- filter(step_data,
                          order == 6) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
 ```
 
-The next step in chla harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into micrograms/L:
+The next step in chla harmonization is converting the units of WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into micrograms/L:
 
 ```{r echo=FALSE, message = FALSE}
 read_csv("../3_harmonize/out/chla_unit_table.csv") %>%
@@ -411,33 +413,7 @@ step_7_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The `ActivityDepthHeightMeasure.MeasureValue` column is the site of our next harmonization step. We want to both harmonize the units (`ActivityDepthHeightMeasure.MeasureUnitCode`) used in the dataset and set limits for depths from which we'll accept data. We'll use a conversion table as with the previous units harmonization step:
-
-```{r echo=FALSE}
-tibble(
-    depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
-    depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
-  ) %>%
-  kable() %>%
-  kable_paper() %>%
-  kable_styling(full_width = FALSE)
-```
-
-Once the units have been standardized we'll make sure that the numeric depth value is within +/-2m **OR** the raw character version indicates something similar. We also keep `NA` depths to avoid losing a ton of records. This is how it's coded:
-
-```{r eval=FALSE}
-converted_units_chla %>%
-  left_join(x = .,
-            y = depth_unit_conversion_table,
-            by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
-  mutate(harmonized_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion,
-         harmonized_depth_unit = "m") %>%
-  filter(abs(harmonized_depth_value) <= 2 |
-           ActivityDepthHeightMeasure.MeasureValue %in% c("0-2", "0-0.5")|
-           is.na(ActivityDepthHeightMeasure.MeasureValue))
-```
-
-<br>
+The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
 Through our depth filtering we lose `r step_7_dropped` rows and have `r step_7_rows` remaining.
 
@@ -478,13 +454,39 @@ step_8_rows <- filter(step_data,
 
 step_8_dropped <- filter(step_data,
                          order == 8) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
 ```
 
-Our next step is to aggregate chla analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. We accomplish this using an external match table `csv` file that is joined to the dataset. Methods that are `NA` for their aggregated grouping or which are `"unlikely"` to be accurate methods are dropped.
+We next review the analytical methods used in measuring chlorophyll a, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Analytical method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
+
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-chlorophyll measurements. We remove these because it's impossible to interpret contradictory information provided within the same data record. Phrases used to flag and remove unrelated methods from chlorophyll a data are: "sulfate", "sediment", "5310", "counting", "plasma", "turbidity", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "zooplankton", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320".
 
 This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining.
+
+The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+
++ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName` or presence of 70951 or 70953 in the `USGSPCode` column
++ **Spectro/fluoro:** Detection of "445", "fluor", "Welshmeyer", "fld", "10200", "446", "trichromatic", "spectrophoto", "monochrom", "monchrom", or "spec" not as part of a word in `ResultAnalyticalMethod.MethodName`
++ **Pheophytin correction:** Detection of "correct", "445", "446", or "in presence" in `ResultAnalyticalMethod.MethodName` or detection of "corrected for pheophytin" or "free of pheophytin" in `CharacteristicName`
+
+Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. As a reminder, these tiers are:
+
++ **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable
++ **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers
++ **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter.
+
+For chlorophyll a, the following rules are used:
+
++ **Tier 0**: Includes records using HPLC methods
++ **Tier 1**: Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209
++ **Tier 2**: All other records by default, including `NA` methods and in-situ probes
+
+At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+
+<br>
 
 ```{r echo = FALSE}
 step_data %>%
@@ -523,15 +525,24 @@ step_9_rows <- filter(step_data,
 
 step_9_dropped <- filter(step_data,
                          order == 10) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+  pull(number_dropped) %>%
+  round(digits = 2)
 ```
 
-The final step in our chla harmonization is filtering based on the `ResultSampleFractionText` column. We assign fractions into two categories based on whether the fraction text makes sense or not and then retain only those records that have a fraction with `"Makes sense"`. Fractions included in this are `"Non-Filterable (Particle)"`, `"Suspended"`, `"Non-filterable"`, `"<Blank>"`, and `"Acid Soluble"`.
+The final step in our chla harmonization is flagging field sampling methods based primarily on the `SampleCollectionMethod.MethodName` column. We first classify each record into either in vitro or in situ methods (i.e., in vitro assumes a water sample was collected and take to a lab for analysis; in situ assumes a measurement was taken in place). 
 
-This process drops `r step_9_dropped` rows leaving `r step_9_rows` remaining in the final harmonized chla dataset.
+We used the following strings to mark **in vitro** samples: "grab", "bottle", "vessel", "bucket", "jar", "composite", "integrate", "UHL001", "surface", "filter", "filtrat", "1060B", "kemmerer", "collect", "rosette", "equal width", "vertical", "van dorn", "bail", "sample", "sampling", "lab" not in the middle of another word, or a "G" on its own as shorthand for "grab". **In situ** samples were detected using "in situ", "probe", or "ctd".
+
+Lastly we created the field flag based on whether the sampling method used agrees with the analytical method. Flags of 0 indicated that the field sampling method is in agreement with the analytical method, 1 indicates that the field sampling methods are uncharacteristic of the analytical method, and anything with analytical tier of 2 is given a field flag of 2 because of the range of potential analytical methods and corresponding sampling methods possible for the inclusive analytical tier.
+
+The following rules are used for chlorophyll a field sampling flags:
+
++ **Flag 0**: Restrictive and narrowed analytical tiers with in vitro field methods
++ **Flag 1**: Restrictive and narrowed analytical tiers with in situ field methods
++ **Flag 2**: Anything in the inclusive tier
+
+
+No records should be removed by this process and so there are `r step_9_dropped` rows dropped leaving `r step_9_rows` remaining in the final harmonized chla dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -555,3 +566,10 @@ step_data %>%
   theme(axis.text.x = element_blank(),
         legend.position = "none")
 ```
+
+<br>
+
+### Harmonized chlorophyll a
+
+At this point the harmonization of the chlorophyll a WQP data is complete and we export the final dataset for use later in the workflow.
+

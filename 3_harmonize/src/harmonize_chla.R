@@ -668,7 +668,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
-  # Filter and slim the tiered product
+  # Slim the tiered product
   cleaned_tiered_methods_chla <- tiered_methods_chla %>%
     # Drop tag columns - these are recorded and exported in tiering_record. We
     # keep only the final tier

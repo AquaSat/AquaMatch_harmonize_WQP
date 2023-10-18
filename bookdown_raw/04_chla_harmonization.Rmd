@@ -407,10 +407,8 @@ step_7_rows <- filter(step_data,
 
 step_7_dropped <- filter(step_data,
                          order == 7) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+  pull(number_dropped) %>%
+  round(digits = 2)
 ```
 
 The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.

@@ -8,7 +8,7 @@ always_allow_html: true
 ---
 # Tiering, flagging, and quality control philosophy 
 
-The variety of data providers, parameters, and methods in the WQP inevitably results in a heterogenous dataset that requires quality control before rigorous analytical use.
+The variety of data providers, parameters, and methods in the WQP inevitably results in a heterogenous dataset that requires rigorous quality control before analytical use.
 
 ## NA values
 Columns related directly to the interoperability of data in the WQP, specifically field and lab methodology and depth-related columns, often contain many `NA`s. A highly restrictive filtering of the WQP would thus result in very limited data, in part, due to the inconsistent entry of data across data providers. Therefore, we are building this dataset to resolve as many `NA`s as possible, but to also include `NA`s within an "inclusive" data tier when necessary.

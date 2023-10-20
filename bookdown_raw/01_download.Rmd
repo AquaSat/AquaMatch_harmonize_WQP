@@ -22,7 +22,7 @@ options(tigris_use_cache = TRUE)
 The download process begins by cataloging the existing data that is available in the WQP. To do this the user specifies parameters and their corresponding `characteristicNames` for retrieving data from the WQP. Below are the current parameters and their `characteristicNames` as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
 
 ```{r, results='asis'}
-yaml_contents <- yaml::read_yaml("../1_inventory/cfg/wqp_codes.yml")
+yaml_contents <- read_yaml("../1_inventory/cfg/wqp_codes.yml")
 names_yaml <- names(yaml_contents)
 
 map_df(.x = names_yaml,

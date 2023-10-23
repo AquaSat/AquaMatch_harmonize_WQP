@@ -16,9 +16,9 @@ Columns related directly to the interoperability of data in the WQP, specificall
 ## Heterogenous data
 In addition to `NA` values, WQP entries can be heterogenous for reasons such as:
 
-+ Having a variety of methods with different levels of precision and accuracy that can be used to quantify the same parameter
++ Having a variety of analytical methods with different levels of precision and accuracy that can be used to quantify the same parameter
 + Having a variety of names or descriptions of the same (e.g., analytical) method across different organizations
-+ Containing data for one parameter obtained by multiple methods with varying levels of interoperability
++ Containing data for one parameter obtained by multiple sampling methods with varying levels of interoperability or necessary metadata
 + Having information relevant to assessing data reliability or method choice spread across multiple columns
 - + Containing observations with sample collection methods and analytical methods that are incompatible
 - + Having data with differing levels of meta data 

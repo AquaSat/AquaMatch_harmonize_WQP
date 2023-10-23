@@ -603,11 +603,10 @@ harmonize_chla <- function(raw_chla, p_codes){
                       collapse = "|") 
   
   chla_tag_hplc <- chla_relevant %>%
-    # TRUE if methods contain HPLC-related text or if the correct USGS p code
+    # TRUE if methods contain HPLC-related text
     mutate(hplc_tag = if_else(condition = grepl(pattern = hplc_text,
                                                 x = ResultAnalyticalMethod.MethodName,
-                                                ignore.case = TRUE) |
-                                USGSPCode %in% c(70951, 70953),
+                                                ignore.case = TRUE),
                               true = TRUE,
                               false = FALSE,
                               missing = FALSE))

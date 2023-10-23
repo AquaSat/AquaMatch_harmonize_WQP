@@ -4,6 +4,7 @@ output:
     html_preview: false
 params:
   documented_drops: NA
+  params_in_use: NA
 ---
 
 # Pre-harmonization decision process

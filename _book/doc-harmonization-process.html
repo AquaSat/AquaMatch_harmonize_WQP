@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>6 DOC harmonization process | _main.knit</title>
+  <meta name="description" content="" />
+  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="6 DOC harmonization process | _main.knit" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="6 DOC harmonization process | _main.knit" />
+  
+  
+  
+
+<meta name="author" content="ROSSyndicate" />
+
+
+<meta name="date" content="2023-10-18" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="chlorophyll-harmonization-process.html"/>
+<link rel="next" href="secchi-harmonization-process.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/codefolding-lua-1.1/codefolding-lua.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> AquaMatch data harmonization process</a></li>
+<li class="chapter" data-level="2" data-path="download-process.html"><a href="download-process.html"><i class="fa fa-check"></i><b>2</b> Download process</a>
+<ul>
+<li class="chapter" data-level="2.0.1" data-path="download-process.html"><a href="download-process.html#catalogue-existing-data"><i class="fa fa-check"></i><b>2.0.1</b> Catalogue existing data</a></li>
+<li class="chapter" data-level="2.0.2" data-path="download-process.html"><a href="download-process.html#maps-of-data-spread"><i class="fa fa-check"></i><b>2.0.2</b> Maps of data spread:</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html"><i class="fa fa-check"></i><b>3</b> Pre-harmonization decision process</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#justification"><i class="fa fa-check"></i><b>3.1</b> Justification</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#initial-dataset"><i class="fa fa-check"></i><b>3.1.1</b> Initial dataset</a></li>
+<li class="chapter" data-level="3.1.2" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#remove-duplicates"><i class="fa fa-check"></i><b>3.1.2</b> Remove duplicates</a></li>
+<li class="chapter" data-level="3.1.3" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#missing-results"><i class="fa fa-check"></i><b>3.1.3</b> Missing results</a></li>
+<li class="chapter" data-level="3.1.4" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#filter-status"><i class="fa fa-check"></i><b>3.1.4</b> Filter status</a></li>
+<li class="chapter" data-level="3.1.5" data-path="pre-harmonization-decision-process.html"><a href="pre-harmonization-decision-process.html#filter-media"><i class="fa fa-check"></i><b>3.1.5</b> Filter media</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html"><i class="fa fa-check"></i><b>4</b> Tiering, flagging, and quality control philosophy</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#na-values"><i class="fa fa-check"></i><b>4.1</b> NA values</a></li>
+<li class="chapter" data-level="4.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#heterogenous-data"><i class="fa fa-check"></i><b>4.2</b> Heterogenous data</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#analytical-method-tiering"><i class="fa fa-check"></i><b>4.2.1</b> Analytical method tiering</a></li>
+<li class="chapter" data-level="4.2.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#field-flags"><i class="fa fa-check"></i><b>4.2.2</b> Field flags</a></li>
+<li class="chapter" data-level="4.2.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#depth-flags"><i class="fa fa-check"></i><b>4.2.3</b> Depth flags</a></li>
+<li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-note"><i class="fa fa-check"></i><b>4.2.4</b> General note</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html"><i class="fa fa-check"></i><b>5</b> Chlorophyll harmonization process</a>
+<ul>
+<li class="chapter" data-level="5.0.1" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#initial-dataset-1"><i class="fa fa-check"></i><b>5.0.1</b> Initial dataset</a></li>
+<li class="chapter" data-level="5.0.2" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#filter-for-water-media"><i class="fa fa-check"></i><b>5.0.2</b> Filter for water media</a></li>
+<li class="chapter" data-level="5.0.3" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#document-and-remove-fails"><i class="fa fa-check"></i><b>5.0.3</b> Document and remove fails</a></li>
+<li class="chapter" data-level="5.0.4" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#clean-mdls"><i class="fa fa-check"></i><b>5.0.4</b> Clean MDLs</a></li>
+<li class="chapter" data-level="5.0.5" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#clean-approximate-values"><i class="fa fa-check"></i><b>5.0.5</b> Clean approximate values</a></li>
+<li class="chapter" data-level="5.0.6" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#clean-values-with-greater-than-data"><i class="fa fa-check"></i><b>5.0.6</b> Clean values with “greater than” data</a></li>
+<li class="chapter" data-level="5.0.7" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#harmonize-record-units"><i class="fa fa-check"></i><b>5.0.7</b> Harmonize record units</a></li>
+<li class="chapter" data-level="5.0.8" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#clean-depth-data"><i class="fa fa-check"></i><b>5.0.8</b> Clean depth data</a></li>
+<li class="chapter" data-level="5.0.9" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>5.0.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="5.0.10" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.0.10</b> Flag based on field methods</a></li>
+<li class="chapter" data-level="5.0.11" data-path="chlorophyll-harmonization-process.html"><a href="chlorophyll-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.0.11</b> Harmonized chlorophyll a</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html"><i class="fa fa-check"></i><b>6</b> DOC harmonization process</a>
+<ul>
+<li class="chapter" data-level="6.0.1" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#initial-dataset-2"><i class="fa fa-check"></i><b>6.0.1</b> Initial dataset</a></li>
+<li class="chapter" data-level="6.0.2" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-for-water-media-1"><i class="fa fa-check"></i><b>6.0.2</b> Filter for water media</a></li>
+<li class="chapter" data-level="6.0.3" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#remove-fails-and-other-missing-data"><i class="fa fa-check"></i><b>6.0.3</b> Remove fails and other missing data</a></li>
+<li class="chapter" data-level="6.0.4" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-mdls-1"><i class="fa fa-check"></i><b>6.0.4</b> Clean MDLs</a></li>
+<li class="chapter" data-level="6.0.5" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-approximate-values-1"><i class="fa fa-check"></i><b>6.0.5</b> Clean approximate values</a></li>
+<li class="chapter" data-level="6.0.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.0.6</b> Harmonize record units</a></li>
+<li class="chapter" data-level="6.0.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-based-on-analytical-method"><i class="fa fa-check"></i><b>6.0.7</b> Filter based on analytical method</a></li>
+<li class="chapter" data-level="6.0.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-based-on-fraction-type"><i class="fa fa-check"></i><b>6.0.8</b> Filter based on fraction type</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html"><i class="fa fa-check"></i><b>7</b> Secchi harmonization process</a>
+<ul>
+<li class="chapter" data-level="7.0.1" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#initial-dataset-3"><i class="fa fa-check"></i><b>7.0.1</b> Initial dataset</a></li>
+<li class="chapter" data-level="7.0.2" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-for-water-media-2"><i class="fa fa-check"></i><b>7.0.2</b> Filter for water media</a></li>
+<li class="chapter" data-level="7.0.3" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-fails-and-other-missing-data-1"><i class="fa fa-check"></i><b>7.0.3</b> Remove fails and other missing data</a></li>
+<li class="chapter" data-level="7.0.4" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#clean-mdls-2"><i class="fa fa-check"></i><b>7.0.4</b> Clean MDLs</a></li>
+<li class="chapter" data-level="7.0.5" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#clean-approximate-values-2"><i class="fa fa-check"></i><b>7.0.5</b> Clean approximate values</a></li>
+<li class="chapter" data-level="7.0.6" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#clean-values-with-greater-than-data-1"><i class="fa fa-check"></i><b>7.0.6</b> Clean values with “greater than” data</a></li>
+<li class="chapter" data-level="7.0.7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#harmonize-record-units-2"><i class="fa fa-check"></i><b>7.0.7</b> Harmonize record units</a></li>
+<li class="chapter" data-level="7.0.8" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-based-on-analytical-method-1"><i class="fa fa-check"></i><b>7.0.8</b> Filter based on analytical method</a></li>
+<li class="chapter" data-level="7.0.9" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-based-on-fraction-type-1"><i class="fa fa-check"></i><b>7.0.9</b> Filter based on fraction type</a></li>
+<li class="chapter" data-level="7.0.10" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-based-on-sample-method"><i class="fa fa-check"></i><b>7.0.10</b> Filter based on sample method</a></li>
+<li class="chapter" data-level="7.0.11" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-based-on-collection-equipment"><i class="fa fa-check"></i><b>7.0.11</b> Filter based on collection equipment</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html"><i class="fa fa-check"></i><b>8</b> TSS harmonization process</a>
+<ul>
+<li class="chapter" data-level="8.0.1" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#initial-dataset-4"><i class="fa fa-check"></i><b>8.0.1</b> Initial dataset</a></li>
+<li class="chapter" data-level="8.0.2" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#filter-for-water-media-3"><i class="fa fa-check"></i><b>8.0.2</b> Filter for water media</a></li>
+<li class="chapter" data-level="8.0.3" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#remove-fails-and-other-missing-data-2"><i class="fa fa-check"></i><b>8.0.3</b> Remove fails and other missing data</a></li>
+<li class="chapter" data-level="8.0.4" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#clean-mdls-3"><i class="fa fa-check"></i><b>8.0.4</b> Clean MDLs</a></li>
+<li class="chapter" data-level="8.0.5" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#clean-approximate-values-3"><i class="fa fa-check"></i><b>8.0.5</b> Clean approximate values</a></li>
+<li class="chapter" data-level="8.0.6" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#clean-values-with-greater-than-data-2"><i class="fa fa-check"></i><b>8.0.6</b> Clean values with “greater than” data</a></li>
+<li class="chapter" data-level="8.0.7" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#harmonize-record-units-3"><i class="fa fa-check"></i><b>8.0.7</b> Harmonize record units</a></li>
+<li class="chapter" data-level="8.0.8" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#filter-based-on-analytical-method-2"><i class="fa fa-check"></i><b>8.0.8</b> Filter based on analytical method</a></li>
+<li class="chapter" data-level="8.0.9" data-path="tss-harmonization-process.html"><a href="tss-harmonization-process.html#filter-based-on-fraction-type-2"><i class="fa fa-check"></i><b>8.0.9</b> Filter based on fraction type</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="doc-harmonization-process" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">6</span> DOC harmonization process<a href="doc-harmonization-process.html#doc-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="initial-dataset-2" class="section level3 hasAnchor" number="6.0.1">
+<h3><span class="header-section-number">6.0.1</span> Initial dataset<a href="doc-harmonization-process.html#initial-dataset-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>After the pre-harmonization process the DOC-only WQP dataset contains
+2.2 million rows.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="filter-for-water-media-1" class="section level3 hasAnchor" number="6.0.2">
+<h3><span class="header-section-number">6.0.2</span> Filter for water media<a href="doc-harmonization-process.html#filter-for-water-media-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The first step in DOC harmonization is to ensure that the media type for
+the data is <code>"water"</code> or <code>"Water"</code>. This should just be a precautionary
+step: 0 rows are removed. The final row count after this is 2.2 million.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="remove-fails-and-other-missing-data" class="section level3 hasAnchor" number="6.0.3">
+<h3><span class="header-section-number">6.0.3</span> Remove fails and other missing data<a href="doc-harmonization-process.html#remove-fails-and-other-missing-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In this step we filter out records based on indications that they have
+failed data for some reason. We screen the following columns:
+<code>ActivityCommentText</code>, <code>ResultLaboratoryCommentText</code>,
+<code>ResultCommentText</code>, <code>ResultMeasureValue</code>, and
+<code>ResultDetectionConditionText</code>. Examples of text that results in a
+dropped record includes (but is not limited to): <code>"fail"</code>, <code>"suspect"</code>,
+<code>"error"</code>, <code>"beyond accept"</code>, <code>"interference"</code>, <code>"questionable"</code>,
+<code>"problem"</code>, <code>"violation"</code>, <code>"rejected"</code>, <code>"no data"</code>. Specific target
+text varies by column.</p>
+<p>72.63 thousand rows are removed and 2.13 million rows remain.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="clean-mdls-1" class="section level3 hasAnchor" number="6.0.4">
+<h3><span class="header-section-number">6.0.4</span> Clean MDLs<a href="doc-harmonization-process.html#clean-mdls-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In this step method detection limits (MDLs) are used to clean up the
+reported values. When a numeric value is missing for the data record
+(i.e., <code>NA</code> or text that became <code>NA</code> during an <code>as.numeric</code> call) we
+check for non-detect language in the <code>ResultLaboratoryCommentText</code>,
+<code>ResultCommentText</code>, <code>ResultDetectionConditionText</code>, and
+<code>ResultMeasureValue</code> columns. This language can be <code>"non-detect"</code>,
+<code>"not detect"</code>, <code>"non detect"</code>, <code>"undetect"</code>, or <code>"below"</code>.</p>
+<p>If non-detect language exists then we use the
+<code>DetectionQuantitationLimitMeasure.MeasureValue</code> column for the MDL,
+otherwise if there is a <code>&lt;</code> and a number in the <code>ResultMeasureValue</code>
+column we use that number instead.</p>
+<p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
+value moving forward.</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 2.13 million.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="clean-approximate-values-1" class="section level3 hasAnchor" number="6.0.5">
+<h3><span class="header-section-number">6.0.5</span> Clean approximate values<a href="doc-harmonization-process.html#clean-approximate-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Step 4 involves a similar process as for MDL cleaning. We flag
+“approximated” values in the dataset. The <code>ResultMeasureValue</code> column
+gets checked for <strong>all</strong> three of the following conditions:</p>
+<ol style="list-style-type: decimal">
+<li>Numeric-only version of the column is still <code>NA</code> after MDL cleaning</li>
+<li>The original column text contained a number</li>
+<li>Any of <code>ResultLaboratoryCommentText</code>, <code>ResultCommentText</code>, or
+<code>ResultDetectionConditionText</code> match this regular expression,
+ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
+</ol>
+<p>We then use the approximate value as the record’s value moving forward.</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 2.13 million.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="harmonize-record-units-1" class="section level3 hasAnchor" number="6.0.6">
+<h3><span class="header-section-number">6.0.6</span> Harmonize record units<a href="doc-harmonization-process.html#harmonize-record-units-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The next step in doc harmonization is working with the units of the WQP
+records. These can vary widely. We create the following conversion
+table, which is used to translate units provided in WQP into
+milligrams/L:</p>
+<table class=" lightable-paper table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+ResultMeasure.MeasureUnitCode
+</th>
+<th style="text-align:right;">
+conversion
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+mg/L
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/l
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppm
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/l
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/L
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/m3
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppb
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/cm3
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/ml
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/ml
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppt
+</td>
+<td style="text-align:right;">
+1.000e-06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+umol/L
+</td>
+<td style="text-align:right;">
+6.008e+01
+</td>
+</tr>
+</tbody>
+</table>
+<p>We also limit values to less than 50 mg/L to ensure realistic data. 17.4
+thousand rows are removed. The final row count after this is 2.11
+million.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-15-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="filter-based-on-analytical-method" class="section level3 hasAnchor" number="6.0.7">
+<h3><span class="header-section-number">6.0.7</span> Filter based on analytical method<a href="doc-harmonization-process.html#filter-based-on-analytical-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Our next step is to aggregate doc analytical methods into groups and
+then filter out methods that may have been erroneously added, were
+unclear, or which don’t meet our needs. Methods that were <code>NA</code> or were
+grouped as <code>"Ambiguous"</code> or <code>"Carbonaceous Analyzer"</code> are dropped.</p>
+<p>This process drops 1053.02 million rows leaving 1.06 million remaining.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="filter-based-on-fraction-type" class="section level3 hasAnchor" number="6.0.8">
+<h3><span class="header-section-number">6.0.8</span> Filter based on fraction type<a href="doc-harmonization-process.html#filter-based-on-fraction-type" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The final step in our doc harmonization is filtering based on the
+<code>ResultSampleFractionText</code> column. We keep records with the following
+values in this column: <code>"Dissolved"</code>, <code>"Filtered, lab"</code>, <code>"Filterable"</code>,
+<code>"Filtered, field"</code>.</p>
+<p>This process drops 704.11 thousand rows leaving 0.35 million remaining
+in the final harmonized doc dataset.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="chlorophyll-harmonization-process.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="secchi-harmonization-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

@@ -305,19 +305,23 @@ harmonize_chla <- function(raw_chla, p_codes){
     arrange(desc(n))
   
   unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L", "mg/m3", "ppb",
-                                      "mg/cm3", "ug/ml", "mg/ml", "ppt"),
+    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
+                                      "mg/m3", "ppb", "mg/cm3", "ug/ml",
+                                      "mg/ml", "ppt"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
                    1000000, 1000000))
+  
+  unit_table_out_path <- "3_harmonize/out/chla_unit_table.csv"
+  
+  write_csv(x = unit_conversion_table,
+            file = unit_table_out_path)
   
   converted_units_chla <- chla_harmonized_values %>%
     inner_join(x = .,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = ResultMeasureValue * conversion,
-           harmonized_units = "ug/L") %>%
-    # MR limit 
-    filter(harmonized_value < 1000)
+           harmonized_units = "ug/L")
   
   # How many records removed due to limits on values?
   print(
@@ -347,7 +351,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                             ActivityBottomDepthHeightMeasure.MeasureValue),
                   .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
                                                         "9999", "-9999", "-99",
-                                                        "NaN"),
+                                                        "99", "NaN"),
                                   true = NA_character_,
                                   false = .x)))
   
@@ -664,7 +668,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
-  # Filter and slim the tiered product
+  # Slim the tiered product
   cleaned_tiered_methods_chla <- tiered_methods_chla %>%
     # Drop tag columns - these are recorded and exported in tiering_record. We
     # keep only the final tier

@@ -41,7 +41,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the preharmonization process the DOC-only WQP dataset contains `r step_0_rows` rows.
+After the pre-harmonization process the DOC-only WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%

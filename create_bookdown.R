@@ -41,7 +41,7 @@ bookdown_targets_list <- list(
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
     cue = tar_cue("always"),
-    packages = c("tidyverse", "sf", "tigris")
+    packages = c("tidyverse", "sf", "tigris", "kableExtra")
   ),
   
   tar_target(
@@ -50,7 +50,7 @@ bookdown_targets_list <- list(
       pre_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops,
-        params_in_use = unique(p3_wqp_data_aoi_formatted$parameter)),
+        params_in_use = names(p1_wqp_params)),
       output_file = "02_preharmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -78,7 +78,8 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       chla_harmonization_rmd,
       params = list(
-        documented_drops = p3_documented_drops),
+        documented_drops = p3_documented_drops,
+        chla_chars = p1_wqp_params$chlorophyll),
       output_file = "04_chla_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

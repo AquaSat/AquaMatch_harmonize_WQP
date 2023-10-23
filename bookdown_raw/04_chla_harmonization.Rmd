@@ -251,7 +251,7 @@ step_4_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Step 4 involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
   
   1. Numeric-only version of the column is still `NA` after MDL cleaning
   2. The original column text contained a number
@@ -302,7 +302,7 @@ step_5_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Step 5 is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
   
   1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
   2. The original column text contained a number
@@ -466,21 +466,24 @@ This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining.
 
 The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
-+ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName` or presence of 70951 or 70953 in the `USGSPCode` column
++ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName`
 + **Spectro/fluoro:** Detection of "445", "fluor", "Welshmeyer", "fld", "10200", "446", "trichromatic", "spectrophoto", "monochrom", "monchrom", or "spec" not as part of a word in `ResultAnalyticalMethod.MethodName`
 + **Pheophytin correction:** Detection of "correct", "445", "446", or "in presence" in `ResultAnalyticalMethod.MethodName` or detection of "corrected for pheophytin" or "free of pheophytin" in `CharacteristicName`
 
-Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. As a reminder, these tiers are:
 
-+ **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable
-+ **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers
-+ **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter.
+Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
 
-For chlorophyll *a*, the following rules are used:
-
-+ **Tier 0**: Includes records using HPLC methods
-+ **Tier 1**: Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209
-+ **Tier 2**: All other records by default, including `NA` methods and *in situ* probes
+<br>
+  
+  <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
+  
+  | Tier | Name        | Description                                                                                                                                                                                                                                                                                            | Chl *a* details                                                                                                              |   |
+  |------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---|
+  | 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using HPLC methods                                                                                          |   |
+  | 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers                                                                                                                                                                   | Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209 |   |
+  | 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | All other records by default, including `NA` methods and *in situ* probes                                                    |   |
+  
+<br>
 
 At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 

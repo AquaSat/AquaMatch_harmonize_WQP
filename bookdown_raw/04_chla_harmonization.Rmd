@@ -365,6 +365,15 @@ read_csv("../3_harmonize/out/chla_unit_table.csv") %>%
   kable_styling(full_width = FALSE)
 ```
 
+<br>
+
+Below is a pie chart that breaks down the different unit codes that were dropped in the unit harmonization process, and how many records were lost with each code.
+
+<br>
+
+<img src="3_harmonize/out/chla_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/>
+
+<br>
 
 `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
 

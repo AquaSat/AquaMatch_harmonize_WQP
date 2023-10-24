@@ -1,30 +1,30 @@
 CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,hplc_tag,spec_fluor_tag,pheo_corr_tag,analytical_tier,n
 Chlorophyll a,NA,NA,FALSE,FALSE,FALSE,2,469005
-"Chlorophyll a, corrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,TRUE,1,436457
-"Chlorophyll a, uncorrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,196083
+"Chlorophyll a, corrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,TRUE,1,437056
+"Chlorophyll a, uncorrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,196682
 Chlorophyll a,10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,139482
 Chlorophyll a,445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,107441
 Chlorophyll a,MONOCHROMATIC; SPECTROPHOTOMETRIC,NA,FALSE,TRUE,FALSE,2,96452
 Chlorophyll a (probe),NA,NA,FALSE,FALSE,FALSE,2,72732
-"Chlorophyll a, corrected for pheophytin",445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,70975
+"Chlorophyll a, corrected for pheophytin",445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,72168
 "Chlorophyll a, uncorrected for pheophytin",445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,60673
 "Chlorophyll a, free of pheophytin",445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,50862
-Chlorophyll a (probe relative fluorescence),445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,50351
+Chlorophyll a (probe relative fluorescence),445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,50420
 "Chlorophyll a, uncorrected for pheophytin",LAKEWATCH-CHL,NA,FALSE,FALSE,FALSE,2,40690
 Chlorophyll a,analyticTRICHROMATIC CHLOROPHYLL A,NA,FALSE,TRUE,FALSE,2,40215
 "Chlorophyll a, corrected for pheophytin",LAKEWATCH-CHL,NA,FALSE,FALSE,TRUE,2,33206
 "Chlorophyll a, corrected for pheophytin",10200 H 2  ~ Chlorophyll a-b-c Determination by spectrophotometer,NA,FALSE,TRUE,TRUE,1,27166
 "Chlorophyll a, uncorrected for pheophytin",10200 H 2  ~ Chlorophyll a-b-c Determination by spectrophotometer,NA,FALSE,TRUE,FALSE,2,25299
 Chlorophyll a,analyticCHLA_103,NA,FALSE,FALSE,FALSE,2,22710
-Chlorophyll a,N/A Calculation,NA,FALSE,FALSE,FALSE,2,22488
+Chlorophyll a,N/A Calculation,NA,FALSE,FALSE,FALSE,2,22579
 "Chlorophyll a, corrected for pheophytin",NA,32209,FALSE,FALSE,TRUE,1,20022
 "Chlorophyll a, corrected for pheophytin",CHLOROPHYLL-A UG/L SPECTROPHOTOMETRIC ACID. METH.,NA,FALSE,TRUE,TRUE,1,19604
-Chlorophyll a,"Plant pigments, sonication & 445",70953,TRUE,TRUE,TRUE,0,18635
+Chlorophyll a,"Plant pigments, sonication & 445",70953,FALSE,TRUE,TRUE,1,18724
 Chlorophyll a,YSI EXO2 Chlorophyll a measurement,NA,FALSE,FALSE,FALSE,2,15227
 Chlorophyll a,"Chlorophyll, phytoplankton, HPLC",70953,TRUE,FALSE,FALSE,0,15172
 "Chlorophyll a, uncorrected for pheophytin",NA,32217,FALSE,FALSE,FALSE,2,14561
 "Chlorophyll a, free of pheophytin",NA,NA,FALSE,FALSE,TRUE,2,14132
-Chlorophyll a,NA,70953,TRUE,FALSE,FALSE,0,13805
+Chlorophyll a,NA,70953,FALSE,FALSE,FALSE,2,13805
 Chlorophyll a (probe relative fluorescence),NA,NA,FALSE,FALSE,FALSE,2,12921
 "Chlorophyll a, corrected for pheophytin",10200 H 3  ~ Chlorophyll a-b-c Determination by fluorometer,NA,FALSE,TRUE,TRUE,1,12843
 "Chlorophyll a, uncorrected for pheophytin",NA,32230,FALSE,FALSE,FALSE,2,12204
@@ -39,17 +39,17 @@ Chlorophyll a,FLUOROMETRIC; IN-VITRO CHLOROPHYLL A,NA,FALSE,TRUE,FALSE,2,7166
 "Chlorophyll a, free of pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,TRUE,1,5404
 Chlorophyll a,10200 H 2  ~ Chlorophyll a-b-c Determination by spectrophotometer,NA,FALSE,TRUE,FALSE,2,5318
 "Chlorophyll a, uncorrected for pheophytin",Used for all methods where historical methodology may not be available.,NA,FALSE,FALSE,FALSE,2,5154
-Chlorophyll a,NA,32211,FALSE,FALSE,FALSE,2,4984
+Chlorophyll a,NA,32211,FALSE,FALSE,FALSE,2,5008
 "Chlorophyll a, uncorrected for pheophytin","Chlorophyll a,fluorometric,uncor",32217,FALSE,TRUE,FALSE,2,4962
 "Chlorophyll a, corrected for pheophytin","Chlorophyll a, corrected for pheophytin",NA,FALSE,FALSE,TRUE,2,4945
 Chlorophyll a,"445.0 ~ EPA; Revision 1.2, September 1997, In Vitro Determination of Chlorophyll a and Pheophytin a in Marine and Freshwater Algae by Fluorescence",NA,FALSE,TRUE,TRUE,1,4375
 Chlorophyll a,446.0 ~ EPA; Chlorophylls and Pheopigments in Phytoplankton by Spectrophotometry,NA,FALSE,TRUE,TRUE,1,4308
-Chlorophyll a,"Chlorophyll a,phyto,fluorometric",70953,TRUE,TRUE,FALSE,0,4087
+Chlorophyll a,"Chlorophyll a,phyto,fluorometric",70953,FALSE,TRUE,FALSE,2,4087
 Chlorophyll a (probe relative fluorescence),Operating the Seabird CTD,NA,FALSE,FALSE,FALSE,2,4018
 "Chlorophyll a, uncorrected for pheophytin",Chlorophyll a,NA,FALSE,FALSE,FALSE,2,3779
 "Chlorophyll a, corrected for pheophytin",Chlorophyll a,NA,FALSE,FALSE,TRUE,2,3684
 Chlorophyll a (probe relative fluorescence),10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,3585
-Chlorophyll a,447.0 ~ EPA; Chlorophyll a and b in phytoplankton by HPLC/UV,NA,TRUE,FALSE,FALSE,0,3343
+Chlorophyll a,447.0 ~ EPA; Chlorophyll a and b in phytoplankton by HPLC/UV,NA,TRUE,FALSE,FALSE,0,3355
 Chlorophyll a,analytic04,NA,FALSE,FALSE,FALSE,2,3247
 Chlorophyll a,YSI6025,NA,FALSE,FALSE,FALSE,2,3209
 "Chlorophyll a, corrected for pheophytin",USEPA 445,NA,FALSE,TRUE,TRUE,1,3176
@@ -61,7 +61,7 @@ Chlorophyll a,SM 10200 H,NA,FALSE,TRUE,FALSE,2,2864
 "Chlorophyll a, uncorrected for pheophytin",EPA447.0,NA,TRUE,FALSE,FALSE,0,2659
 "Chlorophyll a, uncorrected for pheophytin",CHLOROPHYLL BY TRICHROAMTIC METHOD - STANDARD METHODS 10200H(2)(C),NA,FALSE,TRUE,FALSE,2,2479
 Chlorophyll a,EPA 445.0,NA,FALSE,TRUE,TRUE,1,2433
-Chlorophyll a,"Chlorophyll a, phytoplankton",70953,TRUE,FALSE,FALSE,0,2414
+Chlorophyll a,"Chlorophyll a, phytoplankton",70953,FALSE,FALSE,FALSE,2,2414
 "Chlorophyll a, uncorrected for pheophytin",NA,NA,FALSE,FALSE,FALSE,2,2319
 "Chlorophyll a, corrected for pheophytin","STANDARD METHODS 10200(2)(B) - CHLOROPHYLL A, PHAEOPHYTIN CORRECTION METHOD",NA,FALSE,TRUE,TRUE,1,2242
 "Chlorophyll a, corrected for pheophytin",SM10200H,NA,FALSE,TRUE,TRUE,1,2099
@@ -71,7 +71,6 @@ Chlorophyll a,SM10200H,NA,FALSE,TRUE,FALSE,2,1984
 Chlorophyll a,FLUOROMETIC CHLOROPHYLL USING PROBE,NA,FALSE,TRUE,FALSE,2,1915
 Chlorophyll a,EPA Method 445.0,NA,FALSE,TRUE,TRUE,1,1912
 "Chlorophyll a, corrected for pheophytin",LEGACY,NA,FALSE,FALSE,TRUE,2,1868
-Chlorophyll a - Phytoplankton (suspended),445.0,NA,FALSE,TRUE,TRUE,1,1842
 "Chlorophyll a, uncorrected for pheophytin",SM10200H,NA,FALSE,TRUE,FALSE,2,1838
 "Chlorophyll a, corrected for pheophytin","Chlorophyll a - Corrected for pheophytin, by Fluorometer",NA,FALSE,TRUE,TRUE,1,1768
 "Chlorophyll a, corrected for pheophytin",Analytical method not available,NA,FALSE,FALSE,TRUE,2,1760
@@ -80,7 +79,7 @@ Chlorophyll a,EPA 445.0M,NA,FALSE,TRUE,TRUE,1,1690
 "Chlorophyll a, corrected for pheophytin","Chlorophyll A and Phaephytin Monochromatic, Water",NA,FALSE,TRUE,TRUE,1,1666
 Chlorophyll a (probe),10200 H 3  ~ Chlorophyll a-b-c Determination by fluorometer,NA,FALSE,TRUE,FALSE,2,1640
 Chlorophyll a (probe),UNKOWN,NA,FALSE,FALSE,FALSE,2,1563
-Chlorophyll a,NA,70951,TRUE,FALSE,FALSE,0,1552
+Chlorophyll a,NA,70951,FALSE,FALSE,FALSE,2,1552
 "Chlorophyll a, corrected for pheophytin",SM 10200 H,NA,FALSE,TRUE,TRUE,1,1450
 "Chlorophyll a, corrected for pheophytin",LAKE COUNTY QUALITY SYSTEMS MANUAL,NA,FALSE,FALSE,TRUE,2,1442
 "Chlorophyll a, free of pheophytin",EPA447.0,NA,TRUE,FALSE,TRUE,0,1311
@@ -89,7 +88,6 @@ Chlorophyll a,UNKNOWN,NA,FALSE,FALSE,FALSE,2,1235
 "Chlorophyll a, corrected for pheophytin",CHLOROPHYLL A,NA,FALSE,FALSE,TRUE,2,1177
 Chlorophyll a,ANL_MTHD,NA,FALSE,FALSE,FALSE,2,1176
 "Chlorophyll a, corrected for pheophytin",General Listing of Field and Lab Analytical Procedures for Manatee County,NA,FALSE,FALSE,TRUE,2,1102
-Chlorophyll a - Phytoplankton (suspended),445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,1093
 Chlorophyll a,Nutrient analyses,NA,FALSE,FALSE,FALSE,2,1007
 "Chlorophyll a, corrected for pheophytin",QA Plan #900456,NA,FALSE,FALSE,TRUE,2,988
 Chlorophyll a,PIIC_QAPP,NA,FALSE,FALSE,FALSE,2,984
@@ -97,10 +95,10 @@ Chlorophyll a,PIIC_QAPP,NA,FALSE,FALSE,FALSE,2,984
 "Chlorophyll a, uncorrected for pheophytin",Laboratory Procedures for Water Quality Chemical Analysis,NA,FALSE,FALSE,FALSE,2,930
 "Chlorophyll a, uncorrected for pheophytin",Nutrient analyses from water samples,NA,FALSE,FALSE,FALSE,2,913
 Chlorophyll a,analyticCHLA_102,NA,FALSE,FALSE,FALSE,2,877
-Chlorophyll a,"Plant pigments, algae, vis spec",70951,TRUE,TRUE,FALSE,0,840
+Chlorophyll a,"Plant pigments, algae, vis spec",70951,FALSE,TRUE,FALSE,2,840
 "Chlorophyll a, uncorrected for pheophytin",CHLOROPHYLL-A UG/L TRICHROMATIC UNCORRECTED,NA,FALSE,TRUE,TRUE,1,752
 Chlorophyll a,ISU modification of EPA 445,NA,FALSE,TRUE,TRUE,1,743
-Chlorophyll a,"Pigments, algae, EPA445.0 w/ACTN",70953,TRUE,TRUE,TRUE,0,709
+Chlorophyll a,"Pigments, algae, EPA445.0 w/ACTN",70953,FALSE,TRUE,TRUE,1,709
 "Chlorophyll a, uncorrected for pheophytin","Chlorophyll A and Phaephytin Monochromatic, Water",NA,FALSE,TRUE,FALSE,2,701
 Chlorophyll a,Chloro-a fld,NA,FALSE,TRUE,FALSE,2,698
 "Chlorophyll a, corrected for pheophytin",NA,NA,FALSE,FALSE,TRUE,2,694
@@ -116,7 +114,6 @@ Chlorophyll a,Chlorophyll a/pheophytin a,NA,FALSE,FALSE,FALSE,2,510
 Chlorophyll a,NA,32316,FALSE,FALSE,FALSE,2,494
 Chlorophyll a,"Plant pigments, mac, 5 um, fluor",32737,FALSE,TRUE,FALSE,2,476
 Chlorophyll a,LEGACY,NA,FALSE,FALSE,FALSE,2,473
-Chlorophyll a - Phytoplankton (suspended),10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,451
 "Chlorophyll a, corrected for pheophytin",EPA 445,NA,FALSE,TRUE,TRUE,1,426
 Chlorophyll a,10200 H 3  ~ Chlorophyll a-b-c Determination by fluorometer,NA,FALSE,TRUE,FALSE,2,386
 "Chlorophyll a, uncorrected for pheophytin",Harrel's Chlorophyll a Procedure at BITH,NA,FALSE,FALSE,FALSE,2,384
@@ -208,13 +205,10 @@ Chlorophyll a,Chlorophyll a By Modified USEPA Fluorometric Procedure,NA,FALSE,TR
 Chlorophyll a,QAPP-LAKE,NA,FALSE,FALSE,FALSE,2,16
 Chlorophyll a,50,NA,FALSE,FALSE,FALSE,2,14
 "Chlorophyll a, uncorrected for pheophytin",Field procedure or Not Specified,NA,FALSE,TRUE,FALSE,2,14
-Chlorophyll a - Phytoplankton (suspended),LC3152,NA,FALSE,FALSE,FALSE,2,13
 "Chlorophyll a, free of pheophytin",UNKOWN,NA,FALSE,FALSE,TRUE,2,11
 "Chlorophyll a, uncorrected for pheophytin",CHLOROPHYLL-A UG/L SPECTROPHOTOMETRIC ACID. METH.,NA,FALSE,TRUE,FALSE,2,10
-Chlorophyll a - Phytoplankton (suspended),445M,NA,FALSE,TRUE,TRUE,1,9
 "Chlorophyll a, corrected for pheophytin",CHLOROPHYLL A UG/L FLUOROMETRIC CORRECTED,NA,FALSE,TRUE,TRUE,1,9
 Chlorophyll a,EPA 445 (FL-M),NA,FALSE,TRUE,TRUE,1,5
-Chlorophyll a - Phytoplankton (suspended),STANDARD METHOD FOR 10200 H,NA,FALSE,TRUE,FALSE,2,4
 Chlorophyll a,LC2645,NA,FALSE,FALSE,FALSE,2,3
 "Chlorophyll a, corrected for pheophytin",FIELD PARAMETERS,NA,FALSE,FALSE,TRUE,2,3
 "Chlorophyll a, corrected for pheophytin",UNKNOWN,NA,FALSE,FALSE,TRUE,2,3

@@ -11,14 +11,14 @@ filter-status
 filter-media
 location-type
 tiering-flagging-and-quality-control-philosophy
-na-values
+handling-na-values
 heterogenous-data
 analytical-method-tiering
 field-flags
 depth-flags
 pre-processing
 general-note
-chlorophyll-harmonization-process
+chlorophyll-a-chla-harmonization-process
 initial-dataset-1
 filter-for-water-media
 document-and-remove-fails

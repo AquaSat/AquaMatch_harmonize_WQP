@@ -299,11 +299,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Harmonize value units ---------------------------------------------------
   
-  # Now count the units column: 
-  unit_counts <- chla_harmonized_values %>%
-    count(ResultMeasure.MeasureUnitCode) %>%
-    arrange(desc(n))
-  
+  # Matchup table for expected chla units in the dataset
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
                                       "mg/m3", "ppb", "mg/cm3", "ug/ml",
@@ -322,6 +318,17 @@ harmonize_chla <- function(raw_chla, p_codes){
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = ResultMeasureValue * conversion,
            harmonized_units = "ug/L")
+  
+  # Plot and export unit codes that didn't make through joining
+  chla_harmonized_values %>%
+    anti_join(x = .,
+              y = unit_conversion_table,
+              by = "ResultMeasure.MeasureUnitCode")  %>%
+    count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
+    plot_unit_pie() %>%
+    ggsave(filename = "3_harmonize/out/chla_unit_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
   
   # How many records removed due to limits on values?
   print(

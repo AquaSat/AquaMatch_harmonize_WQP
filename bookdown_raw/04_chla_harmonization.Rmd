@@ -475,7 +475,7 @@ This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining.
 
 The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
-+ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName`
++ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName` or presence of 70951 or 70953 in the `USGSPCode` column
 + **Spectro/fluoro:** Detection of "445", "fluor", "Welshmeyer", "fld", "10200", "446", "trichromatic", "spectrophoto", "monochrom", "monchrom", or "spec" not as part of a word in `ResultAnalyticalMethod.MethodName`
 + **Pheophytin correction:** Detection of "correct", "445", "446", or "in presence" in `ResultAnalyticalMethod.MethodName` or detection of "corrected for pheophytin" or "free of pheophytin" in `CharacteristicName`
 

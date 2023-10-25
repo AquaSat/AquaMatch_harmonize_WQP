@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2023-10-23" />
+<meta name="date" content="2023-10-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -242,7 +242,7 @@ contains 2.63 million rows. This dataset contains the following
 user-defined <code>characteristicNames</code>: Chlorophyll a, Chlorophyll a (probe
 relative fluorescence), Chlorophyll a, corrected for pheophytin,
 Chlorophyll a (probe), Chlorophyll a, free of pheophytin, Chlorophyll a,
-uncorrected for pheophytin.</p>
+uncorrected for pheophytin, Chlorophyll a - Phytoplankton (suspended).</p>
 <p>These names are chosen in order to select for only those measurements
 that pertain to chlorophyll <em>a</em>.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
@@ -295,7 +295,7 @@ failure phrases are not mutually exclusive.</p>
 <p><br></p>
 <!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
-<p>69.56 thousand rows are removed after detecting failure-related phrases
+<p>69.57 thousand rows are removed after detecting failure-related phrases
 and 2.56 million rows remain.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
@@ -474,7 +474,7 @@ lost with each code.</p>
 <p><br></p>
 <p><img src="3_harmonize/out/chla_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/></p>
 <p><br></p>
-<p>116.99 thousand rows are removed. The final row count after this is 2.44
+<p>117.48 thousand rows are removed. The final row count after this is 2.45
 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
 <p><br></p>
@@ -486,7 +486,7 @@ obtained from the WQP. The details behind this step are covered in the
 <em>Depth flags</em> section of the <em>Tiering, flagging, and quality control
 philosophy</em> chapter.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.44 million.</p>
+are removed. The final row count after this is 2.45 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -516,7 +516,8 @@ the final step of this process. The criteria for each of the above
 classifications are:</p>
 <ul>
 <li><strong>HPLC:</strong> Detection of “447”, “chromatography”, or “hplc” in the
-<code>ResultAnalyticalMethod.MethodName</code></li>
+<code>ResultAnalyticalMethod.MethodName</code> or presence of 70951 or 70953 in
+the <code>USGSPCode</code> column</li>
 <li><strong>Spectro/fluoro:</strong> Detection of “445”, “fluor”, “Welshmeyer”, “fld”,
 “10200”, “446”, “trichromatic”, “spectrophoto”, “monochrom”,
 “monchrom”, or “spec” not as part of a word in

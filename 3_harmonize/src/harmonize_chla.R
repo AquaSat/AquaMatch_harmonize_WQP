@@ -766,6 +766,62 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
+  # Generate plots with harmonized dataset ----------------------------------
+  
+  # Plot harmonized measurements by CharacteristicName
+  
+  plotting_subset <- field_flagged_chla %>%
+    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value)
+  
+  n_lost_plotting <- plotting_subset %>%
+    filter(harmonized_value <= 0 | is.na(harmonized_value)) %>%
+    nrow()
+  
+  char_dists <- plotting_subset %>%
+    ggplot() +
+    geom_histogram(aes(harmonized_value)) +
+    facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    xlab("Harmonized chl a (ug/L)") +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+            subtitle = paste0(n_lost_plotting,
+                              " rows lost due to NA, negative, or 0 values before log10 transformation")) +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_charname_dists.png",
+         plot = char_dists,
+         width = 8, height = 6, units = "in", device = "png")
+  
+  
+  # Plot harmonized measurements by Tier
+  
+  tier_dists <- plotting_subset %>%
+    mutate(tier_label = case_when(
+      analytical_tier == 0 ~ "Restrictive (Tier 0)",
+      analytical_tier == 1 ~ "Narrowed (Tier 1)",
+      analytical_tier == 2 ~ "Inclusive (Tier 2)"
+    )) %>%
+    ggplot() +
+    geom_histogram(aes(harmonized_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y") +
+    xlab("Harmonized chl a (ug/L)") +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
+            subtitle = paste0(n_lost_plotting,
+                              " rows lost due to NA, negative, or 0 values before log10 transformation")) +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_tier_dists.png",
+         plot = tier_dists,
+         width = 7, height = 3, units = "in", device = "png")
+  
+  
   # Export ------------------------------------------------------------------
   
   # Record of all steps where rows were dropped, why, and how many

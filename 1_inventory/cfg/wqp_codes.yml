@@ -19,6 +19,7 @@
     - "Chlorophyll a (probe)"
     - "Chlorophyll a, free of pheophytin"
     - "Chlorophyll a, uncorrected for pheophytin"
+    - "Chlorophyll a - Phytoplankton (suspended)"
 
   # depth:
   #   - "Depth"

@@ -610,10 +610,11 @@ harmonize_chla <- function(raw_chla, p_codes){
                       collapse = "|") 
   
   chla_tag_hplc <- chla_relevant %>%
-    # TRUE if methods contain HPLC-related text
+    # TRUE if methods contain HPLC-related text or if the correct USGS p code
     mutate(hplc_tag = if_else(condition = grepl(pattern = hplc_text,
                                                 x = ResultAnalyticalMethod.MethodName,
-                                                ignore.case = TRUE),
+                                                ignore.case = TRUE) |
+                                USGSPCode %in% c(70951, 70953),
                               true = TRUE,
                               false = FALSE,
                               missing = FALSE))
@@ -629,10 +630,15 @@ harmonize_chla <- function(raw_chla, p_codes){
                             collapse = "|")
   
   chla_tag_spec_fluor <- chla_tag_hplc %>%
-    mutate(spec_fluor_tag = grepl(pattern = spec_fluor_text,
-                                  x = ResultAnalyticalMethod.MethodName,
-                                  ignore.case = TRUE,
-                                  perl = TRUE))
+    mutate(spec_fluor_tag = if_else(
+      condition = grepl(pattern = spec_fluor_text,
+                        x = ResultAnalyticalMethod.MethodName,
+                        ignore.case = TRUE,
+                        perl = TRUE) |
+        parameter_code %in% c(32211, 32230),
+      true = TRUE,
+      false = FALSE,
+      missing = FALSE))
   
   # 1.3 Correction for pheo detection - new column
   
@@ -643,7 +649,7 @@ harmonize_chla <- function(raw_chla, p_codes){
              case_when(
                # If correction or correction-related methods mentioned in
                # analytical method OR...
-               grepl(pattern = "correct|445|446|in presence",
+               grepl(pattern = "\\bcorrect|in presence",
                      x = ResultAnalyticalMethod.MethodName,
                      ignore.case = TRUE) ~ TRUE,
                # The characteristic name mentions correction
@@ -655,11 +661,15 @@ harmonize_chla <- function(raw_chla, p_codes){
   # 1.4 Create tiers
   tiered_methods_chla <- chla_tag_pheo %>%
     mutate(analytical_tier = case_when(
+      # Conflicting method info
+      grepl(pattern = "445", x = ResultAnalyticalMethod.MethodName) & hplc_tag ~ 2,
       # Top tier is HPLC = TRUE
       hplc_tag ~ 0,
       # Narrowed tier is non-HPLC lab analyzed AND corrected
       spec_fluor_tag & pheo_corr_tag ~ 1,
       USGSPCode == 32209 ~ 1,
+      # No specific method listed but correction mentioned
+      pheo_corr_tag ~ 1,
       # Everything else is inclusive tier
       .default = 2
     ))

@@ -303,9 +303,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
                                       "mg/m3", "ppb", "mg/cm3", "ug/ml",
-                                      "mg/ml", "ppt"),
+                                      "mg/ml", "ppt", "ug/mL", "mg/mL"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                   1000000, 1000000))
+                   1000000, 1000000, 1000, 1000000))
   
   unit_table_out_path <- "3_harmonize/out/chla_unit_table.csv"
   

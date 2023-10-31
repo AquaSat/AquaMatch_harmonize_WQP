@@ -583,3 +583,14 @@ step_data %>%
 
 At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we export the final dataset for use later in the workflow.
 
+Below are two sets of histograms showing the distribution of harmonized measurements broken down by 1) `CharacteristicName`, and 2) `analytical_tier`.
+
+<br>
+
+<img src="3_harmonize/out/chla_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/>
+
+<br>
+
+<img src="3_harmonize/out/chla_tier_dists.png" alt="Distribution of chl *a* values by analytical tier" width="650"/>
+
+<br>

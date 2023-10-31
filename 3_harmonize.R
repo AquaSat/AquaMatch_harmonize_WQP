@@ -92,7 +92,8 @@ p3_targets_list <- list(
              harmonize_chla(raw_chla = p3_cleaned_wqp_data %>%
                               filter(parameter == "chlorophyll"),
                             p_codes = p3_p_codes),
-             packages = c("tidyverse", "lubridate", "feather", "ggrepel")),
+             packages = c("tidyverse", "lubridate", "feather", "ggrepel",
+                          "scales")),
   
   tar_file_read(name = p3_chla_tiering_record,
                 command = p3_harmonized_chla$chla_tiering_record_path,

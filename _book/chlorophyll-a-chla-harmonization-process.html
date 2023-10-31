@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2023-10-25" />
+<meta name="date" content="2023-10-26" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -465,6 +465,22 @@ ppt
 1e+06
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+ug/mL
+</td>
+<td style="text-align:right;">
+1e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/mL
+</td>
+<td style="text-align:right;">
+1e+06
+</td>
+</tr>
 </tbody>
 </table>
 <p><br></p>
@@ -474,7 +490,7 @@ lost with each code.</p>
 <p><br></p>
 <p><img src="3_harmonize/out/chla_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/></p>
 <p><br></p>
-<p>117.48 thousand rows are removed. The final row count after this is 2.45
+<p>117.3 thousand rows are removed. The final row count after this is 2.45
 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
 <p><br></p>
@@ -622,6 +638,14 @@ dropped leaving million remaining in the final harmonized chlorophyll
 <p>At this point the harmonization of the chlorophyll <em>a</em> data from the WQP
 is complete and we export the final dataset for use later in the
 workflow.</p>
+<p>Below are two sets of histograms showing the distribution of harmonized
+measurements broken down by 1) <code>CharacteristicName</code>, and 2)
+<code>analytical_tier</code>.</p>
+<p><br></p>
+<p><img src="3_harmonize/out/chla_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/></p>
+<p><br></p>
+<p><img src="3_harmonize/out/chla_tier_dists.png" alt="Distribution of chl *a* values by analytical tier" width="650"/></p>
+<p><br></p>
 
 </div>
 </div>

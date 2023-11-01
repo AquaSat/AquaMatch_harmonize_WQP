@@ -130,7 +130,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   mdl_updates <- chla_fails_removed %>%
     # only want NAs and character value data:
     filter(is.na(ResultMeasureValue)) %>%
-    # if the value is na BUT there is non detect language in the comments...  
+    # if the value is NA BUT there is non detect language in the comments...  
     mutate(
       mdl_vals = ifelse(
         test = (is.na(ResultMeasureValue_original) & 
@@ -178,8 +178,8 @@ harmonize_chla <- function(raw_chla, p_codes){
     left_join(x = ., y = mdl_updates, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
-           harmonized_comments = ifelse(index %in% mdl_updates$index,
-                                        "Approximated using the EPA's MDL method.", NA))
+           # Flag: 1 = used MDL adjustment, 0 = value not adjusted
+           mdl_flag = ifelse(index %in% mdl_updates$index, 1, 0))
   
   dropped_mdls <- tibble(
     step = "chla harmonization",
@@ -231,9 +231,8 @@ harmonize_chla <- function(raw_chla, p_codes){
     mutate(harmonized_value = ifelse(index %in% chla_approx$index,
                                      approx_value,
                                      harmonized_value),
-           harmonized_comments = ifelse(index %in% chla_approx$index,
-                                        'Value identified as "approximated" by organization.',
-                                        harmonized_comments))
+           # Flag: 1 = used approximate adjustment, 0 = value not adjusted
+           approx_flag = ifelse(index %in% chla_approx$index, 1, 0))
   
   dropped_approximates <- tibble(
     step = "chla harmonization",
@@ -278,9 +277,8 @@ harmonize_chla <- function(raw_chla, p_codes){
     left_join(x = ., y = greater_vals, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% greater_vals$index,
                                      greater_value, harmonized_value),
-           harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        'Value identified as being greater than listed value.',
-                                        harmonized_comments))
+           # Flag: 1 = used greater than adjustment, 0 = value not adjusted
+           greater_flag = ifelse(index %in% greater_vals$index, 1, 0))
   
   dropped_greater_than <- tibble(
     step = "chla harmonization",
@@ -294,6 +292,30 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Free up memory
   rm(chla)
+  gc()
+  
+  
+  # Remove remaining NAs ----------------------------------------------------
+  
+  # At this point we've processed MDLs, approximate values, and values containing
+  # symbols like ">". If there are still remaining NAs in the numeric measurement
+  # column then it's time to drop them.
+  
+  chla_no_na <- chla_harmonized_values %>%
+    filter(!is.na(harmonized_value))
+  
+  dropped_na <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped unresolved NAs",
+    short_reason = "Unresolved NAs",
+    number_dropped = nrow(chla_harmonized_values) - nrow(chla_no_na),
+    n_rows = nrow(chla_no_na),
+    order = 6
+  )
+  
+  # Free up memory
+  rm(chla_harmonized_values, chla_approx_added, chla_mdls_added,
+     chla_fails_removed)
   gc()
   
   
@@ -312,7 +334,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   write_csv(x = unit_conversion_table,
             file = unit_table_out_path)
   
-  converted_units_chla <- chla_harmonized_values %>%
+  converted_units_chla <- chla_no_na %>%
     inner_join(x = .,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
@@ -320,7 +342,7 @@ harmonize_chla <- function(raw_chla, p_codes){
            harmonized_units = "ug/L")
   
   # Plot and export unit codes that didn't make through joining
-  chla_harmonized_values %>%
+  chla_no_na %>%
     anti_join(x = .,
               y = unit_conversion_table,
               by = "ResultMeasure.MeasureUnitCode")  %>%
@@ -334,7 +356,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Rows removed while harmonizing units: ",
-      nrow(chla_harmonized_values) - nrow(converted_units_chla)
+      nrow(chla_no_na) - nrow(converted_units_chla)
     )
   )
   
@@ -342,9 +364,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while harmonizing units",
     short_reason = "Harmonize units",
-    number_dropped = nrow(chla_harmonized_values) - nrow(converted_units_chla),
+    number_dropped = nrow(chla_no_na) - nrow(converted_units_chla),
     n_rows = nrow(converted_units_chla),
-    order = 6
+    order = 7
   )
   
   
@@ -411,7 +433,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   harmonized_depth_chla <- converted_depth_units_chla %>%
     rowwise() %>%
     mutate(
-      # 1. New harmonized discrete column:
+      # New harmonized discrete column:
       harmonized_discrete_depth_value = case_when(
         # Use activity depth mainly
         !is.na(harmonized_activity_depth_value) &
@@ -564,7 +586,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     short_reason = "Clean depths",
     number_dropped = nrow(converted_units_chla) - nrow(flagged_depth_chla),
     n_rows = nrow(flagged_depth_chla),
-    order = 7
+    order = 8
   )
   
   
@@ -697,11 +719,11 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   dropped_methods <- tibble(
     step = "chla harmonization",
-    reason = "Dropped rows while cleaning analytical methods",
+    reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
     number_dropped = nrow(flagged_depth_chla) - nrow(cleaned_tiered_methods_chla),
     n_rows = nrow(chla_relevant),
-    order = 8
+    order = 9
   )
   
   
@@ -762,24 +784,28 @@ harmonize_chla <- function(raw_chla, p_codes){
     short_reason = "Field flagging",
     number_dropped = nrow(cleaned_tiered_methods_chla) - nrow(field_flagged_chla),
     n_rows = nrow(field_flagged_chla),
-    order = 9
+    order = 10
   )
   
   
   # Generate plots with harmonized dataset ----------------------------------
   
+  # We'll generate plots now before aggregating across simultaneous records
+  # because it won't be possible to use CharacteristicName after that point.
+  
   # Plot harmonized measurements by CharacteristicName
   
   plotting_subset <- field_flagged_chla %>%
-    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value)
+    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001)
   
   n_lost_plotting <- plotting_subset %>%
-    filter(harmonized_value <= 0 | is.na(harmonized_value)) %>%
+    filter(plot_value <= 0 | is.na(plot_value)) %>%
     nrow()
   
   char_dists <- plotting_subset %>%
     ggplot() +
-    geom_histogram(aes(harmonized_value)) +
+    geom_histogram(aes(plot_value)) +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
     xlab("Harmonized chl a (ug/L)") +
     ylab("Count") +
@@ -805,7 +831,7 @@ harmonize_chla <- function(raw_chla, p_codes){
       analytical_tier == 2 ~ "Inclusive (Tier 2)"
     )) %>%
     ggplot() +
-    geom_histogram(aes(harmonized_value)) +
+    geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y") +
     xlab("Harmonized chl a (ug/L)") +
     ylab("Count") +
@@ -817,17 +843,56 @@ harmonize_chla <- function(raw_chla, p_codes){
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
-  ggsave(filename = "3_harmonize/out/chla_tier_dists.png",
+  ggsave(filename = "3_harmonize/out/chla_tier_dists_preagg.png",
          plot = tier_dists,
          width = 7, height = 3, units = "in", device = "png")
+  
+  
+  # Aggregate simultaneous records ------------------------------------------
+  
+  # There are full duplicates and also values occurring at the same time, location,
+  # etc. We take medians across them here
+  
+  no_simul_chla <- field_flagged_chla %>%
+    # First drop negative chla values
+    filter(harmonized_value >= 0) %>%
+    group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
+             ActivityStartDateTime,
+             harmonized_top_depth_value, harmonized_top_depth_unit,
+             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
+             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
+             depth_flag, mdl_flag, approx_flag, greater_flag,
+             analytical_tier, field_flag, harmonized_units) %>%
+    summarize(harmonized_value = median(harmonized_value, na.rm = TRUE)) %>%
+    ungroup()
+  
+  # How many records removed in aggregating simultaneous records?
+  print(
+    paste0(
+      "Rows removed while aggregating simultaneous records: ",
+      nrow(field_flagged_chla) - nrow(no_simul_chla)
+    )
+  )
+  
+  dropped_simul <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while aggregating simultaneous records",
+    short_reason = "Simultaneous records",
+    number_dropped = nrow(field_flagged_chla) - nrow(no_simul_chla),
+    n_rows = nrow(no_simul_chla),
+    order = 11
+  )
   
   
   # Export ------------------------------------------------------------------
   
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_depths, dropped_fails, 
-                                dropped_field, dropped_greater_than, dropped_harmonization, 
-                                dropped_mdls, dropped_media, dropped_methods)
+  compiled_dropped <- bind_rows(starting_data, dropped_media,
+                                dropped_fails, dropped_mdls,
+                                dropped_approximates, dropped_greater_than,
+                                dropped_na, dropped_harmonization,
+                                dropped_depths, dropped_methods,
+                                dropped_field, dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
   
@@ -838,14 +903,14 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/harmonized_chla.feather"
   
-  write_feather(field_flagged_chla,
+  write_feather(no_simul_chla,
                 data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(field_flagged_chla)
+      nrow(no_simul_chla)
     )
   )
   

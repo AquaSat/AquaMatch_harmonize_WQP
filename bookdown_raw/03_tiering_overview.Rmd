@@ -61,7 +61,6 @@ Prior to assigning the `depth_flag` we complete a few pre-processing steps:
 1. Convert the following (character) values to an explicit `NA`: "NA", "999", "-999", "9999", "-9999", "-99", "99", "NaN"
 2. Convert depths in all four columns to meters from the depth unit listed by the data provider
 3. Create a single "discrete" sample depth column using a combination of the `ActivityDepthHeightMeasure.MeasureValue` and `ResultDepthHeightMeasure.MeasureValue` columns. We use `ActivityDepth` value when `ResultDepth` value is missing, and `ResultDepth` when `ActivityDepth` is missing. If both columns have values but disagree we use an average of the two. 
-4. [[Insert description of `harmonized_top_depth_value`, `harmonized_bottom_depth_value`.]]
 
 This pre-processing results in three "harmonized" columns reporting depth values in meters: `harmonized_discrete_depth_value`, `harmonized_top_depth_value`, `harmonized_bottom_depth_value`. 
 
@@ -69,4 +68,9 @@ Depth flags are assigned using the harmonized depth columns that result from the
 
 ### General note
 Generally speaking, we avoid further classification for any WQP entry's parameter methodology, tier, or flag unless there are at least 1% of observations with the same unresolved text.
+
+## Simultaneous records
+The WQP contains records that can be considered true duplicates and others where multiple non-identical measurements are recorded at the same time and place and by the same organization. We deal with these within each parameter's harmonization step by taking the median value from simultaneous observations.  
+
+This is dealt with separately for each parameter so that specific accommodations can be made based on the tiering and value cleaning process for each parameter. For example, for chlorophyll *a*, this step includes filtering out any negative `harmonized_value`s prior to aggregation. Additionally, this step also requires us to group the dataset by a subset of its original columns in order to create aggregate groups, necessarily resulting in a reduced subset of columns in the final data product.
 

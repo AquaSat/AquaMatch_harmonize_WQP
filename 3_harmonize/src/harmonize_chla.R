@@ -800,7 +800,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     mutate(plot_value = harmonized_value + 0.001)
   
   n_lost_plotting <- plotting_subset %>%
-    filter(plot_value <= 0 | is.na(plot_value)) %>%
+    filter(plot_value <= 0) %>%
     nrow()
   
   char_dists <- plotting_subset %>%
@@ -811,7 +811,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
             subtitle = paste0(n_lost_plotting,
-                              " rows lost due to NA, negative, or 0 values before log10 transformation")) +
+                              " rows lost to negative vals. 0.001 added to each value.")) +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
@@ -820,32 +820,6 @@ harmonize_chla <- function(raw_chla, p_codes){
   ggsave(filename = "3_harmonize/out/chla_charname_dists.png",
          plot = char_dists,
          width = 8, height = 6, units = "in", device = "png")
-  
-  
-  # Plot harmonized measurements by Tier
-  
-  tier_dists <- plotting_subset %>%
-    mutate(tier_label = case_when(
-      analytical_tier == 0 ~ "Restrictive (Tier 0)",
-      analytical_tier == 1 ~ "Narrowed (Tier 1)",
-      analytical_tier == 2 ~ "Inclusive (Tier 2)"
-    )) %>%
-    ggplot() +
-    geom_histogram(aes(plot_value)) +
-    facet_wrap(vars(tier_label), scales = "free_y") +
-    xlab("Harmonized chl a (ug/L)") +
-    ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
-            subtitle = paste0(n_lost_plotting,
-                              " rows lost due to NA, negative, or 0 values before log10 transformation")) +
-    scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
-    theme_bw() +
-    theme(strip.text = element_text(size = 7))
-  
-  ggsave(filename = "3_harmonize/out/chla_tier_dists_preagg.png",
-         plot = tier_dists,
-         width = 7, height = 3, units = "in", device = "png")
   
   
   # Aggregate simultaneous records ------------------------------------------
@@ -865,6 +839,33 @@ harmonize_chla <- function(raw_chla, p_codes){
              analytical_tier, field_flag, harmonized_units) %>%
     summarize(harmonized_value = median(harmonized_value, na.rm = TRUE)) %>%
     ungroup()
+  
+  # Plot harmonized measurements by Tier
+  
+  tier_dists <- no_simul_chla %>%
+    select(analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001) %>%
+    mutate(tier_label = case_when(
+      analytical_tier == 0 ~ "Restrictive (Tier 0)",
+      analytical_tier == 1 ~ "Narrowed (Tier 1)",
+      analytical_tier == 2 ~ "Inclusive (Tier 2)"
+    )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y") +
+    xlab("Harmonized chl a (ug/L)") +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
+            subtitle = "0.001 added to each value") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_tier_dists_postagg.png",
+         plot = tier_dists,
+         width = 7, height = 3, units = "in", device = "png")
+  
   
   # How many records removed in aggregating simultaneous records?
   print(

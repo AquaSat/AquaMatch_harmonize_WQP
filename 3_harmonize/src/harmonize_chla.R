@@ -179,7 +179,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
            # Flag: 1 = used MDL adjustment, 0 = value not adjusted
-           mdl_flag = ifelse(index %in% mdl_updates$index, 1, 0))
+           mdl_flag = ifelse(index %in% mdl_updates$index, 1, 0)) %>%
+    # Remove negative measurement values
+    filter(harmonized_value >= 0)
   
   dropped_mdls <- tibble(
     step = "chla harmonization",
@@ -799,10 +801,6 @@ harmonize_chla <- function(raw_chla, p_codes){
     select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
-  n_lost_plotting <- plotting_subset %>%
-    filter(plot_value <= 0) %>%
-    nrow()
-  
   char_dists <- plotting_subset %>%
     ggplot() +
     geom_histogram(aes(plot_value)) +
@@ -810,8 +808,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     xlab("Harmonized chl a (ug/L)") +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
-            subtitle = paste0(n_lost_plotting,
-                              " rows lost to negative vals. 0.001 added to each value.")) +
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
@@ -827,9 +824,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # There are full duplicates and also values occurring at the same time, location,
   # etc. We take medians across them here
   
-  no_simul_chla <- field_flagged_chla %>%
-    # First drop negative chla values
-    filter(harmonized_value >= 0) %>%
+  # First tag aggregate subgroups with group IDs
+  grouped_chla <- field_flagged_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              ActivityStartDateTime,
              harmonized_top_depth_value, harmonized_top_depth_unit,
@@ -837,26 +833,43 @@ harmonize_chla <- function(raw_chla, p_codes){
              harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
              depth_flag, mdl_flag, approx_flag, greater_flag,
              analytical_tier, field_flag, harmonized_units) %>%
-    summarize(harmonized_value = median(harmonized_value, na.rm = TRUE)) %>%
+    mutate(subgroup_id = cur_group_id())
+  
+  # Export the dataset with subgroup IDs for joining future aggregated product
+  # back to original raw data
+  grouped_chla_out_path <- "3_harmonize/out/chla_harmonized_grouped.feather"
+  
+  write_feather(x = ungroup(grouped_chla),
+                path = grouped_chla_out_path)
+  
+  # Now aggregate at the subgroup level to take care of simultaneous observations
+  no_simul_chla <- grouped_chla %>%
+    summarize(
+      harmonized_value = median(harmonized_value),
+      harmonized_value_sd = sd(harmonized_value)
+    ) %>%
     ungroup()
+  
+  rm(grouped_chla)
+  gc()
   
   # Plot harmonized measurements by Tier
   
   tier_dists <- no_simul_chla %>%
     select(analytical_tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001) %>%
-    mutate(tier_label = case_when(
-      analytical_tier == 0 ~ "Restrictive (Tier 0)",
-      analytical_tier == 1 ~ "Narrowed (Tier 1)",
-      analytical_tier == 2 ~ "Inclusive (Tier 2)"
-    )) %>%
+    mutate(plot_value = harmonized_value + 0.001,
+           tier_label = case_when(
+             analytical_tier == 0 ~ "Restrictive (Tier 0)",
+             analytical_tier == 1 ~ "Narrowed (Tier 1)",
+             analytical_tier == 2 ~ "Inclusive (Tier 2)"
+           )) %>%
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y") +
     xlab("Harmonized chl a (ug/L)") +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
-            subtitle = "0.001 added to each value") +
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
@@ -895,14 +908,14 @@ harmonize_chla <- function(raw_chla, p_codes){
                                 dropped_depths, dropped_methods,
                                 dropped_field, dropped_simul)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_chla_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/chla_harmonize_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
   
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_chla.feather"
+  data_out_path <- "3_harmonize/out/chla_harmonized_final.feather"
   
   write_feather(no_simul_chla,
                 data_out_path)
@@ -916,7 +929,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   return(list(
-    harmonized_chla_path = data_out_path,
-    compiled_drops_path = documented_drops_out_path,
-    chla_tiering_record_path = tiering_record_out_path))  
+    chla_tiering_record_path = tiering_record_out_path,
+    chla_grouped_preagg_path = grouped_chla_out_path,
+    chla_harmonized_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path
+  ))  
 }

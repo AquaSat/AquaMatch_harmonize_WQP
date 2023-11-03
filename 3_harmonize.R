@@ -82,13 +82,13 @@ p3_targets_list <- list(
   
   # Harmonization process ---------------------------------------------------
   
-  tar_target(p3_harmonized_tss,
+  tar_target(p3_tss_harmonized,
              harmonize_tss(raw_tss = p3_cleaned_wqp_data %>%
                              filter(parameter == "tss"),
                            p_codes = p3_p_codes),
              packages = c("tidyverse", "lubridate", "pander", "feather")),
   
-  tar_target(p3_harmonized_chla,
+  tar_target(p3_chla_harmonized,
              harmonize_chla(raw_chla = p3_cleaned_wqp_data %>%
                               filter(parameter == "chlorophyll"),
                             p_codes = p3_p_codes),
@@ -96,11 +96,27 @@ p3_targets_list <- list(
                           "scales")),
   
   tar_file_read(name = p3_chla_tiering_record,
-                command = p3_harmonized_chla$chla_tiering_record_path,
+                command = p3_chla_harmonized$chla_tiering_record_path,
                 read = read_csv(file = !!.x),
                 cue = tar_cue("always")),
   
-  tar_target(p3_harmonized_sdd,
+  # Harmonized chlorophyll data containing grouping IDs for simultaneous
+  # records, but not aggregated
+  tar_file_read(name = p3_chla_preagg_grouped,
+                command = p3_chla_harmonized$chla_grouped_preagg_path,
+                read = read_feather(path = !!.x),
+                cue = tar_cue("always"),
+                packages = "feather"),
+  
+  # Harmonized chlorophyll data after simultaneous record aggregation (i.e.,
+  # final product)
+  tar_file_read(name = p3_chla_agg_harmonized,
+                command = p3_chla_harmonized$chla_harmonized_path,
+                read = read_feather(path = !!.x),
+                cue = tar_cue("always"),
+                packages = "feather"),
+  
+  tar_target(p3_sdd_harmonized,
              harmonize_sdd(raw_sdd = p3_cleaned_wqp_data %>%
                              filter(parameter == "secchi"),
                            p_codes = p3_p_codes,
@@ -109,7 +125,7 @@ p3_targets_list <- list(
                            sdd_equipment_matchup = p3_sdd_equipment_matchup),
              packages = c("tidyverse", "lubridate", "feather")),
   
-  tar_target(p3_harmonized_doc,
+  tar_target(p3_doc_harmonized,
              harmonize_doc(raw_doc = p3_cleaned_wqp_data %>%
                              filter(parameter == "doc"),
                            p_codes = p3_p_codes),
@@ -117,10 +133,10 @@ p3_targets_list <- list(
   
   tar_target(p3_documented_drops,
              map_df(.x = c(p3_wqp_data_aoi_ready$compiled_drops_path,
-                           p3_harmonized_chla$compiled_drops_path,
-                           p3_harmonized_sdd$compiled_drops_path,
-                           p3_harmonized_doc$compiled_drops_path,
-                           p3_harmonized_tss$compiled_drops_path),
+                           p3_chla_harmonized$compiled_drops_path,
+                           p3_sdd_harmonized$compiled_drops_path,
+                           p3_doc_harmonized$compiled_drops_path,
+                           p3_tss_harmonized$compiled_drops_path),
                     .f = read_csv),
              cue = tar_cue("always")),
   
@@ -130,9 +146,9 @@ p3_targets_list <- list(
              {
                # Read in the exported harmonized datasets
                
-               map_df(.x = c(p3_harmonized_chla$harmonized_chla_path,
-                             p3_harmonized_doc,
-                             p3_harmonized_tss, p3_harmonized_sdd),
+               map_df(.x = c(p3_chla_harmonized$chla_harmonized_path,
+                             p3_doc_harmonized,
+                             p3_tss_harmonized, p3_sdd_harmonized),
                       .f = ~ read_feather(.x) %>%
                         select(MonitoringLocationIdentifier, ActivityStartDate, lat, lon,
                                harmonized_parameter = parameter, CharacteristicName,

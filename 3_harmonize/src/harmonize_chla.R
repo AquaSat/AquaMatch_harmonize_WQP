@@ -178,8 +178,16 @@ harmonize_chla <- function(raw_chla, p_codes){
     left_join(x = ., y = mdl_updates, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
-           # Flag: 1 = used MDL adjustment, 0 = value not adjusted
-           mdl_flag = ifelse(index %in% mdl_updates$index, 1, 0)) %>%
+           # Flag: 0 = value not adjusted and MDL not a concern
+           #       1 = original NA value adjusted using MDL method
+           #       2 = provided value below provided MDL; not adjusted
+           mdl_flag = case_when(
+             index %in% mdl_updates$index ~ 1,
+             (!(index %in% mdl_updates$index) & DetectionQuantitationLimitMeasure.MeasureValue <= ResultMeasureValue) |
+               (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
+             DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
+             .default = NA_integer_
+           )) %>%
     # Remove negative measurement values
     filter(harmonized_value >= 0)
   

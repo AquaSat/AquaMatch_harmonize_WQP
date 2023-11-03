@@ -805,7 +805,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    xlab("Harmonized chl a (ug/L)") +
+    xlab("Harmonized chl a (ug/L, log~10~ transformed)") +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
@@ -866,7 +866,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y") +
-    xlab("Harmonized chl a (ug/L)") +
+    xlab("Harmonized chl a (ug/L, log~10~ transformed)") +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +

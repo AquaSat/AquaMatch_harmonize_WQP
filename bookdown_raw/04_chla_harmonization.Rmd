@@ -658,7 +658,7 @@ step_11_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous is simplified into a single record using the median of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
+The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record using the median of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
 
 To do this we first filter out any records where the `harmonized_value` is < 0 to keep only realistic measurements. Then we identify simultaneous records to aggregate by creating identical subgroups from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final AquaMatch dataset, but it is necessary when creating subgroups using tier and flag columns and then dropping records based on those groups.
 

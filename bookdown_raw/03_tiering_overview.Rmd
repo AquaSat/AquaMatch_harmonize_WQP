@@ -70,7 +70,7 @@ Depth flags are assigned using the harmonized depth columns that result from the
 Generally speaking, we avoid further classification for any WQP entry's parameter methodology, tier, or flag unless there are at least 1% of observations with the same unresolved text.
 
 ## Simultaneous records
-The WQP contains records that can be considered true duplicates and others where multiple non-identical measurements are recorded at the same time and place and by the same organization. We deal with these within each parameter's harmonization step by taking the median value from simultaneous observations.  
+The WQP contains records that can be considered true duplicates and others where multiple non-identical measurements are recorded at the same time, place, and depth by the same organization. We deal with these within each parameter's harmonization step by taking the median value from simultaneous observations.  We also provide a total number of entries contributing to the median as well as the standard deviation of the mean for downstream users to apply their own filtering for this aggregated dataset.
 
 This is dealt with separately for each parameter so that specific accommodations can be made based on the tiering and value cleaning process for each parameter. For example, for chlorophyll *a*, this step includes filtering out any negative `harmonized_value`s prior to aggregation. Additionally, this step also requires us to group the dataset by a subset of its original columns in order to create aggregate groups, necessarily resulting in a reduced subset of columns in the final data product.
 

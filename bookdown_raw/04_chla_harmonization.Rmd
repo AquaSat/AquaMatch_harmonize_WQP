@@ -205,11 +205,11 @@ In this step method detection limits (MDLs) are used to clean up the reported va
 
 If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
 
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
+We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward. Once the process is complete we filter out any negative values in the dataset. 
 
-Records with corrected values based on the above method are noted with a 1 in the `mdl_flag` column.
+We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
-This should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
+This step should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -658,13 +658,13 @@ step_11_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record using the median of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
+The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
 
-To do this we first filter out any records where the `harmonized_value` is < 0 to keep only realistic measurements. Then we identify simultaneous records to aggregate by creating identical subgroups from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final AquaMatch dataset, but it is necessary when creating subgroups using tier and flag columns and then dropping records based on those groups.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
-The final, aggregated values are presented in the `harmonized_value` column.
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns.
 
-`r step_11_dropped` rows dropped leaving `r step_11_rows` remaining in the final harmonized chlorophyll *a* dataset.
+`r step_11_dropped` rows dropped leaving `r step_11_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%

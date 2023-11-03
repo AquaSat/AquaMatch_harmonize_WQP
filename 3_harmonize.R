@@ -138,23 +138,25 @@ p3_targets_list <- list(
                            p3_doc_harmonized$compiled_drops_path,
                            p3_tss_harmonized$compiled_drops_path),
                     .f = read_csv),
-             cue = tar_cue("always")),
+             cue = tar_cue("always"))#,
   
+  # # Temporarily commented out because the products have different dimensions
+  # # and column names for the moment
   # A target using the harmonized outputs to prepare a dataset for the later
   # analysis steps
-  tar_target(p3_harmonized_wqp_w_methods,
-             {
-               # Read in the exported harmonized datasets
-               
-               map_df(.x = c(p3_chla_harmonized$chla_harmonized_path,
-                             p3_doc_harmonized,
-                             p3_tss_harmonized, p3_sdd_harmonized),
-                      .f = ~ read_feather(.x) %>%
-                        select(MonitoringLocationIdentifier, ActivityStartDate, lat, lon,
-                               harmonized_parameter = parameter, CharacteristicName,
-                               ResultAnalyticalMethod.MethodName))
-             },
-             packages = c("tidyverse", "feather"))
+  # tar_target(p3_harmonized_wqp_w_methods,
+  #            {
+  #              # Read in the exported harmonized datasets
+  #              
+  #              map_df(.x = c(p3_chla_harmonized$chla_harmonized_path,
+  #                            p3_doc_harmonized,
+  #                            p3_tss_harmonized, p3_sdd_harmonized),
+  #                     .f = ~ read_feather(.x) %>%
+  #                       select(MonitoringLocationIdentifier, ActivityStartDate, lat, lon,
+  #                              harmonized_parameter = parameter, CharacteristicName,
+  #                              ResultAnalyticalMethod.MethodName))
+  #            },
+  #            packages = c("tidyverse", "feather"))
   
 )
 

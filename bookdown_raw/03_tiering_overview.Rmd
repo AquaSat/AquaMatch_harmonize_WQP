@@ -20,8 +20,9 @@ In addition to `NA` values, WQP entries can be heterogenous for reasons such as:
 + Having a variety of names or descriptions of the same (e.g., analytical) method across different organizations
 + Containing data for one parameter obtained by multiple sampling methods with varying levels of interoperability or necessary metadata
 + Having information relevant to assessing data reliability or method choice spread across multiple columns
-- + Containing observations with sample collection methods and analytical methods that are incompatible
-- + Having data with differing levels of meta data 
+  + Containing observations with sample collection methods and analytical methods that are incompatible
+  + Having data with differing levels of meta data 
+  
 In order to control for some of this variation and provide end-users with something more readily navigable we have incorporated several tiers and flagging systems into the AquaSat v2 dataset:
 
 + **Analytical method tiering**: Tiers indicating the interoperability of data based on the analytical method used to acquire measurements
@@ -72,5 +73,5 @@ Generally speaking, we avoid further classification for any WQP entry's paramete
 ## Simultaneous records
 The WQP contains records that can be considered true duplicates and others where multiple non-identical measurements are recorded at the same time, place, and depth by the same organization. We deal with these within each parameter's harmonization step by taking the median value from simultaneous observations.  We also provide a total number of entries contributing to the median as well as the standard deviation of the mean for downstream users to apply their own filtering for this aggregated dataset.
 
-This is dealt with separately for each parameter so that specific accommodations can be made based on the tiering and value cleaning process for each parameter. For example, for chlorophyll *a*, this step includes filtering out any negative `harmonized_value`s prior to aggregation. Additionally, this step also requires us to group the dataset by a subset of its original columns in order to create aggregate groups, necessarily resulting in a reduced subset of columns in the final data product.
+This is dealt with separately for each parameter so that specific accommodations can be made based on the tiering and value cleaning process for each parameter. Additionally, this step also requires us to group the dataset by a subset of its original columns in order to create aggregate groups, necessarily resulting in a reduced subset of columns in the final data product. To aide in back-joining for advanced AquaSat users, we provide a `subgroup_id` column identifying the grouping used to create the aggregated value. The `subgroup_id` is also present in an upstream, pre-aggregated dataset version that also contains all records prior to aggregation and the original WQP columns along with the columns created in the harmonization steps. The upstream, pre-aggregated dadtaset is the `p3_chla_preagg_grouped` pipeline target.
 

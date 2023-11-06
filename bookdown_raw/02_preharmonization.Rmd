@@ -34,7 +34,7 @@ step_data <- documented_drops %>%
   filter(step == "pre-harmonization") 
 ```
 
-### Initial dataset
+## Initial dataset
 
 ```{r echo=FALSE}
 step_0_rows <- filter(step_data,
@@ -73,52 +73,8 @@ step_data %>%
 
 <br>
 
-### Remove duplicates
 
-```{r echo = FALSE}
-step_1_rows <- filter(step_data,
-                      order == 1) %>%
-  mutate(mil_row = n_rows / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-
-step_1_dropped <- filter(step_data,
-                         order == 1) %>%
-  mutate(mil_row = number_dropped / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-```
-
-The first filtering step is to remove any duplicated records present in the dataset. Duplicate records occur in the WQP database. The pipeline allows for the user to specify which columns the `clean_wqp_data()` function should use when checking for duplicated information. By default these columns are: OrganizationIdentifier, MonitoringLocationIdentifier, ActivityStartDate, ActivityStartTime.Time, CharacteristicName, and ResultSampleFractionText. This results in dropping `r step_1_dropped` rows for a record count of `r step_1_rows`.
-
-```{r echo = FALSE}
-step_data %>%
-  filter(order %in% 0:1) %>%
-  ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
-           stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
-                  bg.color = "white", bg.r = 0.15,
-                  point.size = NA,
-                  xlim = c(-Inf, Inf),
-                  ylim =  c(-Inf, Inf),
-                  nudge_x = 0.1,
-                  hjust = "left") +
-  xlab("Step number") +
-  ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[2:1]) +
-  scale_x_discrete(drop = F) +
-  coord_flip() +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        legend.position = "none")
-```
-
-<br>
-
-### Missing results
+## Missing results
 
 ```{r echo = FALSE}
 step_2_rows <- filter(step_data,
@@ -140,8 +96,7 @@ Next records that have missing data are dropped from the dataset. Several criter
 
 1. Both the result column and detection limit column had `NA` data
 2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
-3. Result detection condition column contains `not reported`
-4. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+3. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
 
 `r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
 
@@ -171,7 +126,7 @@ step_data %>%
 
 <br>
 
-### Filter status
+## Filter status
 
 ```{r echo = FALSE}
 step_3_rows <- filter(step_data,
@@ -225,7 +180,7 @@ step_data %>%
 
 <br>
 
-### Filter media
+## Filter media
 
 ```{r echo = FALSE}
 step_4_rows <- filter(step_data,
@@ -277,7 +232,7 @@ step_data %>%
 
 <br>
 
-#### Location type
+## Location type
 
 ```{r echo = FALSE}
 step_5_rows <- filter(step_data,

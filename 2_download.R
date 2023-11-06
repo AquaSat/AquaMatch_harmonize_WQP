@@ -46,7 +46,6 @@ p2_targets_list <- list(
   # be reworked into targets branching. The goal right now is to create a way for
   # each param to be downloaded separately so that an error in one doesn't
   # prevent others from being collected and combined
-  
   # tar_target(
   #   p2_site_counts_grouped_alk,
   #   add_download_groups(p2_site_counts$alkalinity, 
@@ -58,55 +57,44 @@ p2_targets_list <- list(
   # ),
   
   tar_target(
-    p2_site_counts_grouped,
-    add_download_groups(p2_site_counts[p0_param_groups_select] %>% bind_rows(), 
+    p2_site_counts_grouped_chl,
+    add_download_groups(p2_site_counts$chlorophyll, 
                         max_sites = 500,
-                        max_results = 250000) %>% 
-      group_by(download_grp) %>% 
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
       tar_group(),
-    iteration = "group",
-    pattern = map(p0_param_groups_select)
+    iteration = "group"
   ),
   
-  # tar_target(
-  #   p2_site_counts_grouped_chl,
-  #   add_download_groups(p2_site_counts$chlorophyll, 
-  #                       max_sites = 500,
-  #                       max_results = 250000) %>%
-  #     group_by(download_grp) %>%
-  #     tar_group(),
-  #   iteration = "group"
-  # ),
-  # 
-  # tar_target(
-  #   p2_site_counts_grouped_sdd,
-  #   add_download_groups(p2_site_counts$secchi, 
-  #                       max_sites = 500,
-  #                       max_results = 250000) %>%
-  #     group_by(download_grp) %>%
-  #     tar_group(),
-  #   iteration = "group"
-  # ),
-  # 
-  # tar_target(
-  #   p2_site_counts_grouped_tss,
-  #   add_download_groups(p2_site_counts$tss, 
-  #                       max_sites = 500,
-  #                       max_results = 250000) %>%
-  #     group_by(download_grp) %>%
-  #     tar_group(),
-  #   iteration = "group"
-  # ),
-  # 
-  # tar_target(
-  #   p2_site_counts_grouped_doc,
-  #   add_download_groups(p2_site_counts$doc, 
-  #                       max_sites = 500,
-  #                       max_results = 250000) %>%
-  #     group_by(download_grp) %>%
-  #     tar_group(),
-  #   iteration = "group"
-  # ),
+  tar_target(
+    p2_site_counts_grouped_sdd,
+    add_download_groups(p2_site_counts$secchi, 
+                        max_sites = 500,
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
+      tar_group(),
+    iteration = "group"
+  ),
+  
+  tar_target(
+    p2_site_counts_grouped_tss,
+    add_download_groups(p2_site_counts$tss, 
+                        max_sites = 500,
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
+      tar_group(),
+    iteration = "group"
+  ),
+  
+  tar_target(
+    p2_site_counts_grouped_doc,
+    add_download_groups(p2_site_counts$doc, 
+                        max_sites = 500,
+                        max_results = 250000) %>%
+      group_by(download_grp) %>%
+      tar_group(),
+    iteration = "group"
+  ),
   
   # tar_target(
   #   p2_site_counts_grouped_temp,
@@ -208,60 +196,48 @@ p2_targets_list <- list(
   # ),
   
   tar_target(
-    p2_wqp_data_aoi,
-    fetch_wqp_data(p2_site_counts_grouped,
-                   char_names = unique(p2_site_counts_grouped$CharacteristicName),
+    p2_wqp_data_aoi_chl,
+    fetch_wqp_data(p2_site_counts_grouped_chl,
+                   char_names = unique(p2_site_counts_grouped_chl$CharacteristicName),
                    wqp_args = p0_wqp_args),
-    #pattern = map(p2_site_counts_grouped_chl),
+    pattern = map(p2_site_counts_grouped_chl),
     error = "continue",
-    format = "feather",
-    pattern = map(p2_site_counts_grouped)
+    format = "feather"
     # cue = tar_cue("never")
   ),
-  # 
-  # tar_target(
-  #   p2_wqp_data_aoi_chl,
-  #   fetch_wqp_data(p2_site_counts_grouped_chl,
-  #                  char_names = unique(p2_site_counts_grouped_chl$CharacteristicName),
-  #                  wqp_args = p0_wqp_args),
-  #   pattern = map(p2_site_counts_grouped_chl),
-  #   error = "continue",
-  #   format = "feather"
-  #   # cue = tar_cue("never")
-  # ),
-  # 
-  # tar_target(
-  #   p2_wqp_data_aoi_sdd,
-  #   fetch_wqp_data(p2_site_counts_grouped_sdd,
-  #                  char_names = unique(p2_site_counts_grouped_sdd$CharacteristicName),
-  #                  wqp_args = p0_wqp_args),
-  #   pattern = map(p2_site_counts_grouped_sdd),
-  #   error = "continue",
-  #   format = "feather"#,
-  #   # cue = tar_cue("never")
-  # ),
-  # 
-  # tar_target(
-  #   p2_wqp_data_aoi_tss,
-  #   fetch_wqp_data(p2_site_counts_grouped_tss,
-  #                  char_names = unique(p2_site_counts_grouped_tss$CharacteristicName),
-  #                  wqp_args = p0_wqp_args),
-  #   pattern = map(p2_site_counts_grouped_tss),
-  #   error = "continue",
-  #   format = "feather"#,
-  #   # cue = tar_cue("never")
-  # ),
-  # 
-  # tar_target(
-  #   p2_wqp_data_aoi_doc,
-  #   fetch_wqp_data(p2_site_counts_grouped_doc,
-  #                  char_names = unique(p2_site_counts_grouped_doc$CharacteristicName),
-  #                  wqp_args = p0_wqp_args),
-  #   pattern = map(p2_site_counts_grouped_doc),
-  #   error = "continue",
-  #   format = "feather"#,
-  #   # cue = tar_cue("never")
-  # ),
+  
+  tar_target(
+    p2_wqp_data_aoi_sdd,
+    fetch_wqp_data(p2_site_counts_grouped_sdd,
+                   char_names = unique(p2_site_counts_grouped_sdd$CharacteristicName),
+                   wqp_args = p0_wqp_args),
+    pattern = map(p2_site_counts_grouped_sdd),
+    error = "continue",
+    format = "feather"#,
+    # cue = tar_cue("never")
+  ),
+  
+  tar_target(
+    p2_wqp_data_aoi_tss,
+    fetch_wqp_data(p2_site_counts_grouped_tss,
+                   char_names = unique(p2_site_counts_grouped_tss$CharacteristicName),
+                   wqp_args = p0_wqp_args),
+    pattern = map(p2_site_counts_grouped_tss),
+    error = "continue",
+    format = "feather"#,
+    # cue = tar_cue("never")
+  ),
+  
+  tar_target(
+    p2_wqp_data_aoi_doc,
+    fetch_wqp_data(p2_site_counts_grouped_doc,
+                   char_names = unique(p2_site_counts_grouped_doc$CharacteristicName),
+                   wqp_args = p0_wqp_args),
+    pattern = map(p2_site_counts_grouped_doc),
+    error = "continue",
+    format = "feather"#,
+    # cue = tar_cue("never")
+  ),
   
   # tar_target(
   #   p2_wqp_data_aoi_temp,
@@ -329,27 +305,21 @@ p2_targets_list <- list(
   #   # cue = tar_cue("never")
   # ),
   
-  tar_target(p2_wqp_data_aoi_file,
+  tar_target(p2_wqp_data_aoi,
              bind_rows(
-               p2_wqp_data_aoi
+               # p2_wqp_data_aoi_alk,
+               p2_wqp_data_aoi_chl,
+               p2_wqp_data_aoi_sdd, 
+               p2_wqp_data_aoi_tss,
+               p2_wqp_data_aoi_doc, 
+               # p2_wqp_data_aoi_temp,
+               # p2_wqp_data_aoi_phos, 
+               # p2_wqp_data_aoi_nitro,
+               # p2_wqp_data_aoi_depth, 
+               # p2_wqp_data_aoi_ssc,
+               # p2_wqp_data_aoi_poc
              ),
              format = "feather"),
-  
-  # tar_target(p2_wqp_data_aoi,
-  #            bind_rows(
-  #              # p2_wqp_data_aoi_alk,
-  #              p2_wqp_data_aoi_chl,
-  #              p2_wqp_data_aoi_sdd, 
-  #              p2_wqp_data_aoi_tss,
-  #              p2_wqp_data_aoi_doc, 
-  #              # p2_wqp_data_aoi_temp,
-  #              # p2_wqp_data_aoi_phos, 
-  #              # p2_wqp_data_aoi_nitro,
-  #              # p2_wqp_data_aoi_depth, 
-  #              # p2_wqp_data_aoi_ssc,
-  #              # p2_wqp_data_aoi_poc
-  #            ),
-  #            format = "feather"),
   
   # Summarize the data downloaded from the WQP
   tar_target(
@@ -358,5 +328,5 @@ p2_targets_list <- list(
                            "2_download/log/summary_wqp_data.csv"),
     format = "file"
   )
-
+  
 )

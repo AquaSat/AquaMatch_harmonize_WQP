@@ -41,7 +41,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the preharmonization process the secchi-only WQP dataset contains `r step_0_rows` rows.
+After the pre-harmonization process the secchi-only WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -225,7 +225,7 @@ step_4_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Step 4 involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
 
 1. Numeric-only version of the column is still `NA` after MDL cleaning
 2. The original column text contained a number
@@ -275,7 +275,7 @@ step_5_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Step 5 is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
 
 1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
 2. The original column text contained a number

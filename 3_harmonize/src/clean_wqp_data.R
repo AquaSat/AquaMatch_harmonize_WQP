@@ -27,7 +27,7 @@
 #' However, these options can be customized by passing a vector of column names 
 #' to the argument `duplicate_definition`.
 #' @param remove_duplicated_rows logical; should duplicated records be omitted
-#' from the cleaned dataset? Defaults to TRUE. 
+#' from the cleaned dataset? Defaults to FALSE 
 #' 
 #' @returns 
 #' Returns a formatted and harmonized data frame containing data downloaded from 
@@ -48,7 +48,7 @@ clean_wqp_data <- function(wqp_data,
                                                     'ActivityStartTime.Time',
                                                     'CharacteristicName',
                                                     'ResultSampleFractionText'),
-                           remove_duplicated_rows = TRUE){
+                           remove_duplicated_rows = FALSE){
   
   # Starting values for dataset
   starting_data <- tibble(
@@ -73,29 +73,8 @@ clean_wqp_data <- function(wqp_data,
               by = c("MonitoringLocationIdentifier", "CharacteristicName",
                      "parameter")) %>%
     # Flag true missing results
-    flag_missing_results(., commenttext_missing) %>%
-    # Flag duplicate records
-    flag_duplicates(., duplicate_definition) %>%
-    {if(remove_duplicated_rows){
-      remove_duplicates(., duplicate_definition)
-    } else {.}
-    }
+    flag_missing_results(., commenttext_missing)
   
-  # Inform the user what we found for duplicated rows
-  if(remove_duplicated_rows){
-    message(sprintf(paste0("Removed %s duplicated records."), 
-                    nrow(wqp_data) - nrow(wqp_data_no_dup)))
-  }
-  
-  # Record info on the dropped rows
-  dropped_duplicates <- tibble(
-    step = "pre-harmonization",
-    reason = "Removed duplicated records",
-    short_reason = "Remove duplicates",
-    number_dropped = nrow(wqp_data) - nrow(wqp_data_no_dup),
-    n_rows = nrow(wqp_data_no_dup),
-    order = 1
-  )
   
   rm(wqp_data)
   gc()
@@ -104,7 +83,7 @@ clean_wqp_data <- function(wqp_data,
   wqp_data_no_missing <- wqp_data_no_dup %>%
     filter(!flag_missing_result)
   
-  # # Inform the user what we found for missing rows
+  # Inform the user what we found for missing rows
   message(sprintf(paste0("Removed %s records with missing results."),
                   nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing)))
   
@@ -114,7 +93,7 @@ clean_wqp_data <- function(wqp_data,
     short_reason = "Remove missing",
     number_dropped = nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing),
     n_rows = nrow(wqp_data_no_missing),
-    order = 2
+    order = 1
   )
   
   rm(wqp_data_no_dup)
@@ -123,7 +102,6 @@ clean_wqp_data <- function(wqp_data,
   # Remove records that don't meet needs for status
   wqp_data_pass_status <- wqp_data_no_missing %>%
     filter(ResultStatusIdentifier %in%
-             # MR's version had Preliminary & NA included too, so let's try those:
              c('Accepted', 'Final', 'Historical', 'Validated', 'Preliminary')|
              is.na(ResultStatusIdentifier))
   
@@ -133,11 +111,11 @@ clean_wqp_data <- function(wqp_data,
   
   dropped_status <- tibble(
     step = "pre-harmonization",
-    reason = "Keep only status = accepted/final/historical/validated/preliminary",
+    reason = "Keep only status = accepted/final/historical/validated/preliminary/NA",
     short_reason = "Finalized statuses",
     number_dropped = nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status),
     n_rows = nrow(wqp_data_pass_status),
-    order = 3
+    order = 2
   )
   
   rm(wqp_data_no_missing)
@@ -158,7 +136,7 @@ clean_wqp_data <- function(wqp_data,
     short_reason = "Media types",
     number_dropped = nrow(wqp_data_pass_status) - nrow(wqp_data_pass_media),
     n_rows = nrow(wqp_data_pass_media),
-    order = 4
+    order = 3
   )
   
   rm(wqp_data_pass_status)
@@ -166,16 +144,6 @@ clean_wqp_data <- function(wqp_data,
   
   # Remove white space before export
   wqp_data_clean <- wqp_data_pass_media %>%
-    # Temp fix to remove Facility sites; do this eventually in the WQP data pull
-    semi_join(x = .,
-              y = wqp_metadata %>%
-                filter(ResolvedMonitoringLocationTypeName %in%
-                         c("Estuary", "Lake, Reservoir, Impoundment", "Stream")),
-              by = c("OrganizationIdentifier",
-                     "MonitoringLocationIdentifier",
-                     "lat", "lon")) %>%
-    # rename_with(~ match_table$short_name[which(match_table$wqp_name == .x)],
-    #             .cols = match_table$wqp_name) %>%
     mutate(year = year(ActivityStartDate),
            ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
   
@@ -193,14 +161,14 @@ clean_wqp_data <- function(wqp_data,
     short_reason = "Location type",
     number_dropped = nrow(wqp_data_pass_media) - nrow(wqp_data_clean),
     n_rows = nrow(wqp_data_clean),
-    order = 5
+    order = 4
   )
   
   rm(wqp_data_pass_media)
   gc()
   
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_duplicates, dropped_missing,
+  compiled_dropped <- bind_rows(starting_data, dropped_missing,
                                 dropped_status, dropped_media, dropped_location)
   documented_drops_out_path <- "3_harmonize/out/clean_wqp_data_dropped_metadata.csv"
   
@@ -243,7 +211,6 @@ flag_missing_results <- function(wqp_data, commenttext_missing){
              ( is.na(ResultMeasureValue) & is.na(ResultMeasure.MeasureUnitCode) &
                  is.na(ActivityCommentText) & is.na(ResultLaboratoryCommentText) &
                  is.na(ResultCommentText) ) |
-             grepl("not reported", ResultDetectionConditionText, ignore.case = TRUE) |
              grepl(paste(commenttext_missing, collapse = "|"), ResultCommentText, ignore.case = TRUE)
     )
   

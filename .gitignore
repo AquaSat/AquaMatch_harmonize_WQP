@@ -41,3 +41,6 @@ vignettes/*.pdf
 # Data
 data/
 _targets/
+
+# Other
+**.DS_Store

@@ -304,9 +304,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
     # To avoid editing the tss_lookup, we convert ug/l to mg/l here:
     mutate(harmonized_value = (harmonized_value * conversion) / 1000,
-           harmonized_unit = 'mg/L') %>%
-    # MR limit
-    filter(harmonized_value < 1000) 
+           harmonized_units = 'mg/L')
   
   # How many records removed due to values?
   print(

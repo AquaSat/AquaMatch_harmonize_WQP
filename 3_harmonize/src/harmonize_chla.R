@@ -861,6 +861,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Now aggregate at the subgroup level to take care of simultaneous observations
   no_simul_chla <- grouped_chla %>%
+    # Make sure we don't drop subgroup ID
+    group_by(subgroup_id, .add = TRUE) %>%
     summarize(
       harmonized_value = median(harmonized_value),
       harmonized_value_sd = sd(harmonized_value)

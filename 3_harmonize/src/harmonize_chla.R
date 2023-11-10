@@ -853,7 +853,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   grouped_chla %>%
     select(
       all_of(c(raw_names,
-               "parameter_code", "group_name", "parameter_name_description")),
+               "parameter_code", "group_name", "parameter_name_description",
+               "subgroup_id")),
       group_cols()
     ) %>%
     write_feather(path = grouped_chla_out_path)

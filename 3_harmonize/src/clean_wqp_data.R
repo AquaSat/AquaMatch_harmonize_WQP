@@ -81,7 +81,9 @@ clean_wqp_data <- function(wqp_data,
   
   # Remove records flagged as having missing results
   wqp_data_no_missing <- wqp_data_no_dup %>%
-    filter(!flag_missing_result)
+    filter(!flag_missing_result) %>%
+    # All will now be FALSE; remove col
+    select(-flag_missing_result)
   
   # Inform the user what we found for missing rows
   message(sprintf(paste0("Removed %s records with missing results."),

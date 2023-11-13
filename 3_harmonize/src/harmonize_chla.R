@@ -13,6 +13,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Minor data prep ---------------------------------------------------------
   
+  # Grab the column names of the dataset coming in
+  raw_names <- names(raw_chla)
+  
   # First step is to read in the data and do basic formatting and filtering
   chla <- raw_chla %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
@@ -847,11 +850,19 @@ harmonize_chla <- function(raw_chla, p_codes){
   # back to original raw data
   grouped_chla_out_path <- "3_harmonize/out/chla_harmonized_grouped.feather"
   
-  write_feather(x = ungroup(grouped_chla),
-                path = grouped_chla_out_path)
+  grouped_chla %>%
+    select(
+      all_of(c(raw_names,
+               "parameter_code", "group_name", "parameter_name_description",
+               "subgroup_id")),
+      group_cols()
+    ) %>%
+    write_feather(path = grouped_chla_out_path)
   
   # Now aggregate at the subgroup level to take care of simultaneous observations
   no_simul_chla <- grouped_chla %>%
+    # Make sure we don't drop subgroup ID
+    group_by(subgroup_id, .add = TRUE) %>%
     summarize(
       harmonized_value = median(harmonized_value),
       harmonized_value_sd = sd(harmonized_value)

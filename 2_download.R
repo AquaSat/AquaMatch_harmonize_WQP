@@ -328,5 +328,5 @@ p2_targets_list <- list(
                            "2_download/log/summary_wqp_data.csv"),
     format = "file"
   )
-
+  
 )

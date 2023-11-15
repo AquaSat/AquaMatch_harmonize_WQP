@@ -23,9 +23,9 @@ package_installer <- function(x) {
 }
 
 # map function using base lapply
-lapply(packages, package_installer)
+lapply(required_pkgs, package_installer)
 
-
+# load targets library
 library(targets)
 
 # This is a helper script to run the pipeline.

@@ -1,0 +1,413 @@
+
+# Download process
+
+### Catalogue existing data
+
+The download process begins by cataloging the existing data that is
+available in the WQP. To do this the user specifies parameters and their
+corresponding `characteristicName` for retrieving data from the WQP.
+Below are the current parameters and their `characteristicName` as
+defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data
+for these parameters are requested from the WQP within a spatial grid
+that is mapped in the next section.
+
+``` r
+yaml_contents <- read_yaml("../1_inventory/cfg/wqp_codes.yml")
+names_yaml <- names(yaml_contents)
+
+map_df(.x = names_yaml,
+    .f = ~yaml_contents[.x] %>%
+        as_tibble() %>%
+        rename(characteristicName = 1) %>%
+        mutate(parameter = .x) %>%
+        select(parameter, characteristicName)) %>%
+  kable() %>%
+  kable_material() %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+<table class=" lightable-material" style="font-family: &quot;Source Sans Pro&quot;, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+parameter
+</th>
+<th style="text-align:left;">
+characteristicName
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a (probe relative fluorescence)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a, corrected for pheophytin
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a (probe)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a, free of pheophytin
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a, uncorrected for pheophytin
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+chlorophyll
+</td>
+<td style="text-align:left;">
+Chlorophyll a - Phytoplankton (suspended)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+doc
+</td>
+<td style="text-align:left;">
+Organic carbon
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+doc
+</td>
+<td style="text-align:left;">
+Total carbon
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+doc
+</td>
+<td style="text-align:left;">
+Hydrophilic fraction of organic carbon
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+doc
+</td>
+<td style="text-align:left;">
+Non-purgeable Organic Carbon (NPOC)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secchi
+</td>
+<td style="text-align:left;">
+Depth, Secchi disk depth
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secchi
+</td>
+<td style="text-align:left;">
+Depth, Secchi disk depth (choice list)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secchi
+</td>
+<td style="text-align:left;">
+Secchi Reading Condition (choice list)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secchi
+</td>
+<td style="text-align:left;">
+Secchi depth
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+secchi
+</td>
+<td style="text-align:left;">
+Water transparency, Secchi disc
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tss
+</td>
+<td style="text-align:left;">
+Total suspended solids
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tss
+</td>
+<td style="text-align:left;">
+Total Particulate Matter
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tss
+</td>
+<td style="text-align:left;">
+Total Suspended Particulate Matter
+</td>
+</tr>
+</tbody>
+</table>
+<!-- chlorophyll: -->
+<!-- -   "Chlorophyll" -->
+<!-- -   "Chlorophyll A" -->
+<!-- -   "Chlorophyll a" -->
+<!-- -   "Chlorophyll a (probe relative fluorescence)" -->
+<!-- -   "Chlorophyll a (probe)" -->
+<!-- -   "Chlorophyll a - Periphyton (attached)" -->
+<!-- -   "Chlorophyll a - Phytoplankton (suspended)" -->
+<!-- -   "Chlorophyll a, corrected for pheophytin" -->
+<!-- -   "Chlorophyll a, free of pheophytin" -->
+<!-- -   "Chlorophyll a, uncorrected for pheophytin" -->
+<!-- -   "Chlorophyll b" -->
+<!-- -   "Chlorophyll c" -->
+<!-- -   "Chlorophyll/Pheophytin ratio" -->
+<!-- secchi: -->
+<!-- -   "Depth, Secchi disk depth" -->
+<!-- -   "Depth, Secchi disk depth (choice list)" -->
+<!-- -   "Secchi Reading Condition (choice list)" -->
+<!-- -   "Secchi depth" -->
+<!-- -   "Water transparency, Secchi disc" -->
+<!-- doc: -->
+<!-- -   "Organic carbon" -->
+<!-- -   "Total carbon" -->
+<!-- -   "Hydrophilic fraction of organic carbon" -->
+<!-- -   "Non-purgeable Organic Carbon (NPOC)" -->
+<!-- tss: -->
+<!-- - "Total suspended solids" -->
+<!-- - "Total Particulate Matter" -->
+<!-- - "Total Suspended Particulate Matter" -->
+
+<br>
+
+### Maps of data spread:
+
+Maps are presented below with counts of records across a grid. The grid
+is how records are grouped in download requests to the Water Quality
+Portal. **Note:** The counts here are for raw data that are not filtered
+or harmonized.
+
+``` r
+# Combine counts in each grid_id with the grid polygons
+grid_counts <- left_join(x = global_grid,
+                         y = site_counts %>%
+                           count(grid_id),
+                         by = c("id" = "grid_id")) %>%
+  st_transform(crs = 9311)
+
+state_selection <- states(progress_bar = FALSE) %>%
+  st_transform(crs = 9311)
+```
+
+    ## Retrieving data for the year 2021
+
+``` r
+# Conterminous US map:
+conterminous_us <- state_selection %>%
+  filter(!(NAME %in% c("Alaska", "Hawaii", "American Samoa",
+                       "Guam", "Puerto Rico",
+                       "United States Virgin Islands",
+                       "Commonwealth of the Northern Mariana Islands")))
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = conterminous_us,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(min(st_coordinates(conterminous_us)[,"X"]),
+                    max(st_coordinates(conterminous_us)[,"X"])),
+           ylim = c(min(st_coordinates(conterminous_us)[,"Y"]),
+                    max(st_coordinates(conterminous_us)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Conterminous US") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+# Alaska map:
+AK <- state_selection %>%
+  filter(NAME == "Alaska")
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = AK,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(min(st_coordinates(AK)[,"X"]),
+                    max(st_coordinates(AK)[,"X"])),
+           ylim = c(min(st_coordinates(AK)[,"Y"]),
+                    max(st_coordinates(AK)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Alaska") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
+
+``` r
+# Hawaii map:
+HI <- state_selection %>%
+  filter(NAME == "Hawaii")
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = HI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(min(st_coordinates(HI)[,"X"]),
+                    0.9 * max(st_coordinates(HI)[,"X"])),
+           ylim = c(1.1 * min(st_coordinates(HI)[,"Y"]),
+                    max(st_coordinates(HI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Hawaii") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-3.png)<!-- -->
+
+``` r
+# American Samoa map:
+AS <- state_selection %>%
+  filter(NAME %in% c("American Samoa"))
+
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = AS,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(1.025 * min(st_coordinates(AS)[,"X"]),
+                    0.975 *max(st_coordinates(AS)[,"X"])),
+           ylim = c(1.05 * min(st_coordinates(AS)[,"Y"]),
+                    max(st_coordinates(AS)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("American Samoa") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-4.png)<!-- -->
+
+``` r
+# Guam & Commonwealth of the Northern Mariana Islands map
+GU_CNMI <- state_selection %>%
+  filter(NAME %in% c("Guam", "Commonwealth of the Northern Mariana Islands"))
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = GU_CNMI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(1.025 * min(st_coordinates(GU_CNMI)[,"X"]),
+                    0.975 * max(st_coordinates(GU_CNMI)[,"X"])),
+           ylim = c(0.95 * min(st_coordinates(GU_CNMI)[,"Y"]),
+                    1.05 * max(st_coordinates(GU_CNMI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Guam & Commonwealth of the Northern Mariana Islands") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-5.png)<!-- -->
+
+``` r
+# Puerto Rico & United States Virgin Islands map:
+PR_VI <- state_selection %>%
+  filter(NAME %in% c("Puerto Rico", "United States Virgin Islands"))
+
+
+ggplot() +
+  geom_sf(data = grid_counts,
+          aes(fill = n)) +
+  geom_sf(data = PR_VI,
+          fill = NA, color = "black") +
+  xlab(NULL) +
+  ylab(NULL) +
+  coord_sf(xlim = c(0.95 * min(st_coordinates(PR_VI)[,"X"]),
+                    1.05 * max(st_coordinates(PR_VI)[,"X"])),
+           ylim = c(1.075 * min(st_coordinates(PR_VI)[,"Y"]),
+                    0.925 * max(st_coordinates(PR_VI)[,"Y"]))) +
+  scale_fill_viridis_c("Record count",
+                       trans = "log10",
+                       labels = scales::label_number(),
+                       na.value = "white",
+                       breaks = c(1, 10, 100, 1000, 10000)) +
+  ggtitle("Puerto Rico & United States Virgin Islands") +
+  theme_bw()
+```
+
+![](/Users/steeleb/Documents/GitHub/aquasat_v2/chapters/01_download_files/figure-gfm/unnamed-chunk-3-6.png)<!-- -->

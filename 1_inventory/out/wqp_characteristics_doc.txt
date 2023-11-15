@@ -1,5 +1,4 @@
 The following characteristics are already included in the WQP codes cfg file: 
-Colored dissolved organic matter (CDOM)
 Non-purgeable Organic Carbon (NPOC)
 
 
@@ -29,6 +28,8 @@ The following characteristics might be relevant to the selected parameter and ar
 1,2-Octanediol
 1-(3,4-dichlorophenyl)-3-methyl urea
 1,3,6-Trioxocane
+13C1-D2-Hydrochlorothiazide
+13C2-PFDoA
 1,3-Dichlorobenzene
 1,3-Dichloropropane
 1,3-Dichloropropene
@@ -40,7 +41,6 @@ The following characteristics might be relevant to the selected parameter and ar
 1,5-Dichloronaphthalene
 1-Cyclopentyl-4-n-octyldodecane
 1-Decanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heneicosafluoro-
-1-Decanesulfonic acid, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluoro-
 1-Heptanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,7-pentadecafluoro-
 1-Heptanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,6,6,7,7,7-pentadecafluoro-,sodium salt (1:1)
 1-Hexadecene
@@ -54,6 +54,7 @@ The following characteristics might be relevant to the selected parameter and ar
 1-Octanesulfonic acid, 3,3,4,4,5,5,6,6,7,7,8,8,8-tridecafluoro-
 1-Octanol
 1-Pentanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,5-undecafluoro-
+1-Pentanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,5-undecafluoro-, potassium salt
 1-Tailed Critical (H)
 1-Tailed Critical (W)
 1-Tetradecene
@@ -104,12 +105,14 @@ The following characteristics might be relevant to the selected parameter and ar
 2,6-Dichlorobenzamide
 2,6-Dichlorobiphenyl
 2,6-Dichlorophenol
+2,6-Dichlorotoluene
 2,6-dimethyloct-7-en-2-ol
 2,7,8-trimethyl-2-(4,8,12-trimethyltridecyl)chroma
 2-(Dimethylamino)-N-hydroxy-2-oxoethanimidothioic acid methyl ester
 2H,2H,3H,3H-Perfluorooctanoate
 2-Methyldecane
 2-Methyltetradecane
+2-Naphthacenecarboxamide, 4-(dimethylamino)-1,4,4a,5,12,12a-hexahydro-3,10,11,12a-tetrahydroxy-6-methyl-1,12-dioxo-, hydrochloride (1:1), (4R,4aS,12aS)-
 2-(N-methylperfluoro-1-octanesulfonamido)-ethanol
 2-Octanone
 2-Phenyldecane
@@ -306,6 +309,7 @@ Cocaethylene-D3
 Cocaine
 Cocaine-D3
 Coliform/Streptococcus ratio, fecal
+Colored dissolved organic matter (CDOM)
 Condition class, chemical (Conductivity/Salinity)
 Condition class (Dissolved oxygen (DO))
 Conductance
@@ -320,6 +324,9 @@ Cyclododecane, 1,2,5,6,9,10-hexabromo-
 Cyclohexyl isothiocyanate
 Cyclopropanecarboxylic acid, 3-(2,2-dichloroethenyl)-2,2-dimethyl-, methyl ester, (1R,3R)-rel-
 Cyproconazole
+D3-Carbadox
+Dacthal Acid Metabolites
+DCPA mono-acid degradate
 Dead centric diatoms
 Decabromodiphenylethane
 Decabromodiphenyl ether
@@ -333,6 +340,8 @@ Decane
 Decanoic acid, 2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-nonadecafluoro-
 Decanoic acid, 4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-pentadecafluoro-
 Decapoda
+Dechlorane 602
+Dechlorane 603
 Dechloroacetochlor
 Dechloroalachlor
 Dechlorodimethenamid
@@ -474,6 +483,7 @@ Hirudo
 Human Influence: Docks/Boats (choice list)
 Hydrocarbons
 Hydrocarbons, C10-28
+Hydrocarbons, C25-36
 Hydrocarbons, C>28-C40
 Hydrocarbons, Chlorinated (Unspecified Mix)
 Hydrocarbons, petroleum
@@ -485,9 +495,11 @@ Hydrocodone
 Hydrocodone-d3
 Hydrocodone-D6
 Hydrocortisone
+Hydrocortisone-d4
 Hydromorphone hydrochloride
 Hydroxyacetochlor
 Imidacloprid
+Imidacloprid-d4
 Imidacloprid desnitro
 Imidacloprid desnitro-olefin
 Imidacloprid desnitro-olefin hydrochloride
@@ -498,6 +510,7 @@ Indoxacarb
 Inhibited biochemical oxygen demand
 Inundation Evidence: Sparesely vegetated concave surfaces (choice list)
 Iopamidol
+Iopamidol-d8
 Isochlortetracycline
 Ketoconazole
 Labeled 1,2,3,4,5,6,7,8-Octachloronaphthalene
@@ -570,6 +583,7 @@ Naphthalene, 2,7-dichloro-
 Naphthalene, decahydro-, trans-
 N-Ethyl-N-(2-hydroxyethyl)perfluorooctanesulfonamide
 N-Ethylperfluorooctane-1-sulfonamide
+N-ethyl Perfluorooctane sulfonamide
 N-ethyl perfluorooctanesulfonamidoacetic acid
 N-Ethyl perfluorooctane sulfonamido ethanol
 Nitrate-reducing bacteria
@@ -627,6 +641,7 @@ Other Hydrologic Evidence: Frost-heave hummocks (choice list)
 Overhead Cover
 Oxidation reduction potential (ORP)
 Oxycodone-d3
+Oxycodone-d6
 Parachaetocladius
 Parachironomus monochromus
 Paracladopelma
@@ -691,6 +706,7 @@ Polycyclic aromatic hydrocarbons, high molecular weight
 Polycyclic aromatic hydrocarbons, low molecular weight
 Pool Velocity
 Potassium 11-chloroeicosafluoro-3-oxaundecane-1-sulfonate
+Potassium 9-chlorohexadecafluoro-3-oxanonane-1-sulfonate
 Primary productivity
 Primidone
 Procambarus
@@ -786,9 +802,11 @@ syn-Dechlorane Plus
 Synorthocladius
 Tanaidacea
 Tebuthiuron Transformation Product 108
+Tetradecachloro-m-terphenyl
 Tetradecane
 Tetradecylbenzene
 Tetrahydrocannabinol
+Thermocline Present
 Thiocyanate
 Thiocyanic acid
 Thiodicarb
@@ -812,8 +830,10 @@ Trazodone
 Trichocerca
 Trichocladius
 Triclocarban
+Triclocarban-13C6
 Tricyclo[3.3.1.13,7]decane
 Tridecane
+Tridecanoic acid, 2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,13-pentacosafluoro-
 Triiodomethane
 Tris(1,3-dichloro-2-propyl)phosphate
 Trissocladius
@@ -835,3 +855,4 @@ Woody Ground Coverage shrubs (choice list)
 Woody Ground Coverage Type (choice list)
 Xenochironomus
 Zidovudine
+Zidovudine-d3

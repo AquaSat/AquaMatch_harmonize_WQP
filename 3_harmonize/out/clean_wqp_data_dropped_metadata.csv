@@ -1,0 +1,6 @@
+step,reason,short_reason,number_dropped,n_rows,order
+pre-harmonization,Starting dataset,Start,0,14230000,0
+pre-harmonization,Removed missing results,Remove missing,472901,13757099,1
+pre-harmonization,Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,91333,13665766,2
+pre-harmonization,Keep only media = surface water/water/estuary,Media types,12009,13653757,3
+pre-harmonization,"Keep only location type = estuary/lake, res, impoundment/stream",Location type,0,13653757,4

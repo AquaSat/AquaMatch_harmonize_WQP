@@ -1,30 +1,16 @@
 CharacteristicName,n_sites,n_records
-Apparent color,23673,229088
-Chlorophyll,4510,162979
-Chlorophyll a,64460,1488012
-Chlorophyll a - Periphyton (attached),1587,3676
-Chlorophyll a - Phytoplankton (suspended),993,3252
-Chlorophyll a (probe relative fluorescence),4003,1188234
-Chlorophyll a (probe),1473,171179
-"Chlorophyll a, corrected for pheophytin",59429,686154
-"Chlorophyll a, free of pheophytin",3314,69522
-"Chlorophyll a, uncorrected for pheophytin",31003,374751
-Chlorophyll b,25973,336242
-Chlorophyll c,23439,309567
-Chlorophyll/Pheophytin ratio,5605,97133
-Color,3635,45501
-Colored dissolved organic matter (CDOM),367,4488
-"Depth, Secchi disk depth",113489,2561139
-"Depth, Secchi disk depth (choice list)",11459,52429
-Fixed suspended solids,6787,209894
-Non-purgeable Organic Carbon (NPOC),94,3478
-Organic carbon,102957,2250816
-Secchi Reading Condition (choice list),121,1871
-Silica,50383,897710
-Silicon as SiO2,9,215
-Suspended sediment concentration (SSC),39,536
-Suspended Sediment Concentration (SSC),15206,1127636
-Total carbon,453,20747
-Total suspended solids,179285,3541398
-True color,46675,570074
-"Water transparency, Secchi disc",21,595
+Chlorophyll a,67495,1564583
+Chlorophyll a (probe relative fluorescence),4572,1242073
+Chlorophyll a (probe),2070,241223
+Chlorophyll a - Phytoplankton (suspended),1114,4024
+"Chlorophyll a, corrected for pheophytin",71396,859379
+"Chlorophyll a, free of pheophytin",3394,89562
+"Chlorophyll a, uncorrected for pheophytin",41217,521426
+"Depth, Secchi disk depth",126946,2950695
+"Depth, Secchi disk depth (choice list)",11664,54241
+Non-purgeable Organic Carbon (NPOC),216,4599
+Organic carbon,121689,2661677
+Secchi Reading Condition (choice list),126,2490
+Total carbon,456,23699
+Total suspended solids,197774,4009485
+"Water transparency, Secchi disc",22,844

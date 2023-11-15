@@ -1,16 +1,21 @@
 #!/usr/bin/env Rscript
 
 # list of packages required for this pipeline
-required_pkgs <- c("targets", 
-  "tarchetypes",
-  "sf",
-  "tidyverse",
+required_pkgs <- c("dataRetreival",
   "feather",
+  "janitor",
   "lubridate",
   "ggrepel",
+  "pander",
+  "rvest",
   "scales",
+  "sf",
+  "targets", 
+  "tarchetypes",
+  "tidyverse",
   "tigris",
-  "tictoc")
+  "tictoc",
+  "yaml")
 
 # helper function to install all necessary pacakges
 package_installer <- function(x) {

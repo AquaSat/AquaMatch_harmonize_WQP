@@ -1,0 +1,269 @@
+
+# TSS harmonization process
+
+### Initial dataset
+
+After the pre-harmonization process the tss-only WQP dataset contains
+3.78 million rows.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+<br>
+
+### Filter for water media
+
+The first step in TSS harmonization is to ensure that the media type for
+the data is `"water"` or `"Water"`. This should just be a precautionary
+step: 0 rows are removed. The final row count after this is 3.78
+million.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+<br>
+
+### Remove fails and other missing data
+
+In this step we filter out records based on indications that they have
+failed data for some reason. We screen the following columns:
+`ActivityCommentText`, `ResultLaboratoryCommentText`,
+`ResultCommentText`, `ResultMeasureValue`, and
+`ResultDetectionConditionText`. Examples of text that results in a
+dropped record includes (but is not limited to): `"fail"`, `"suspect"`,
+`"error"`, `"beyond accept"`, `"interference"`, `"questionable"`,
+`"problem"`, `"violation"`, `"rejected"`, `"no data"`. Specific target
+text varies by column.
+
+160.82 thousand rows are removed and 3.61 million rows remain.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+<br>
+
+### Clean MDLs
+
+In this step method detection limits (MDLs) are used to clean up the
+reported values. When a numeric value is missing for the data record
+(i.e., `NA` or text that became `NA` during an `as.numeric` call) we
+check for non-detect language in the `ResultLaboratoryCommentText`,
+`ResultCommentText`, `ResultDetectionConditionText`, and
+`ResultMeasureValue` columns. This language can be `"non-detect"`,
+`"not detect"`, `"non detect"`, `"undetect"`, or `"below"`.
+
+If non-detect language exists then we use the
+`DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL,
+otherwise if there is a `<` and a number in the `ResultMeasureValue`
+column we use that number instead.
+
+We then use a random number between 0 and `0.5 * MDL` as the record’s
+value moving forward.
+
+This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 3.61 million.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+<br>
+
+### Clean approximate values
+
+Cleaning approximate values involves a similar process as for MDL
+cleaning. We flag “approximated” values in the dataset. The
+`ResultMeasureValue` column gets checked for **all** three of the
+following conditions:
+
+1.  Numeric-only version of the column is still `NA` after MDL cleaning
+2.  The original column text contained a number
+3.  Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or
+    `ResultDetectionConditionText` match this regular expression,
+    ignoring case: `"result approx|RESULT IS APPROX|value approx"`
+
+We then use the approximate value as the record’s value moving forward.
+
+This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 3.61 million.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+<br>
+
+### Clean values with “greater than” data
+
+The next step is similar to the MDL and approximate value cleaning
+processes, and follows the approximate cleaning process most closely.
+The goal is to clean up values that were entered as “greater than” some
+value. The `ResultMeasureValue` column gets checked for **all** three of
+the following conditions:
+
+1.  Numeric-only version of the column is still `NA` after MDL &
+    approximate cleaning
+2.  The original column text contained a number
+3.  The original column text contained a `>`
+
+We then use the “greater than” value (without `>`) as the record’s value
+moving forward.
+
+This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 3.61 million.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+<br>
+
+### Harmonize record units
+
+The next step in TSS harmonization is working with the units of the WQP
+records. These can vary widely. We create the following conversion
+table, which is used to translate units provided in WQP into
+milligrams/L:
+
+<table class=" lightable-paper table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+ResultMeasure.MeasureUnitCode
+</th>
+<th style="text-align:right;">
+conversion
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+mg/L
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/l
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppm
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/l
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/L
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/m3
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppb
+</td>
+<td style="text-align:right;">
+1.000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/cm3
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/ml
+</td>
+<td style="text-align:right;">
+1.000e+03
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mg/ml
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ppt
+</td>
+<td style="text-align:right;">
+1.000e-06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+umol/L
+</td>
+<td style="text-align:right;">
+6.008e+01
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+g/l
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
+</tbody>
+</table>
+
+We also limit values to less than 1000 mg/L to ensure realistic data.
+125.84 thousand rows are removed. The final row count after this is 3.49
+million.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+<br>
+
+### Filter based on analytical method
+
+Our next step is to aggregate TSS analytical methods into groups and
+then filter out methods that may have been erroneously added, were
+unclear, or which don’t meet our needs. Methods that were grouped as
+`"Ambiguous"` or `"Unlikely"` are dropped.
+
+This process drops 1870.33 million rows leaving 1.62 million remaining.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+<br>
+
+### Filter based on fraction type
+
+The final step in our TSS harmonization is filtering based on the
+`ResultSampleFractionText` column. We **drop** records with the
+following values in this column: `"Fixed`“, `"Volatile"`, `"Dissolved"`,
+or `"Acid Soluble"`.
+
+This process drops 0.15 thousand rows leaving 1.62 million remaining in
+the final harmonized TSS dataset.
+
+![](/Users/mbrousil/Documents/aquasat_v2/chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->

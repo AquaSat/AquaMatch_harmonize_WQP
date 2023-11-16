@@ -1,0 +1,10 @@
+step,reason,short_reason,number_dropped,n_rows,order
+tss harmonization,Starting dataset,Start,0,3775322,0
+tss harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,3614497,4
+tss harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",160825,3614497,2
+tss harmonization,Dropped rows while filtering fraction types,Fraction types,149,1618182,8
+tss harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,3614497,5
+tss harmonization,Dropped rows while harmonizing units,Harmonize units,125840,3488657,6
+tss harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,3614497,3
+tss harmonization,Filtered for only water media,Water media,0,3775322,1
+tss harmonization,Dropped rows while aggregating analytical methods,Analytical methods,1870326,1618331,7

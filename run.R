@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 
 # list of packages required for this pipeline
-required_pkgs <- c("dataRetreival",
+required_pkgs <- c(
+  "dataRetrieval",
   "feather",
   "janitor",
   "lubridate",

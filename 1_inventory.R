@@ -6,7 +6,8 @@ p1_targets_list <- list(
   
   # Track yml file containing common parameter groups and WQP characteristic names
   # If {targets} detects a change in the yml file, it will re-build all downstream
-  # targets that depend on p1_wqp_params_yml.
+  # targets that depend on p1_wqp_params_yml assuming that p0_param_groups_select
+  # indicates that any new parameters should be included in the pipeline.
   tar_file_read(
     p1_wqp_params,
     "1_inventory/cfg/wqp_codes.yml",

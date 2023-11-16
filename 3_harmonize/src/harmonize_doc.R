@@ -13,14 +13,17 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Minor data prep ---------------------------------------------------------
   
+  # Grab the column names of the dataset coming in
+  raw_names <- names(raw_doc)
+  
   doc <- raw_doc %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
-      # Water only
-      ActivityMediaName %in% c("Water","water"))  %>%
-    # Index for being able to track each sample
-    rowid_to_column(.,"index")
+      ActivityMediaName %in% c("Water", "water")) %>%
+    # Add an index to control for cases where there's not enough identifying info
+    # to track a unique record
+    rowid_to_column(., "index")
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
@@ -36,83 +39,86 @@ harmonize_doc <- function(raw_doc, p_codes){
   gc()
   
   
-  # Remove fails ------------------------------------------------------------
+  # Document and remove fail language ---------------------------------------
   
+  # The values that will be considered fails for each column:
+  fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "violation", "reject", "no data",
+    "time exceed"
+  )
+  
+  # Now get counts of fail-related string detections for each column: 
+  fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                      "ResultCommentText", "ResultMeasureValue_original",
+                      "ResultDetectionConditionText") %>%
+    # Set list item names equal to each item in the list so that map will return
+    # a named list
+    set_names() %>%
+    map(
+      .x = .,
+      .f = ~ {
+        # Pass column name into the next map()
+        col_name <- .x
+        
+        # Check each string pattern separately and count instances
+        map_df(.x = fail_text,
+               .f = ~{
+                 hit_count <- doc %>%
+                   filter(grepl(pattern = .x,
+                                x = !!sym(col_name),
+                                ignore.case = TRUE)) %>%
+                   nrow()
+                 
+                 # Return two-col df
+                 tibble(
+                   word = .x,
+                   record_count = hit_count
+                 )
+               }) %>%
+          # Ignore patterns that weren't detected
+          filter(record_count > 0)
+      }) %>%
+    # If there's any data frames with 0 rows (i.e., no fails detected) then
+    # drop them to avoid errors in the next step.
+    keep(~nrow(.) > 0)
+  
+  
+  # Plot and export the plots as png files
+  walk2(.x = fail_counts,
+        .y = names(fail_counts),
+        .f = ~ ggsave(filename = paste0("3_harmonize/out/doc_",
+                                        .y,
+                                        "_fail_pie.png"),
+                      plot = plot_fail_pie(dataset = .x, col_name = .y),
+                      width = 6, height = 6, units = "in", device = "png"))
+  
+  
+  # Now that the fails have been documented, remove them:
   doc_fails_removed <- doc %>%
-    # No failure-related field comments, slightly different list of words than
-    # lab and result list (not including things that could be used to describe
-    # field conditions like "warm", "ice", etc.):
-    filter(!grepl(pattern = paste0(c(
-      "fail", "suspect", "error", "beyond accept", "interference",
-      "questionable", "outside of accept", "problem", "contaminat",
-      "improper", "violation", "invalid", "unable", "no test", "cancelled",
-      "instrument down", "no result", "time exceed", "not accept",
-      "QC EXCEEDED"),
-      collapse = "|"),
-      x = ActivityCommentText,
-      ignore.case = T) |
-        is.na(ActivityCommentText),
-      # No failure-related lab comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
-        collapse = "|"),
-        ResultLaboratoryCommentText,
-        ignore.case = T) |
-        is.na(ResultLaboratoryCommentText),
-      # no failure-related result comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
-        collapse = "|"),
-        ResultCommentText,
-        ignore.case = T) |
-        is.na(ResultCommentText),
-      # no failure-related value comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "not done", "no reading", 
-          "not reported", "no data"),
-        collapse = "|"),
-        ResultMeasureValue_original,
-        ignore.case = T) |
-        is.na(ResultMeasureValue_original),
-      # no failure-related detection comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME"),
-        collapse = "|"),
-        ResultDetectionConditionText,
-        ignore.case = T) |
-        is.na(ResultDetectionConditionText))
+    filter(
+      if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
   
-  # How many records removed due to fails, missing data, etc.?
+  # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fails, missing data, etc.: ",
+      "Rows removed due to fail-related language: ",
       nrow(doc) - nrow(doc_fails_removed)
     )
   )
   
   dropped_fails <- tibble(
     step = "doc harmonization",
-    reason = "Dropped rows indicating fails, missing data, etc.",
+    reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
     number_dropped = nrow(doc) - nrow(doc_fails_removed),
     n_rows = nrow(doc_fails_removed),
@@ -127,7 +133,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   mdl_updates <- doc_fails_removed %>%
     # only want NAs and character value data:
     filter(is.na(ResultMeasureValue)) %>%
-    # if the value is na BUT there is non detect language in the comments...  
+    # if the value is NA BUT there is non detect language in the comments...  
     mutate(
       mdl_vals = ifelse(
         test = (is.na(ResultMeasureValue_original) & 
@@ -175,8 +181,18 @@ harmonize_doc <- function(raw_doc, p_codes){
     left_join(x = ., y = mdl_updates, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
-           harmonized_comments = ifelse(index %in% mdl_updates$index,
-                                        "Approximated using the EPA's MDL method.", NA))
+           # Flag: 0 = value not adjusted and MDL not a concern
+           #       1 = original NA value adjusted using MDL method
+           #       2 = provided value below provided MDL; not adjusted
+           mdl_flag = case_when(
+             index %in% mdl_updates$index ~ 1,
+             (!(index %in% mdl_updates$index) & DetectionQuantitationLimitMeasure.MeasureValue <= ResultMeasureValue) |
+               (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
+             DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
+             .default = NA_integer_
+           )) %>%
+    # Remove negative measurement values
+    filter(harmonized_value >= 0)
   
   dropped_mdls <- tibble(
     step = "doc harmonization",
@@ -217,7 +233,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   print(
     paste(
-      round((nrow(doc_approx)) / nrow(doc) * 100, 3),
+      round((nrow(doc_approx)) / nrow(doc_mdls_added) * 100, 3),
       '% of samples had values listed as approximated'
     )
   )
@@ -228,9 +244,8 @@ harmonize_doc <- function(raw_doc, p_codes){
     mutate(harmonized_value = ifelse(index %in% doc_approx$index,
                                      approx_value,
                                      harmonized_value),
-           harmonized_comments = ifelse(index %in% doc_approx$index,
-                                        'Value identified as "approximated" by organization.',
-                                        harmonized_comments))
+           # Flag: 1 = used approximate adjustment, 0 = value not adjusted
+           approx_flag = ifelse(index %in% doc_approx$index, 1, 0))
   
   dropped_approximates <- tibble(
     step = "doc harmonization",
@@ -242,29 +257,120 @@ harmonize_doc <- function(raw_doc, p_codes){
   )
   
   
+  
   # Clean up "greater than" values ------------------------------------------
   
-  # None present currently. Skip for now
+  greater_vals <- doc_approx_added %>%
+    filter((!index %in% mdl_updates$index) & (!index %in% doc_approx$index)) %>%
+    # Then select fields where the NUMERIC value column is NA....
+    filter(is.na(ResultMeasureValue) & 
+             # ... AND the original value column has numeric characters...
+             grepl("[0-9]", ResultMeasureValue_original) &
+             #... AND a `>` symbol
+             grepl(">", ResultMeasureValue_original))
+  
+  greater_vals$greater_value <- as.numeric(
+    str_replace_all(
+      greater_vals$ResultMeasureValue_original,
+      c("\\>" = "", "\\*" = "", "\\=" = "" )))
+  greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
+  
+  # Keep important data
+  greater_vals <- greater_vals %>%
+    select(greater_value, index)
+  
+  print(
+    paste(
+      round((nrow(greater_vals)) / nrow(doc_approx_added) * 100, 9),
+      '% of samples had values listed as being above a detection limit//greater than'
+    )
+  )
+  
+  # Replace harmonized_value field with these new values
+  doc_harmonized_values <- doc_approx_added %>%
+    left_join(x = ., y = greater_vals, by = "index") %>%
+    mutate(harmonized_value = ifelse(index %in% greater_vals$index,
+                                     greater_value, harmonized_value),
+           # Flag: 1 = used greater than adjustment, 0 = value not adjusted
+           greater_flag = ifelse(index %in% greater_vals$index, 1, 0))
+  
+  dropped_greater_than <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning 'greater than' values",
+    short_reason = "Greater thans",
+    number_dropped = nrow(doc_approx_added) - nrow(doc_harmonized_values),
+    n_rows = nrow(doc_harmonized_values),
+    order = 5
+  )
+  
+  
+  # Free up memory
+  rm(doc)
+  gc()
+  
+  
+  # Remove remaining NAs ----------------------------------------------------
+  
+  # At this point we've processed MDLs, approximate values, and values containing
+  # symbols like ">". If there are still remaining NAs in the numeric measurement
+  # column then it's time to drop them.
+  
+  doc_no_na <- doc_harmonized_values %>%
+    filter(!is.na(harmonized_value))
+  
+  dropped_na <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped unresolved NAs",
+    short_reason = "Unresolved NAs",
+    number_dropped = nrow(doc_harmonized_values) - nrow(doc_no_na),
+    n_rows = nrow(doc_no_na),
+    order = 6
+  )
+  
+  # Free up memory
+  rm(doc_harmonized_values, doc_approx_added, doc_mdls_added,
+     doc_fails_removed)
+  gc()
   
   
   # Harmonize value units ---------------------------------------------------
   
   # Set up a lookup table so that final units are all in ug/L. 
-  unit_conversion_table <- tibble(ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                                                                    'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
-                                  conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                                                 1000000, 0.000001, 60.080000))
+  unit_conversion_table <- tibble(
+    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+                                      'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
+    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
+                   1000000, 0.000001, 60.080000))
   
-  doc_harmonized_units <- doc_approx_added %>%
-    inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
+  unit_table_out_path <- "3_harmonize/out/doc_unit_table.csv"
+  
+  write_csv(x = unit_conversion_table,
+            file = unit_table_out_path)
+  
+  
+  converted_units_doc <- doc_no_na %>%
+    inner_join(x = .,
+               y = unit_conversion_table,
+               by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = (ResultMeasureValue * conversion) / 1000,
-           harmonized_units = 'mg/L')
+           harmonized_units = "mg/L")
   
-  # How many records removed due to values?
+  # Plot and export unit codes that didn't make through joining
+  doc_no_na %>%
+    anti_join(x = .,
+              y = unit_conversion_table,
+              by = "ResultMeasure.MeasureUnitCode")  %>%
+    count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
+    plot_unit_pie() %>%
+    ggsave(filename = "3_harmonize/out/doc_unit_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
+  
+  # How many records removed due to limits on values?
   print(
     paste0(
       "Rows removed while harmonizing units: ",
-      nrow(doc_approx_added) - nrow(doc_harmonized_units)
+      nrow(doc_no_na) - nrow(converted_units_doc)
     )
   )
   
@@ -272,37 +378,232 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Dropped rows while harmonizing units",
     short_reason = "Harmonize units",
-    number_dropped = nrow(doc_approx_added) - nrow(doc_harmonized_units),
-    n_rows = nrow(doc_harmonized_units),
-    order = 5
+    number_dropped = nrow(doc_no_na) - nrow(converted_units_doc),
+    n_rows = nrow(converted_units_doc),
+    order = 7
   )
   
   
-  # Investigate depth -------------------------------------------------------
+  # Clean and flag depth data -----------------------------------------------
   
-  # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
-                                                                                  'm', 'meters'),
-                                   depth_conversion = c(1 / 100, 0.3048, 0.3048,
-                                                        0.0254, 1, 1)) 
-  # Join depth lookup table to doc data
-  doc_harmonized_depth <- inner_join(x = doc_harmonized_units,
-                                     y = depth_conversion_table,
-                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
-    # Some depth measurements have negative values (assume that is just preference)
-    # I also added .01 meters because many samples have depth of zero assuming they were
-    # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
+  # Recode any error-related character values to NAs
+  recode_depth_na_doc <- converted_units_doc %>%
+    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                            ResultDepthHeightMeasure.MeasureValue,
+                            ActivityTopDepthHeightMeasure.MeasureValue,
+                            ActivityBottomDepthHeightMeasure.MeasureValue),
+                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                        "9999", "-9999", "-99",
+                                                        "99", "NaN"),
+                                  true = NA_character_,
+                                  false = .x)))
   
-  # We lose lots of data by keeping only data with depth measurements
+  # Reference table for unit conversion
+  depth_unit_conversion_table <- tibble(
+    depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
+    depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
+  )
+  
+  # There are four columns with potential depth data that we need to convert
+  # into meters:
+  converted_depth_units_doc <- recode_depth_na_doc %>%
+    # 1. Activity depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    # Drop conversion col to avoid interfering with next join
+    select(-depth_conversion) %>%
+    # 2. Result depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    select(-depth_conversion) %>%
+    # 3. Activity top depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_top_depth_unit = "m"
+    ) %>%
+    select(-depth_conversion) %>%
+    # 4. Activity bottom depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_bottom_depth_unit = "m"
+    )
+  
+  # Now combine the two columns with single point depth data into one and clean
+  # up values generally:
+  harmonized_depth_doc <- converted_depth_units_doc %>%
+    rowwise() %>%
+    mutate(
+      # New harmonized discrete column:
+      harmonized_discrete_depth_value = case_when(
+        # Use activity depth mainly
+        !is.na(harmonized_activity_depth_value) &
+          is.na(harmonized_result_depth_value) ~ harmonized_activity_depth_value,
+        # Missing activity depth but not result depth
+        is.na(harmonized_activity_depth_value) &
+          !is.na(harmonized_result_depth_value) ~ harmonized_result_depth_value,
+        # Disagreeing activity and result depths
+        (!is.na(harmonized_activity_depth_value) &
+           !is.na(harmonized_result_depth_value)) &
+          harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+            c(harmonized_activity_depth_value, harmonized_result_depth_value)),
+        # Both agree
+        harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
+        # Defaults to NA otherwise
+        .default = NA_real_
+      ),
+      # Indicate depth unit going along with this column
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    ungroup()
+  
+  # Create a flag system based on depth data presence/completion
+  flagged_depth_doc <- harmonized_depth_doc %>%
+    mutate(
+      depth_flag = case_when(
+        # No depths (including because of recoding above)
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 0,
+        # All columns present
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value) ~ 3,
+        # Integrated depths
+        (!is.na(harmonized_top_depth_value) |
+           !is.na(harmonized_bottom_depth_value)) &
+          is.na(harmonized_discrete_depth_value) ~ 2,
+        # Discrete depths
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 1,
+        # Discrete and integrated present
+        # Note that here using the non-combined discrete col since part of
+        # the combination process above was to create NAs when the discrete
+        # values disagree
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_top_depth_value)) |
+          ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+             !is.na(harmonized_bottom_depth_value)) ~ 3,
+        .default = NA_real_
+      )) %>%
+    # These columns are no longer necessary since the harmonization is done
+    select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+              depth_conversion))
+  
+  # Sanity check that flags are matching up with their intended qualities:
+  depth_check_table <- flagged_depth_doc %>%
+    mutate(
+      # Everything present
+      three_cols_present = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only discrete present
+      only_discrete = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only top present
+      only_top = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only bottom present
+      only_bottom = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Full integrated present
+      fully_integrated = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # No depths present
+      no_depths = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Discrete and one of the integrated
+      discrete_partial_integ = if_else(
+        (!is.na(harmonized_discrete_depth_value) &
+           !is.na(harmonized_top_depth_value) &
+           is.na(harmonized_bottom_depth_value)) |
+          (!is.na(harmonized_discrete_depth_value) &
+             is.na(harmonized_top_depth_value) &
+             !is.na(harmonized_bottom_depth_value)),
+        true = 1, false = 0)
+    ) %>%
+    count(three_cols_present, only_discrete, discrete_partial_integ,
+          only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+    arrange(depth_flag)
+  
+  depth_check_out_path <- "3_harmonize/out/doc_depth_check_table.csv"
+  
+  write_csv(x = depth_check_table,
+            file = depth_check_out_path)
+  
+  # Depth category counts:
+  depth_counts <- flagged_depth_doc %>%
+    # Using a temporary flag to aggregate depth values for count output
+    mutate(depth_agg_flag = case_when(
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 1 ~ "<=1m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 5 ~ "<=5m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value > 5 ~ ">5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 1 ~ "<=1m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 5 ~ "<=5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value > 5 ~ ">5m",
+      .default = "No or inconsistent depth"
+    )) %>%
+    count(depth_agg_flag)
+  
+  depth_counts_out_path <- "3_harmonize/out/doc_depth_counts.csv"
+  
+  write_csv(x = depth_counts, file = depth_counts_out_path)
+  
+  # Have any records been removed while processing depths?
   print(
-    paste(
-      'If we only kept samples that had depth information we would lose',
-      round((nrow(doc_harmonized_units) - nrow(doc_harmonized_depth)) / nrow(doc_harmonized_units) * 100, 1),
-      '% of samples'))
+    paste0(
+      "Rows removed due to non-target depths: ",
+      nrow(converted_units_doc) - nrow(flagged_depth_doc)
+    )
+  )
   
-  rm(doc_harmonized_depth)
-  gc()
+  dropped_depths <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning depths",
+    short_reason = "Clean depths",
+    number_dropped = nrow(converted_units_doc) - nrow(flagged_depth_doc),
+    n_rows = nrow(flagged_depth_doc),
+    order = 8
+  )
+  
+  
   
   
   # Aggregate and tier analytical methods -----------------------------------

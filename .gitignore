@@ -42,5 +42,8 @@ vignettes/*.pdf
 data/
 _targets/
 
+# ignore feather files
+**.feather
+
 # Other
 **.DS_Store

@@ -47,3 +47,6 @@ _targets/
 
 # Other
 **.DS_Store
+
+# The chapters folder created by the pipeline
+chapters/

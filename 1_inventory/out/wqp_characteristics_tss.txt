@@ -1,12 +1,13 @@
 The following characteristics are already included in the WQP codes cfg file: 
-Colored dissolved organic matter (CDOM)
-Suspended sediment concentration (SSC)
-Suspended Sediment Concentration (SSC)
 
 
 The following characteristics might be relevant to the selected parameter and are not included in the WQP codes cfg file: 
 11-KetoTestosterone
+13C2-4:2 FTS
+13C2-6:2 FTS
+13C2-8:2 FTS
 1-Butanesulfonic acid, 1,1,2,2,3,3,4,4,4-nonafluoro-, potassium salt (1:1)
+1-Pentanesulfonic acid, 1,1,2,2,3,3,4,4,5,5,5-undecafluoro-, potassium salt
 4-MUB-a-D-galactoside
 4-MUB-b-D-galactoside
 4-Nonylphenol monoethoxylates
@@ -66,6 +67,7 @@ Carbon, isotope of mass 13
 Chlordane, technical, and/or chlordane metabolites
 Chlorthal monoacid and diacid degradates
 Chrysotile asbestos
+Colored dissolved organic matter (CDOM)
 Condition class, chemical (acid neutralizing capacity)
 Condition class, chemical (Conductivity/Salinity)
 Condition class (Dissolved oxygen (DO))
@@ -78,10 +80,12 @@ Count, species 40-45 mm size class
 Count, species 45-50 mm size class
 Cricotopus bicinctus
 Crocidolite Asbestos
+Cross Section
 Cross-section Depth
 Cryptosporidium
 Cryptosporidium parvum
 Current speed
+Dacthal Acid Metabolites
 Decamethylcyclopentasiloxane
 Detritus Jabs
 Dihydrotestosterone
@@ -138,6 +142,7 @@ Hepatitis-A virus
 Heterotrissocladius
 Human Influence: Docks/Boats (choice list)
 Hydrocortisone
+Hydrocortisone-d4
 Hydrologic Influence: Culverts (choice list)
 Hydrologic Stressors: Animal Trampling (choice list)
 Hydrologic Stressors: Berms (choice list)
@@ -176,7 +181,9 @@ Moss Stream Reach Coverage Average (choice list)
 Mussels observed (choice list)
 Nanocladius distinctus
 Non-Asbestos Fiber/Material
+Nonpoint source pollution sources
 NPS POLLUTION - Domestic Pets Present (Y/N) (choice list)
+Number of Boats
 Number of sampling points
 Number of seeds with ergots
 Octasulfur
@@ -200,6 +207,7 @@ Population diversity, macroinvertebrates, # of species
 Potassium
 Potassium 11-chloroeicosafluoro-3-oxaundecane-1-sulfonate
 Potassium-40
+Potassium 9-chlorohexadecafluoro-3-oxanonane-1-sulfonate
 Potassium bisulfate
 Pressure
 Productivity, photosynthetic rate, carbon production
@@ -232,6 +240,7 @@ Riffle Run Embeddedness
 Riparian vegetation, dominant species present
 Riparian Zone Left Bank Plant Cover - Grass Low Plants
 Riparian Zone Right Bank Plant Cover - Grass Low Plants
+Rooted or floating plants restrict access to waterbody (Y/N) (choice list)
 Seagrass Cover (choice list)
 Seagrass height
 Sediment, inorganic, classification (choice list)
@@ -251,6 +260,8 @@ Subsystem classification stream type (choice list)
 sulfatase (corrected for carbon content)
 Surfactants, anionic
 Surfactants, unspecified mix
+Suspended sediment concentration (SSC)
+Suspended Sediment Concentration (SSC)
 Taxonomic Evenness
 Taxonomic Richness
 Taxonomic Richness, Ephemeroptera, Plecoptera, Tricoptera

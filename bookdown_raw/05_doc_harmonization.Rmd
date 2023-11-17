@@ -4,13 +4,15 @@ output:
     html_preview: false
 params:
   documented_drops: NA
+  chla_chars: NA
 always_allow_html: true
 ---
 
-# DOC harmonization process
+# Dissolved organic carbon (DOC) harmonization process
 
 ```{r echo=FALSE} 
 documented_drops <- params$documented_drops
+doc_chars <- params$doc_chars
 ```
 
 ```{r echo = FALSE}
@@ -41,7 +43,9 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the pre-harmonization process the DOC-only WQP dataset contains `r step_0_rows` rows.
+After the pre-harmonization process the organic carbon-only WQP dataset contains `r step_0_rows` rows. This dataset contains the following user-defined `characteristicNames`: `r doc_chars`.
+
+The WQP doesn't have a "dissolved organic carbon" `CharacteristicName`, so we use these names in order to capture that parameter.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -68,7 +72,7 @@ step_data %>%
 
 <br>
 
-### Filter for water media
+### Filter for water media and doc fraction
 
 ```{r echo = FALSE}
 step_1_rows <- filter(step_data,
@@ -84,7 +88,22 @@ step_1_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-The first step in DOC harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
+The first step in DOC harmonization is to ensure that:
+
+1. The media type for the data is `"water"` or `"Water"`
+2. The fraction of the carbon pool included is only dissolved organic carbon
+
+To achieve goal number 2 above, we filter the `ResultSampleFractionText` column to include only the following fractions, which correspond with dissolved organic carbon: "Dissolved", "Filterable", "Filtered, lab", "Filtered, field").
+
+Below is a pie chart that documents the number of records that were dropped for each fraction that we omitted:
+
+<br>
+
+<img src="3_harmonize/out/doc_fraction_drop_pie.png" alt="ResultSampleFractionText dropped values" width="650"/>
+
+<br>
+
+Through this process `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%

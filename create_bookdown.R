@@ -93,7 +93,8 @@ bookdown_targets_list <- list(
     rmarkdown::render(
       doc_harmonization_rmd,
       params = list(
-        documented_drops = p3_documented_drops),
+        documented_drops = p3_documented_drops,
+        doc_chars = p1_wqp_params$doc),
       output_file = "05_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

@@ -1,0 +1,13 @@
+ResultMeasure.MeasureUnitCode,conversion
+mg/L,1000
+mg/l,1000
+ppm,1000
+ug/l,1
+ug/L,1
+mg/m3,1
+ppb,1
+mg/cm3,1000000
+ug/ml,1000
+mg/ml,1000000
+ppt,1e-6
+umol/L,60.08

@@ -16,20 +16,42 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Grab the column names of the dataset coming in
   raw_names <- names(raw_doc)
   
+  # Count the number of rows in each fraction of the carbon pool:
+  full_fraction_count <- raw_doc %>%
+    count(ResultSampleFractionText, name = "record_count")
+  
   doc <- raw_doc %>% 
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
-      ActivityMediaName %in% c("Water", "water")) %>%
+      ActivityMediaName %in% c("Water", "water"),
+      # Dissolved organic carbon is not a CharacteristicName, so we must identify
+      # the fractions of the carbon pool reported that match our needs:
+      ResultSampleFractionText %in% c("Dissolved", "Filterable", "Filtered, lab",
+                                      "Filtered, field")
+    ) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
   
+  # Count the number of rows in each fraction of the carbon pool now that we've
+  # filtered some out:
+  reduced_fraction_count <- doc %>%
+    count(ResultSampleFractionText, name = "record_count")
+  
+  # Which fraction types got dropped, and how many counts did they have? Plot it.
+  anti_join(x = full_fraction_count,
+            y = reduced_fraction_count) %>%
+    plot_fraction_pie() %>%
+    ggsave(filename = "3_harmonize/out/doc_fraction_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
+  
   # Record info on any dropped rows  
   dropped_media <- tibble(
     step = "doc harmonization",
-    reason = "Filtered for only water media",
-    short_reason = "Water media",
+    reason = "Filtered for only water media & doc fraction",
+    short_reason = "Water media & doc",
     number_dropped = nrow(raw_doc) - nrow(doc),
     n_rows = nrow(doc),
     order = 1

@@ -626,9 +626,35 @@ harmonize_doc <- function(raw_doc, p_codes){
   )
   
   
-  
-  
   # Aggregate and tier analytical methods -----------------------------------
+  
+  # Before creating analytical tiers remove any records that have unrelated
+  # data based on their method:
+  unrelated_text <- paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals",
+                             "E. coli", "Anion", "Cation", "Phosphorus",
+                             "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity",
+                             "Nitrate", "Conductance", "Alkalinity", "Chlorophyll",
+                             "Solids", "Temperature", "Color in Water",
+                             "Coliform", "PARTICULATE CARBON (inorg+org)",
+                             "5210", "bed sed", "bs, calc", "5220",
+                             "Suspended-Sediment in Water"),
+                           collapse = "|")
+  
+  doc_relevant <- flagged_depth_doc %>%
+    filter(!grepl(pattern = unrelated_text,
+                  x = ResultAnalyticalMethod.MethodName,
+                  ignore.case = TRUE))
+  
+  # 1.1 Acid spike and carbon combustion analyzer detection
+  
+  # Create a new column indicating detection of phrases related to acid spike + 
+  # carbon combustion analyzer methods
+  acid_combustion_text <- paste0(c(
+    
+  ),
+  collapse = "|") 
+  
+  
   
   doc_aggregated_methods <- doc_harmonized_units %>%
     # Includes more phrases that are unrelated

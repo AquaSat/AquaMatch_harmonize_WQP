@@ -129,7 +129,8 @@ p3_targets_list <- list(
              harmonize_doc(raw_doc = p3_cleaned_wqp_data %>%
                              filter(parameter == "doc"),
                            p_codes = p3_p_codes),
-             packages = c("tidyverse", "lubridate", "feather")),
+             packages = c("tidyverse", "lubridate", "feather", "ggrepel",
+                          "scales")),
   
   tar_target(p3_documented_drops,
              map_df(.x = c(p3_wqp_data_aoi_ready$compiled_drops_path,

@@ -628,6 +628,15 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Aggregate and tier analytical methods -----------------------------------
   
+  
+  # Get an idea of how many analytical methods exist:
+  print(
+    paste0(
+      "Number of doc analytical methods present: ",
+      length(unique(flagged_depth_doc$ResultAnalyticalMethod.MethodName))
+    )
+  )
+  
   # Before creating analytical tiers remove any records that have unrelated
   # data based on their method:
   unrelated_text <- paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals",
@@ -645,18 +654,137 @@ harmonize_doc <- function(raw_doc, p_codes){
                   x = ResultAnalyticalMethod.MethodName,
                   ignore.case = TRUE))
   
-  # 1.1 Acid spike and carbon combustion analyzer detection
+  # 1.1 Combustion+IR detection
   
-  # Create a new column indicating detection of phrases related to acid spike + 
-  # carbon combustion analyzer methods
-  acid_combustion_text <- paste0(c(
-    
-  ),
-  collapse = "|") 
+  # doc_aggregated_methods %>%
+  #   filter(method_status == "5310B + EPA 415.1 - Combustion + IR") %>%
+  #   pull(ResultAnalyticalMethod.MethodName) %>%
+  #   unique()
+  
+  # Create a new column indicating detection of Combustion+IR methods text: T or F
+  combustion_ir_text <- paste0(c("5310 ?B", "415.1",
+                                 # "combustion" but only when not in the context of
+                                 # 5310 C / 5310C
+                                 "^(?!.*5310 ?C).*combustion(?!.*5310 ?C)",
+                                 "0.45u silver, persulfate IR", "0.7 um GFF, combust IR",
+                                 "Laboratory Procedures for Water Quality Chemical Analysis",
+                                 "CO2 formation", "Qian & Mopper 1996", "Shimadzu TOC Analyzer"),
+                               collapse = "|")
+  
+  doc_tag_combustion_ir <- doc_relevant %>%
+    # TRUE if methods contain Combustion+IR related text or if the correct USGS p code
+    mutate(combustion_ir_tag = if_else(condition = grepl(pattern = combustion_ir_text,
+                                                         x = ResultAnalyticalMethod.MethodName,
+                                                         ignore.case = TRUE,
+                                                         perl = TRUE),# |
+                                       # USGSPCode %in% c(, ),
+                                       true = TRUE,
+                                       false = FALSE,
+                                       missing = FALSE))
+  
+  
+  # 1.2 Persulfate-UV/Heated Persulfate Oxidation+IR detection
+  
+  # doc_aggregated_methods %>%
+  #   filter(method_status == "5310C + USGS O-1122-92 + EPA 415.2 - Persulfate-UV/Heated Persulfate Oxidation + IR") %>%
+  #   pull(ResultAnalyticalMethod.MethodName) %>%
+  #   unique()
+  
+  # Create a new column indicating detection of Combustion+IR methods text: T or F
+  pers_uv_heated_text <- paste0(c("5310 ?C", "persulfate oxid", "415.2",
+                                  "Ultraviolet", "Heated-Persulfate", "UV"),
+                                collapse = "|")
+  
+  doc_tag_pers_uv_heated <- doc_tag_combustion_ir %>%
+    # TRUE if methods contain Persulfate-UV/Heated Persulfate Oxidation+IR
+    # related text or if the correct USGS p code
+    mutate(pers_uv_heated_tag = if_else(condition = grepl(pattern = pers_uv_heated_text,
+                                                          x = ResultAnalyticalMethod.MethodName,
+                                                          ignore.case = TRUE,
+                                                          perl = TRUE),# |
+                                        # USGSPCode %in% c(, ),
+                                        true = TRUE,
+                                        false = FALSE,
+                                        missing = FALSE))
+  
+  # 1.3 Wet Oxidation+Persulfate+IR detection
+  
+  # doc_aggregated_methods %>%
+  #   filter(method_status == "5310D + EPA 415.3 + USGS O-3100 - Wet Oxidation + Persulfate + IR") %>%
+  #   pull(ResultAnalyticalMethod.MethodName) %>%
+  #   unique()
+  
+  # Create a new column indicating detection of Wet Oxidation+Persulfate+IR
+  # methods text: T or F
+  wet_ox_pers_text <- paste0(c(
+    "0.45 ?um cap", "wet oxidation", "5310 ?D", "415.3",
+    "O-3100 ~ Total Organic Carbon in Water"),
+    collapse = "|")
+  
+  doc_tag_wet_ox_pers <- doc_tag_pers_uv_heated %>%
+    # TRUE if methods contain Wet Oxidation+Persulfate+IR related text or if
+    # the correct USGS p code
+    mutate(wet_ox_pers_tag = if_else(condition = grepl(pattern = pers_uv_heated_text,
+                                                       x = ResultAnalyticalMethod.MethodName,
+                                                       ignore.case = TRUE,
+                                                       perl = TRUE),# |
+                                     # USGSPCode %in% c(, ),
+                                     true = TRUE,
+                                     false = FALSE,
+                                     missing = FALSE))
+  
+  
+  # 1.4 Elemental Analyzer detection
+  
+  # doc_aggregated_methods %>%
+  #   filter(method_status == "EPA 440.0") %>%
+  #   pull(ResultAnalyticalMethod.MethodName) %>%
+  #   unique()
+  
+  # Create a new column indicating detection of elemental analyzer methods
+  # text: T or F
+  elemental_text <- 440
+  
+  doc_tag_elemental <- doc_tag_wet_ox_pers %>%
+    # TRUE if methods contain elemental analyzer related text or if
+    # the correct USGS p code
+    mutate(elemental_tag = if_else(condition = grepl(pattern = elemental_text,
+                                                     x = ResultAnalyticalMethod.MethodName,
+                                                     ignore.case = TRUE,
+                                                     perl = TRUE),# |
+                                   # USGSPCode %in% c(, ),
+                                   true = TRUE,
+                                   false = FALSE,
+                                   missing = FALSE))
+  
+  # 1.5 Carbonaceous Analyzer detection
+  
+  # doc_aggregated_methods %>%
+  #   filter(method_status == "EPA 9060A - Carbonaceous Analyzer") %>%
+  #   pull(ResultAnalyticalMethod.MethodName) %>%
+  #   unique()
+  
+  # Create a new column indicating detection of carbonaceous analyzer methods
+  # text: T or F
+  carbonaceous_text <- "9060 A"
+  
+  doc_tag_carbonaceous <- doc_tag_elemental %>%
+    # TRUE if methods contain carbonaceous analyzer related text or if
+    # the correct USGS p code
+    mutate(carbonaceous_tag = if_else(condition = grepl(pattern = carbonaceous_text,
+                                                        x = ResultAnalyticalMethod.MethodName,
+                                                        ignore.case = TRUE,
+                                                        perl = TRUE),# |
+                                      # USGSPCode %in% c(, ),
+                                      true = TRUE,
+                                      false = FALSE,
+                                      missing = FALSE))
   
   
   
-  doc_aggregated_methods <- doc_harmonized_units %>%
+  ### Out of date below this point:
+  
+  doc_aggregated_methods <- doc_relevant %>%
     # Includes more phrases that are unrelated
     filter(!grepl(
       paste0(
@@ -703,28 +831,9 @@ harmonize_doc <- function(raw_doc, p_codes){
       grepl("9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
           EPA 9060|EPA 9060A",
             ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "EPA 9060A - Carbonaceous Analyzer",
-      (!grepl("5310 B ~ Total Organic Carbon by Combustion-Infrared Method|Total Organic Carbon by Combustion|
-          5310 B ~ Total Organic Carbon by High-Temperature Combustion Method|SM5310B|
-          Organic-C, combustion-IR method|EPA 415.1|SM 5310 B|EPA 415.1M|TOC, combustion (SM5310B,COWSC)|
-          DOC, combustion, NDIR (SM5310B)|TOC, combustion & CO2 detection|415.1|TOC, wu, combustion (5310B;DDEC)|
-          SM185310B|DOC, wf, combustion (5310B;DDEC)|EPA Method 415.1 for Total Organic Carbon in aqueous matrices|
-          SM 5310 B v20|DOC, 0.45u silver, persulfate IR|5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method|
-          UV OR HEATED PERSULFATE OXIDATION|
-          DOC, UV/persulfate (NYWSC; ALSC)|415.2|DOC, persulfate oxidation & IR|
-          SM5310C|SM 5310 C|TOC, persulfate oxid (5310C; PA)|TOC, wu, persulfate (SM5310C;CO)|DOC, persulfate oxid, IR (COWSC)|
-          Dissolved Organic Carbon in Water by Persulfate Oxidation and Infrared Spectrometry|TOC, persulfate-UV oxid (NYSDEC)|
-          TOTAL ORGANIC CARBON (TOC) PERSULFATE-ULTRAVIOLET|TOC - Persulfate-Ultraviolet or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;ND)|TOC, wu, persulfate (SM5310C;ND)|TOC, UV/persulfate/IR (USGS-NYL)|
-          DOC, persulfate oxid (5310C; PA)|EPA 415.2|DOC, UV/persulfate (NYWSC; KECK)|
-          5310 C ~ Total Organic Carbon by High-Temperature Combustion Method|415.2 M ~ Total Organic Carbon in Water|
-          SM 5310 C, EPA 415.3|5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;CO)|TOC, wet oxidation|WET OXIDATION METHOD|DOC,0.45um cap,acid,persulfateIR|
-    5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method|DOC, wf, 0.45 um cap, combust IR|415.3|
-    Determination of Total Organic Carbon and Specific UV Absorbance at 254 nm in Source Water and Drinking Water|
-    EPA 415.3|SM 5310 D|O-3100 ~ Total Organic Carbon in Water|9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
-          EPA 9060|EPA 9060A",
-              # KW: include NA values in the "Ambiguous" method lump
-              ResultAnalyticalMethod.MethodName,ignore.case = T) & !is.na(ResultAnalyticalMethod.MethodName)) | is.na(ResultAnalyticalMethod.MethodName) ~ "Ambiguous"))
+      # Uncategorized methods will be placed into the Ambiguous category
+      is.na(ResultAnalyticalMethod.MethodName) ~ "Ambiguous",
+      .default = "Ambiguous"))
   
   doc_grouped_more <- doc_aggregated_methods %>% 
     mutate(grouped = case_when(grepl(pattern = "5310B", 

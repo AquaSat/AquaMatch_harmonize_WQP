@@ -52,5 +52,5 @@ _targets/
 chapters/
 
 # KW test: removing the _book/chapters to see if those are in fact necessary
-_book/chapters/**.png
+_book/chapters/
 

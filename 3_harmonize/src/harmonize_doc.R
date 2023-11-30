@@ -797,6 +797,71 @@ harmonize_doc <- function(raw_doc, p_codes){
     order = 9
   )
   
+  # Flag field methods ------------------------------------------------------
+  
+  # Strings to use in determining sampling procedure
+  in_vitro_pattern <- paste0(c("grab", "bottle", "vessel", "bucket", "jar", "composite",
+                               "integrate", "UHL001", "surface", "filter", "filtrat",
+                               "1060B", "kemmerer", "collect", "rosette", "equal width",
+                               "equal discharge", "\\(ewi\\)", "\\(sewi\\)", "ewi-churn",
+                               "vertical", "van dorn", "bail", "sample", "sampling",
+                               "pump", "dipper",
+                               # "lab" not in the middle of another word
+                               "\\blab", 
+                               # G on its own for "grab"
+                               "^g$"),
+                             collapse = "|")
+  
+  in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
+                            collapse = "|")
+  
+  # Create a temporary tag column for use when comparing to methods
+  tagged_sampling_doc <- cleaned_tiered_methods_doc %>%
+    mutate(field_tag = case_when(
+      grepl(pattern = in_vitro_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in vitro",
+      grepl(pattern = in_situ_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in situ",
+      .default = "unknown"
+    )) 
+  
+  
+  # Generate plots with harmonized dataset ----------------------------------
+  
+  # We'll generate plots now before aggregating across simultaneous records
+  # because it won't be possible to use CharacteristicName after that point.
+  
+  # Plot harmonized measurements by CharacteristicName
+  
+  plotting_subset <- field_flagged_doc %>%
+    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001)
+  
+  char_dists <- plotting_subset %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    xlab("Harmonized doc (ug/L, log~10~ transformed)") +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_charname_dists.png",
+         plot = char_dists,
+         width = 8, height = 6, units = "in", device = "png")
+  
+  
+  
+  
+  #### Outdated below 
   
   # Filter fractions --------------------------------------------------------
   

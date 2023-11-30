@@ -1,12 +1,12 @@
 step,reason,short_reason,number_dropped,n_rows,order
-sdd harmonization,Starting dataset,Start,0,2918215,0
-sdd harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2893284,4
-sdd harmonization,Dropped rows while aggregating collection equipment,Collection equipment,65235,2694043,10
-sdd harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",24931,2893284,2
-sdd harmonization,Dropped rows while filtering fraction types,Fraction types,95930,2791433,8
-sdd harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,2893284,5
-sdd harmonization,Dropped rows while harmonizing units,Harmonize units,3447,2889837,6
-sdd harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,2893284,3
-sdd harmonization,Filtered for only water media,Water media,0,2918215,1
-sdd harmonization,Dropped rows while aggregating analytical methods,Analytical methods,2474,2887363,7
-sdd harmonization,Dropped rows while aggregating sample methods,Sample methods,32155,2759278,9
+sdd harmonization,Starting dataset,Start,0,2925402,0
+sdd harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2900444,4
+sdd harmonization,Dropped rows while aggregating collection equipment,Collection equipment,65511,2699413,10
+sdd harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",24958,2900444,2
+sdd harmonization,Dropped rows while filtering fraction types,Fraction types,95930,2798427,8
+sdd harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,2900444,5
+sdd harmonization,Dropped rows while harmonizing units,Harmonize units,3446,2896998,6
+sdd harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,2900444,3
+sdd harmonization,Filtered for only water media,Water media,0,2925402,1
+sdd harmonization,Dropped rows while aggregating analytical methods,Analytical methods,2641,2894357,7
+sdd harmonization,Dropped rows while aggregating sample methods,Sample methods,33503,2764924,9

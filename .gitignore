@@ -39,7 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # Data
-data/
+#data/ # this is required for pipeline to run, and is very small -KW
 _targets/
 
 # ignore feather files
@@ -50,3 +50,7 @@ _targets/
 
 # The chapters folder created by the pipeline
 chapters/
+
+# KW test: removing the _book/chapters to see if those are in fact necessary
+_book/chapters/
+

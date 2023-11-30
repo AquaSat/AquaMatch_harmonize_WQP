@@ -41,7 +41,7 @@ bookdown_targets_list <- list(
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
     cue = tar_cue("always"),
-    packages = c("tidyverse", "sf", "tigris", "kableExtra")
+    packages = c("tidyverse", "sf", "tigris", "kableExtra", "yaml")
   ),
   
   tar_target(

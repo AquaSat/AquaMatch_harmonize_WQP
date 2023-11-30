@@ -1,4 +1,7 @@
 aquamatch-data-harmonization-process
+download-process
+catalogue-existing-data
+maps-of-data-spread
 pre-harmonization-decision-process
 justification
 initial-dataset

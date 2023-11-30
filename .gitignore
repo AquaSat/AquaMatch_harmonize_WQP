@@ -50,3 +50,7 @@ _targets/
 
 # The chapters folder created by the pipeline
 chapters/
+
+# KW test: removing the _book/chapters to see if those are in fact necessary
+_book/chapters/**.png
+

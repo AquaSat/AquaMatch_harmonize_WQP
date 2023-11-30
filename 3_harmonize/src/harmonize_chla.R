@@ -783,7 +783,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     )) %>%
     select(-field_tag)
   
-  # How many records removed due to unlikely fraction types?
+  # How many records removed while assigning field flags?
   print(
     paste0(
       "Rows removed while assigning field flags: ",

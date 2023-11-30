@@ -799,35 +799,30 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Flag field methods ------------------------------------------------------
   
-  # Strings to use in determining sampling procedure
-  in_vitro_pattern <- paste0(c("grab", "bottle", "vessel", "bucket", "jar", "composite",
-                               "integrate", "UHL001", "surface", "filter", "filtrat",
-                               "1060B", "kemmerer", "collect", "rosette", "equal width",
-                               "equal discharge", "\\(ewi\\)", "\\(sewi\\)", "ewi-churn",
-                               "vertical", "van dorn", "bail", "sample", "sampling",
-                               "pump", "dipper",
-                               # "lab" not in the middle of another word
-                               "\\blab", 
-                               # G on its own for "grab"
-                               "^g$"),
-                             collapse = "|")
+  # DOC doesn't have field sampling methods that lend themselves well to
+  # comparing with analytical methods and assigning flags, unlike variables
+  # like chlorophyll a. We fill this field_flag column with "not applicable"
+  # for DOC
   
-  in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
-                            collapse = "|")
+  field_flagged_doc <- cleaned_tiered_methods_doc %>%
+    mutate(field_flag = "not applicable")
   
-  # Create a temporary tag column for use when comparing to methods
-  tagged_sampling_doc <- cleaned_tiered_methods_doc %>%
-    mutate(field_tag = case_when(
-      grepl(pattern = in_vitro_pattern,
-            x = SampleCollectionMethod.MethodName,
-            ignore.case = TRUE,
-            perl = TRUE) ~ "in vitro",
-      grepl(pattern = in_situ_pattern,
-            x = SampleCollectionMethod.MethodName,
-            ignore.case = TRUE,
-            perl = TRUE) ~ "in situ",
-      .default = "unknown"
-    )) 
+  # How many records removed while assigning field flags?
+  print(
+    paste0(
+      "Rows removed while assigning field flags: ",
+      nrow(cleaned_tiered_methods_doc) - nrow(field_flagged_doc)
+    )
+  )
+  
+  dropped_field <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while assigning field flags",
+    short_reason = "Field flagging",
+    number_dropped = nrow(cleaned_tiered_methods_doc) - nrow(field_flagged_doc),
+    n_rows = nrow(field_flagged_doc),
+    order = 10
+  )
   
   
   # Generate plots with harmonized dataset ----------------------------------

@@ -39,7 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # Data
-data/
+#data/ # this is required for pipeline to run, and is very small -KW
 _targets/
 
 # ignore feather files

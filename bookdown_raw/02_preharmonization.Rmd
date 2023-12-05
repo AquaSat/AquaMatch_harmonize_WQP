@@ -46,7 +46,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the pre-harmonization process the WQP data set contains the parameters `r params_in_use` and `r step_0_rows` rows.
+At the start of the pre-harmonization process the WQP dataset contains the parameters `r params_in_use` and `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -91,7 +91,7 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Next records that have missing data are dropped from the data set. Several criteria are used when checking for missing data. If any of the below criteria are met the sample is removed from the data set:
+Next records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the sample is removed from the dataset:
 
 1.  Both the result column and detection limit column had `NA` data
 2.  Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
@@ -251,7 +251,7 @@ step_5_dropped <- filter(step_data,
 
 The final step in pre-harmonization is filtering out any `ResolvedMonitoringLocationTypeName` that is not `"Estuary"`, `"Lake, Reservoir, Impoundment"`, or `"Stream"`.
 
-After dropping `r step_5_dropped` rows the pre-harmonization data set is complete with `r step_5_rows`.
+After dropping `r step_5_dropped` rows the pre-harmonization dataset is complete with `r step_5_rows`.
 
 ```{r echo = FALSE}
 step_data %>%

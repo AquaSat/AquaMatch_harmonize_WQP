@@ -8,9 +8,9 @@ params:
 always_allow_html: true
 ---
 
-# Chlorophyll *a* (chla) harmonization process
+# Chlorophyll *a* (chl *a*) harmonization process
 
-```{r echo=FALSE} 
+```{r echo=FALSE}
 documented_drops <- params$documented_drops
 chla_chars <- params$chla_chars
 ```
@@ -31,7 +31,6 @@ step_data <- documented_drops %>%
   filter(step == "chla harmonization") 
 ```
 
-
 ### Initial dataset
 
 ```{r echo=FALSE}
@@ -43,9 +42,9 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the pre-harmonization process the chlorophyll *a*-only WQP dataset contains `r step_0_rows` rows. This dataset contains the following user-defined `characteristicNames`: `r chla_chars`.
+After the pre-harmonization process outlined in the previous chapter, the chlorophyll *a*-only WQP dataset contains `r step_0_rows` rows. This dataset contains the following user-defined `characteristicNames:` `r chla_chars`.
 
-These names are chosen in order to select for only those measurements that pertain to chlorophyll *a*.
+These names are chosen in order to select only measurements that pertain to chlorophyll *a*.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -72,7 +71,6 @@ step_data %>%
 
 <br>
 
-
 ### Filter for water media
 
 ```{r echo = FALSE}
@@ -89,7 +87,7 @@ step_1_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-The first step in chla harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
+The first step in chl *a* harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This is just a precautionary testing step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -134,11 +132,11 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures"). 
+In this step we filter out records that have metadata insinuating that they failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures").
 
-After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data".
+After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms across all four column. The terms are: `"beyond accept"`, `"cancelled"`, `"contaminat"`, `"error"`, `"fail"`, `"improper"`, `"instrument down"`, `"interference"`, `"invalid"`, `"no result"`, `"no test"`, `"not accept"`, `"outside of accept"`, `"problem"`, `"QC EXCEEDED"`, `"questionable"`, `"suspect"`, `"unable"`, `"violation"`, `"reject"`, `"no data"`.
 
-Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
+Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for those failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
 
 <br>
 
@@ -147,9 +145,11 @@ Below are pie charts that break down the number of failure detections by column.
 <img src="3_harmonize/out/chla_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/>
 
 #### ResultCommentText fail detects
+
 <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
 
 #### ResultLaboratoryCommentText fail detects
+
 <img src="3_harmonize/out/chla_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/>
 
 <br>
@@ -158,7 +158,7 @@ Below are pie charts that break down the number of failure detections by column.
 
 <!-- <br> -->
 
-`r step_2_dropped` rows are removed after detecting failure-related phrases and `r step_2_rows` rows remain.
+`r step_2_dropped` rows from our final chl *a* dataset are removed after detecting failure-related phrases, while `r step_2_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -201,13 +201,13 @@ step_3_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or  `"below"`.
+In this step, method detection limits (MDLs) are used to clean up the reported values and retain as many records as possible and reasonable. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` after transforming that data to numerical values) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or `"below"`.
 
-If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
+If this non-detect language exists, then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
 
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward. Once the process is complete we filter out any negative values in the dataset. 
+Per EPA BLAH (CITE), we then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
 
-We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
+To track observations whose values were altered in this way, we produced a new column, `mdl_flag`. Records where no MDL-based adjustment was made and values are at or above the MDL (if MDL information is provided) are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
 This step should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
 
@@ -236,7 +236,6 @@ step_data %>%
 
 <br>
 
-
 ### Clean approximate values
 
 ```{r echo = FALSE}
@@ -253,15 +252,13 @@ step_4_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL cleaning
-  2. The original column text contained a number
-  3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
-  
-We then use the approximate value as the record's value moving forward.
+Cleaning values identified as being approximated involves a similar process as that used to clean MDL values. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
 
-Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
+1.  Numeric-only version of the column is still `NA` after MDL cleaning
+2.  The original column text contained a number
+3.  Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
+
+We then use the approximate value as the record's value moving forward and note that they have been altered by listing a 1 in the `approx_flag` column.
 
 This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
@@ -307,14 +304,12 @@ step_5_dropped <- filter(step_data,
 ```
 
 The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
-  2. The original column text contained a number
-  3. The original column text contained a `>`
-  
-We then use the "greater than" value (without `>`) as the record's value moving forward.
 
-Records with corrected values based on the above method are noted with a 1 in the `greater_flag` column.
+1.  Numeric-only version of the column is still `NA` after MDL & approximate cleaning
+2.  The original column text contained a number
+3.  The original column text contained a `>`
+
+We then use the "greater than" value (without `>`) as the record's value moving forward. Records with these corrected values are noted with a 1 in the `greater_flag` column.
 
 This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
 
@@ -361,10 +356,9 @@ step_6_dropped <- filter(step_data,
   # paste0(., " thousand")
 ```
 
-The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to drop the remaining records with `NA` values in their `harmonized_value` column.
+The goal of the preceding three steps is to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. Therefore, can now drop the remaining records with `NA` values in their `harmonized_value` column.
 
-`r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
-
+This results in removal of `r step_6_dropped` rows. The final row count after this step is `r step_6_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -409,7 +403,7 @@ step_7_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The next step in chla harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into micrograms per liter (ug/L):
+The next step in chl *a* harmonization is transforming our WQP records into a single unit. We create the following conversion table, which is used to translate units provided in WQP into micrograms per liter (µg/L):
 
 ```{r echo=FALSE, message = FALSE}
 read_csv("../3_harmonize/out/chla_unit_table.csv") %>%
@@ -420,7 +414,7 @@ read_csv("../3_harmonize/out/chla_unit_table.csv") %>%
 
 <br>
 
-Below is a pie chart that breaks down the different unit codes that were dropped in the unit harmonization process, and how many records were lost with each code.
+Below is a pie chart that breaks down the different unit codes that were dropped in the unit harmonization process, and how many records were lost with each unit.
 
 <br>
 
@@ -437,7 +431,6 @@ Additionally we provide a set of histograms of harmonized measurements by `Chara
 <br>
 
 `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
-
 
 ```{r echo = FALSE}
 step_data %>%
@@ -464,7 +457,6 @@ step_data %>%
 
 <br>
 
-
 ### Clean depth data
 
 ```{r echo = FALSE}
@@ -481,9 +473,9 @@ step_8_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
+The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the ***Depth flags*** section of the ***Tiering, flagging, and quality control philosophy*** chapter.
 
-This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
+This should not result in a change in rows but we still check as a test: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -528,34 +520,35 @@ step_9_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next review the analytical methods used in measuring chlorophyll *a*, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Analytical method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
+We next review the analytical methods used in measuring chlorophyll *a*, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the ***Analytical method tiering*** section of the ***Tiering, flagging, and quality control philosophy*** chapter.
 
-However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-chlorophyll *a* measurements. Phrases used to flag and remove unrelated methods from chlorophyll *a* data are: "sulfate", "sediment", "5310", "counting", "plasma", "turbidity", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "zooplankton", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320".
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-chlorophyll *a* measurements. Phrases used to flag and remove unrelated methods from chlorophyll *a* data are: `"sulfate"`, `"sediment"`, `"5310"`, `"counting"`, `"plasma"`, `"turbidity"`, `"coliform"`, `"carbon"`, `"2540"`, `"conductance"`, `"nitrate"`, `"nitrite"`, `"nitrogen"`, `"alkalin"`, `"zooplankton"`, `"phosphorus"`, `"periphyton"`, `"peri"`, `"biomass"`, `"temperature"`, `"elemental analyzer"`, `"2320"`.
 
-This process drops `r step_9_dropped` rows leaving `r step_9_rows` remaining.
+This process drops `r step_9_dropped` rows, leaving `r step_9_rows` remaining.
 
-The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+The next step towards creating analytical tiers is to classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods (inherently corrected for pheophytin), spectrophotometer and fluorometer methods corrected for pheophytin, or methods for which a pheophytin correction was recorded as part of the methodology. The text detection criteria for each of the above classifications are:
 
-+ **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName` or presence of 70951 or 70953 in the `USGSPCode` column
-+ **Spectro/fluoro:** Detection of "445", "fluor", "Welshmeyer", "fld", "10200", "446", "trichromatic", "spectrophoto", "monochrom", "monchrom", or "spec" not as part of a word in `ResultAnalyticalMethod.MethodName`
-+ **Pheophytin correction:** Detection of "correct", "445", "446", or "in presence" in `ResultAnalyticalMethod.MethodName` or detection of "corrected for pheophytin" or "free of pheophytin" in `CharacteristicName`
+-   **HPLC:** Detection of `"447"`, `"chromatography"`, or `"hplc"` in the `ResultAnalyticalMethod.MethodName` ***or*** presence of `70951` or `70953` in the `USGSPCode` column
+-   **Spectrophotometry and fluorometry, pheophytin corrected:** Detection of `"445"`, `"fluor"`, `"Welshmeyer"`, `"fld"`, `"10200"`, `"446"`, `"trichromatic"`, `"spectrophoto"`, `"monochrom"`, `"monchrom"`, or `"spec"` in the `ResultAnalyticalMethod.MethodName` column ***and***detection of `"correct"` or `"in presence"` in the `ResultAnalyticalMethod.MethodName` column or detection of `"corrected for pheophytin"` or `"free of pheophytin"` in the `CharacteristicName` column.
+-   **Pheophytin correction:** Detection of `"correct"`, `"445"`, `"446"`, or `"in presence"` in `ResultAnalyticalMethod.MethodName` ***or*** detection of `"corrected for pheophytin"` or `"free of pheophytin"` in `CharacteristicName`
 
-
-Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
+Finally, we group the data into three tiers as described in ***Tiering, flagging, and quality control philosophy***. These tiers are:
 
 <br>
-  
-  <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
-  
-  | Tier | Name        | Description                                                                                                                                                                                                                                                                                            | Chl *a* details                                                                                                              |   |
-  |------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---|
-  | 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using HPLC methods                                                                                          |   |
-  | 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers                                                                                                                                                                   | Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209 |   |
-  | 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | All other records by default, including `NA` methods and *in situ* probes                                                    |   |
-  
+
+<!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
+
+| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | Chl *a* details                                                                                                                  |     |
+|------------|------------|---------------------------|------------|------------|
+| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using HPLC methods                                                                                              |     |
+| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209[^1] |     |
+| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | All other records by default, including `NA` methods and *in situ* probes                                                        |     |
+
+[^1]: "Chlorophyll a, water, fluorometric method, corrected, micrograms per liter"
+
 <br>
 
-At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a list of all `ResultAnalyticalMethod.MethodNames` listed in the dataset, as well as how they were tiered and how many row counts corresponded to each method.
 
 <br>
 
@@ -600,20 +593,19 @@ step_10_dropped <- filter(step_data,
   round(digits = 2)
 ```
 
-Next we flag field sampling methods based primarily on the `SampleCollectionMethod.MethodName` column. We first classify each record into either *in vitro* or *in situ* methods (i.e., *in vitro* assumes a water sample was collected and taken to a lab for analysis; *in situ* assumes a measurement was obtained in the field). 
+Next we flag field sampling methods based primarily on the `SampleCollectionMethod.MethodName` column. We first classify each record into either *in vitro* or *in situ* methods. *In vitro* assumes a water sample was collected and taken to a lab for analysis, while *in situ* assumes a measurement was obtained in the field.
 
-We used the following strings to mark **in vitro** samples: "grab", "bottle", "vessel", "bucket", "jar", "composite", "integrate", "UHL001", "surface", "filter", "filtrat", "1060B", "kemmerer", "collect", "rosette", "equal width", "vertical", "van dorn", "bail", "sample", "sampling", "lab" not in the middle of another word, or a "G" on its own as shorthand for "grab". **In situ** samples were detected using "*in situ*", "probe", or "ctd".
+We used the following strings to mark *in vitro* samples: `"grab"`, `"bottle"`, `"vessel"`, `"bucket"`, `"jar"`, `"composite"`, `"integrate"`, `"UHL001"`, `"surface"`, `"filter"`, `"filtrat"`, `"1060B"`, `"kemmerer"`, `"collect"`, `"rosette"`, `"equal width"`, `"vertical"`, `"van dorn"`, `"bail"`, `"sample"`, `"sampling"`, `"lab"` not in the middle of another word, or a standalone `"G"` as shorthand for "grab". *In situ* samples were detected using *`"in situ`*`"`, `"probe"`, or `"ctd"`.
 
-Lastly we created the field flag based on whether the sampling method used agrees with the analytical method. Flags of 0 indicated that the field sampling method is in agreement with the analytical method, 1 indicates that the field sampling methods are uncharacteristic of the analytical method, and anything with analytical tier of 2 is given a field flag of 2 due to the ambiguity associated with those observations' analytical methods and corresponding sampling methods. 
+Lastly we create the field flag based on whether the listed sampling method agrees with the analytical method. Flags of 0 indicate that the field sampling method is in agreement with the analytical method, 1 indicates that the field sampling methods are uncharacteristic of the analytical method, and anything with an analytical tier of 2 is automatically given a field flag of 2 due to the ambiguity associated with those observations' analytical methods and corresponding sampling methods.
 
-The following rules are used for chlorophyll a field sampling flags:
+The following rules are used for chlorophyll *a* field sampling flags:
 
-+ **Flag 0**: Restrictive and narrowed analytical tiers with in vitro field methods
-+ **Flag 1**: Restrictive and narrowed analytical tiers with in situ field methods
-+ **Flag 2**: Any entry in the inclusive tier
+-   **Flag 0**: Restrictive and narrowed analytical tiers with *in vitro* field methods
+-   **Flag 1**: Restrictive and narrowed analytical tiers with *in situ* field methods
+-   **Flag 2**: Any entry in the inclusive tier
 
-
-No records should be removed by this process and so there are `r step_10_dropped` rows dropped leaving `r step_10_rows` remaining in the harmonized chlorophyll *a* dataset.
+No records should be removed by this process but we test this: there are `r step_10_dropped` rows dropped leaving `r step_10_rows` remaining in the harmonized chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -658,13 +650,13 @@ step_11_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
+The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records, or records with non-identical values recorded at the same time and place and by the same organization.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the water quality dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`) that includes the `subgroup_id` column, so that advanced users can utilize the disaggregated data to make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns.
 
-`r step_11_dropped` rows dropped leaving `r step_11_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
+Ultimately, we are left with `r step_11_rows` rown in the final harmonized and aggregated chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -691,9 +683,9 @@ step_data %>%
 
 <br>
 
-### Harmonized chlorophyll a
+### Harmonized chlorophyll *a*
 
-At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we export the final dataset for use later in the workflow.
+At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we can export the final dataset for use later in the workflow.
 
 Below is a final set of histograms showing the distribution of harmonized measurements broken down by `analytical_tier` ***after*** aggregating simultaneous records.
 

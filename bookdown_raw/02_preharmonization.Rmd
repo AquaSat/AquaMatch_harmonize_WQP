@@ -14,9 +14,9 @@ documented_drops <- params$documented_drops
 params_in_use <- params$params_in_use
 ```
 
-## Justification 
+## Justification
 
-Following the completion of the download process described in the previous chapter, the pipeline contains raw data for a variety of potential parameters of interest. Before we begin to harmonize each individual parameter we run through a series of "pre-harmonization" steps, which ensure that each parameter will enter its individual harmonization routine with a dataset that has been formatted identically to each other parameter in the pipeline.
+Following the completion of the {dataRetrieval} download process described in the previous chapter, the pipeline contains raw WQP data for each parameter of interest. Before harmonization of each parameter separately, we run through a series of universal "pre-harmonization" steps, which ensure that all data enters its parameter-specific harmonization routine after it's been tidied and formatted appropriately.
 
 ```{r echo = FALSE}
 step_order_rev <- max(documented_drops$order):min(documented_drops$order)
@@ -36,7 +36,7 @@ step_data <- documented_drops %>%
 
 ## Initial dataset
 
-```{r echo=FALSE}
+```{r echo = FALSE}
 step_0_rows <- filter(step_data,
                       step == "pre-harmonization",
                       order == 0) %>%
@@ -46,7 +46,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the pre-harmonization process the WQP dataset contains the parameters `r params_in_use` and `r step_0_rows` rows.
+At the start of the pre-harmonization process the WQP data set contains the parameters `r params_in_use` and `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -73,7 +73,6 @@ step_data %>%
 
 <br>
 
-
 ## Missing results
 
 ```{r echo = FALSE}
@@ -92,14 +91,13 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Next records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
+Next records that have missing data are dropped from the data set. Several criteria are used when checking for missing data. If any of the below criteria are met the sample is removed from the data set:
 
-1. Both the result column and detection limit column had `NA` data
-2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
-3. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+1.  Both the result column and detection limit column had `NA` data
+2.  Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
+3.  The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
 
-`r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
-
+This step removes`r step_2_dropped` rows of data, resulting in a final count of `r step_2_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -144,16 +142,18 @@ step_3_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next filter the `ResultStatusIdentifier` column to include only the following statuses:
+We next filter the `ResultStatusIdentifier` column to include only the following sampling approval statuses:
 
-+ `"Accepted"` 
-+ `"Final"`
-+ `"Historical"`
-+ `"Validated"`
-+ `"Preliminary"`
-+ `NA`
+-   `"Accepted"`
+-   `"Final"`
+-   `"Historical"`
+-   `"Validated"`
+-   `"Preliminary"`
+-   `NA`
 
-These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data. `r step_3_dropped` rows are dropped from the dataset leaving it with `r step_3_rows` remaining.
+These statuses generally indicate that a sample's results are reliable, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we retain `NA` values if removing those `NA` records would drop 10% or more of the available data (see ***Tiering, flagging, and quality control philosophy: Handling `NA` values*** for more details).
+
+This step removes `r step_3_dropped` rows of data, resulting in `r step_3_rows` rows remaining.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -198,14 +198,14 @@ step_4_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Next the `ActivityMediaSubdivisionName` is filtered to only include only the following media types:
+Next the `ActivityMediaSubdivisionName` is filtered to only include the following media types:
 
-+ `"Surface Water"`
-+ `"Water"`
-+ `"Estuary"`
-+ `NA`
+-   `"Surface Water"`
+-   `"Water"`
+-   `"Estuary"`
+-   `NA`
 
-`r step_4_dropped` rows are dropped and `r step_4_rows` remain.
+As a result, `r step_4_dropped` rows are dropped and `r step_4_rows` remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -251,7 +251,7 @@ step_5_dropped <- filter(step_data,
 
 The final step in pre-harmonization is filtering out any `ResolvedMonitoringLocationTypeName` that is not `"Estuary"`, `"Lake, Reservoir, Impoundment"`, or `"Stream"`.
 
-After dropping `r step_5_dropped` rows the pre-harmonization dataset is complete with `r step_5_rows`.
+After dropping `r step_5_dropped` rows the pre-harmonization data set is complete with `r step_5_rows`.
 
 ```{r echo = FALSE}
 step_data %>%

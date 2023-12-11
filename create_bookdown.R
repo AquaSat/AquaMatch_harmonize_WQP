@@ -35,36 +35,37 @@ bookdown_targets_list <- list(
       download_rmd,
       params = list(
         site_counts = bind_rows(p2_site_counts),
-        global_grid = p1_global_grid),
+        global_grid = p1_global_grid,
+        yaml_contents = p1_wqp_params),
       output_file = "01_download",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
     cue = tar_cue("always"),
-    packages = c("tidyverse", "sf", "tigris", "kableExtra", "yaml")
+    packages = c("tidyverse", "sf", "tigris", "kableExtra")
   ),
   
-  tar_target(
-    preharmonization_report,
-    rmarkdown::render(
-      pre_harmonization_rmd,
-      params = list(
-        documented_drops = p3_documented_drops,
-        params_in_use = names(p1_wqp_params)),
-      output_file = "02_preharmonization",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
-    cue = tar_cue("always"),
-    packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra")
-  ),
-  
+  # tar_target(
+  #   preharmonization_report,
+  #   rmarkdown::render(
+  #     pre_harmonization_rmd,
+  #     params = list(
+  #       documented_drops = p3_documented_drops,
+  #       params_in_use = names(p1_wqp_params)),
+  #     output_file = "02_preharmonization",
+  #     output_dir = 'chapters') %>%
+  #     change_ext(inext = 'md', outext = 'Rmd'),
+  #   format = 'file',
+  #   cue = tar_cue("always"),
+  #   packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra")
+  # ),
+  # 
   tar_target(
     tiering_overview,
     rmarkdown::render(
       tiering_overview_rmd,
       # params = list(
-        # documented_drops = p3_documented_drops),
+      # documented_drops = p3_documented_drops),
       output_file = "03_tiering_overview",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

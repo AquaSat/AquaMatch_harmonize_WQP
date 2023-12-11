@@ -20,8 +20,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   chla <- raw_chla %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
-    filter(
-      ActivityMediaName %in% c("Water", "water")) %>%
+    # Filter out non-target media types
+    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+             is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -29,8 +30,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Record info on any dropped rows  
   dropped_media <- tibble(
     step = "chla harmonization",
-    reason = "Filtered for only water media",
-    short_reason = "Water media",
+    reason = "Filtered for only specific water media",
+    short_reason = "Target water media",
     number_dropped = nrow(raw_chla) - nrow(chla),
     n_rows = nrow(chla),
     order = 1

@@ -2,13 +2,6 @@ aquamatch-data-harmonization-process
 download-process
 catalogue-existing-data
 maps-of-data-spread
-pre-harmonization-decision-process
-justification
-initial-dataset
-missing-results
-filter-status
-filter-media
-location-type
 tiering-flagging-and-quality-control-philosophy
 handling-na-values
 heterogenous-data
@@ -19,7 +12,10 @@ pre-processing
 general-note
 simultaneous-records
 chlorophyll-a-chla-harmonization-process
-initial-dataset-1
+pre-harmonization-of-the-raw-chlorophyll-wqp-dataset
+missing-results
+filter-status
+harmonization-ready-chlorophyll-dataset
 filter-for-water-media
 document-and-remove-fails
 activitycommenttext-fail-detects
@@ -36,7 +32,7 @@ flag-based-on-field-methods
 aggregate-simultaneous-records
 harmonized-chlorophyll-a
 doc-harmonization-process
-initial-dataset-2
+initial-dataset
 filter-for-water-media-1
 remove-fails-and-other-missing-data
 clean-mdls-1
@@ -45,7 +41,7 @@ harmonize-record-units-1
 filter-based-on-analytical-method
 filter-based-on-fraction-type
 secchi-harmonization-process
-initial-dataset-3
+initial-dataset-1
 filter-for-water-media-2
 remove-fails-and-other-missing-data-1
 clean-mdls-2
@@ -57,7 +53,7 @@ filter-based-on-fraction-type-1
 filter-based-on-sample-method
 filter-based-on-collection-equipment
 tss-harmonization-process
-initial-dataset-4
+initial-dataset-2
 filter-for-water-media-3
 remove-fails-and-other-missing-data-2
 clean-mdls-3

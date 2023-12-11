@@ -7,6 +7,7 @@ required_pkgs <- c(
   "janitor",
   "lubridate",
   "ggrepel",
+  "googledrive",
   "MASS",
   "pander",
   "retry",

@@ -823,7 +823,7 @@ The final step of chlorophyll *a* harmonization is to aggregate simultaneous obs
 
 We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
-The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns.
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
 `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
 

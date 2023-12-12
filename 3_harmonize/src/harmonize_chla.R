@@ -865,8 +865,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     # Make sure we don't drop subgroup ID
     group_by(subgroup_id, .add = TRUE) %>%
     summarize(
-      harmonized_value = median(harmonized_value),
-      harmonized_value_sd = sd(harmonized_value)
+      harmonized_row_count = n(),
+      harmonized_value_sd = sd(harmonized_value),
+      harmonized_value = median(harmonized_value)
     ) %>%
     ungroup()
   

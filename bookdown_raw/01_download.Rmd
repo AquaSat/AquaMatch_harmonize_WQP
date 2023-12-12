@@ -21,7 +21,7 @@ options(tigris_use_cache = TRUE)
 
 ### Catalogue existing data
 
-The download process begins by cataloging the existing data that is available in the WQP. To do this the user specifies parameters and their corresponding `characteristicName` for retrieving data from the WQP. Below are the current parameters and their `characteristicName` as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
+The download process begins by using the {dataRetrieval} package to catalogue the data that is available in the WQP. To do this the user selects parameters of interest and their corresponding `characteristicName` for retrieving data from the WQP. Below are the current parameters and their `characteristicName`s as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
 
 ```{r, results='asis'}
 names_yaml <- names(yaml_contents)
@@ -39,12 +39,12 @@ map_df(.x = names_yaml,
 
 <br>
 
-### Maps of data spread:
+### Maps of data spread
 
-Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. **Note:** The counts here are for raw data that are not filtered or harmonized.
+The pipeline uses a spatial grid to download data from the WQP in batches. Maps are presented below with counts of records across this spatial grid. **Note:** The counts here are for raw data that are not yet filtered or harmonized.
 
 ```{r}
-# Combine counts in each grid_id with the grid polygons
+# Combine sample counts in each grid_id with the grid polygons
 grid_counts <- left_join(x = global_grid,
                          y = site_counts %>%
                            count(grid_id),

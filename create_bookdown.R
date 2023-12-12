@@ -8,23 +8,20 @@ bookdown_targets_list <- list(
   tar_file(download_rmd,
            "bookdown_raw/01_download.Rmd"),
   
-  tar_file(pre_harmonization_rmd,
-           "bookdown_raw/02_preharmonization.Rmd"),
-  
   tar_file(tiering_overview_rmd,
-           "bookdown_raw/03_tiering_overview.Rmd"),
+           "bookdown_raw/02_tiering_overview.Rmd"),
   
   tar_file(chla_harmonization_rmd,
-           "bookdown_raw/04_chla_harmonization.Rmd"),
+           "bookdown_raw/03_chla_harmonization.Rmd"),
   
   tar_file(doc_harmonization_rmd,
-           "bookdown_raw/05_doc_harmonization.Rmd"),
+           "bookdown_raw/04_doc_harmonization.Rmd"),
   
   tar_file(sdd_harmonization_rmd,
-           "bookdown_raw/06_sdd_harmonization.Rmd"),
+           "bookdown_raw/05_sdd_harmonization.Rmd"),
   
   tar_file(tss_harmonization_rmd,
-           "bookdown_raw/07_tss_harmonization.Rmd"),
+           "bookdown_raw/06_tss_harmonization.Rmd"),
   
   
   # Knit chapters -----------------------------------------------------------
@@ -45,28 +42,13 @@ bookdown_targets_list <- list(
     packages = c("tidyverse", "sf", "tigris", "kableExtra")
   ),
   
-  # tar_target(
-  #   preharmonization_report,
-  #   rmarkdown::render(
-  #     pre_harmonization_rmd,
-  #     params = list(
-  #       documented_drops = p3_documented_drops,
-  #       params_in_use = names(p1_wqp_params)),
-  #     output_file = "02_preharmonization",
-  #     output_dir = 'chapters') %>%
-  #     change_ext(inext = 'md', outext = 'Rmd'),
-  #   format = 'file',
-  #   cue = tar_cue("always"),
-  #   packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra")
-  # ),
-  # 
   tar_target(
     tiering_overview,
     rmarkdown::render(
       tiering_overview_rmd,
       # params = list(
       # documented_drops = p3_documented_drops),
-      output_file = "03_tiering_overview",
+      output_file = "02_tiering_overview",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -81,7 +63,7 @@ bookdown_targets_list <- list(
       params = list(
         documented_drops = p3_documented_drops,
         chla_chars = p1_wqp_params$chlorophyll),
-      output_file = "04_chla_harmonization",
+      output_file = "03_chla_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -95,7 +77,7 @@ bookdown_targets_list <- list(
       doc_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops),
-      output_file = "05_doc_harmonization",
+      output_file = "04_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -109,7 +91,7 @@ bookdown_targets_list <- list(
       sdd_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops),
-      output_file = "06_doc_harmonization",
+      output_file = "05_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -123,7 +105,7 @@ bookdown_targets_list <- list(
       tss_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops),
-      output_file = "07_tss_harmonization",
+      output_file = "06_tss_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -138,7 +120,6 @@ bookdown_targets_list <- list(
     book,
     render_with_deps(index = index,
                      deps = c(download_report,
-                              preharmonization_report,
                               tiering_overview,
                               chla_harmonization_report,
                               doc_harmonization_report,

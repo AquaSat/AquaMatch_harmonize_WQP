@@ -17,7 +17,7 @@ documented_drops <- params$documented_drops %>%
 chla_chars <- params$chla_chars
 ```
 
-Following the completion of the download process described previously, the pipeline contains raw data for a variety of potential parameters of interest. Before we begin to harmonize each individual parameter we run through a series of "pre-harmonization" steps, which ensure that the parameter will enter its individual harmonization routine with a dataset that has been formatted identically to each other parameter in the pipeline.
+Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
 
 The text below first walks through the pre-harmonization steps for the raw chlorophyll *a* dataset and then delves into the specifics of the harmonization process.
 
@@ -176,7 +176,7 @@ The final step in pre-harmonization is to filter the `ResultStatusIdentifier` co
 
 These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
 
-`r step_3_dropped` rows are dropped from the dataset leaving it with `r step_3_rows` remaining.
+This step removes `r step_3_dropped` rows of data, leaving it with `r step_3_rows` rows remaining.
 
 ```{r echo = FALSE}
 step_data %>%

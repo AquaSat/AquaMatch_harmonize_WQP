@@ -11,58 +11,18 @@ editor_options:
 
 # AquaMatch data harmonization process
 
-This bookdown documents the harmonization process for data downloaded from the
-[Water Quality Portal](https://www.waterqualitydata.us/wqp_description/) (WQP)
-used to build the AquaMatch dataset, a data product of Aquasat. The WQP is a
-data warehouse for water-related data measured or observed within the United
-States and US Territories managed by the Environmental Protection Agency (EPA),
-United States Geological Survey (USGS), and the National Water Quality
-Monitoring Council (NWQMC). AquaMatch collates water quality measurements and
-observations with optical and thermal satellite data from lakeSR and riverSR.
+This bookdown documents the harmonization process for data downloaded from the [Water Quality Portal](https://www.waterqualitydata.us/wqp_description/) (WQP) used to build the AquaMatch dataset, a data product of AquaSat. The WQP is a data warehouse for water-related data measured or observed within the United States and US Territories managed by the Environmental Protection Agency (EPA), United States Geological Survey (USGS), and the National Water Quality Monitoring Council (NWQMC). AquaMatch collates water quality measurements and observations with optical and thermal satellite data from lakeSR and riverSR.
 
-All data in this workflow are processed as parameter groups, a high-level
-grouping used in AquaMatch for specific water quality measures found in the WQP.
-This document first describes selections made while downloading WQP data using
-the {dataRetrieval} package (***CITE***), the "pre-harmonization" process that
-data for all parameter groups go through, and then how the chlorophyll *a*,
-dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids
-(TSS) parameter groups are each filtered and harmonized.
+All data in this workflow are processed as parameter groups, a high-level grouping used in AquaMatch for specific water quality measures found in the WQP. This document first describes selections made while downloading WQP data using the {dataRetrieval} package (***CITE***), the "pre-harmonization" process that data for all parameter groups go through, and then how the chlorophyll *a*, dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids (TSS) parameter groups are each filtered and harmonized.
 
-*Note: for the purposes of this bookdown, all terms surrounded by `backticks`
-are column names from the dataset being referenced. Some of these names are defined within this bookdown and a
-full list of definitions for columns present in the original WQP dataset can be found in Table 7
-[here](https://www.waterqualitydata.us/portal_userguide/).*
+*Note: for the purposes of this bookdown, all terms surrounded by `backticks` are column names from the dataset being referenced. Some of these names are defined within this bookdown and a full list of definitions for columns present in the original WQP dataset can be found in Table 7 [here](https://www.waterqualitydata.us/portal_userguide/).*
 
-Data are contributed to the WQP by a wide range of data providers
-(`organizationIdentifier` and `organizationFormalName`) with varying sampling
-and analysis methods and multiple `characteristicNames`. `characteristicNames`
-are defined by the WQP as:
+Data are contributed to the WQP by a wide range of data providers (`organizationIdentifier` and `organizationFormalName`) with varying sampling and analysis methods and multiple `characteristicNames`. `characteristicNames` are defined by the WQP as:
 
 > *The object, property, or substance which is evaluated or enumerated by either
 > a direct field measurement, a direct field observation, or by laboratory
 > analysis of material collected in the field.*
 
-Parameter groups are comprised of data with multiple `characteristicNames` in
-data from the WQP. For example, chlorophyll-related `characteristicNames`
-include "Chlorophyll a", "Chlorophyll a, corrected for pheophytin", "Chlorophyll
-b", and "Chlorophyll c" among several others. Only a subset of these
-`characteristicNames` will be included in our "chlorophyll *a*" parameter group.
-As mentioned previously, measurements and observations within the WQP for a
-given parameter group are often sampled and analyzed using a variety of methods.
-Some of these methods for sampling and analysis are directly interoperable and
-others are not. The processing steps described within this bookdown walks
-through how we harmonize the data for each parameter group while flagging or
-removing data that may not have enough information associated with a measurement
-or observation. The product of this is a database of WQP entries with
-interoperability and reliability in mind.
+Parameter groups are comprised of data from multiple `characteristicNames` in the WQP. For example, chlorophyll-related `characteristicNames`include "Chlorophyll a", "Chlorophyll a, corrected for pheophytin", "Chlorophyll b", and "Chlorophyll c" among several others. Only a subset of these `characteristicNames` are included in our "chlorophyll *a*" parameter group. As mentioned previously, measurements and observations within the WQP for a given parameter group are often sampled and analyzed using a variety of methods. Some of these methods for sampling and analysis are directly interoperable and others are not. The processing steps described within this bookdown walk through how we harmonize the data for each parameter group while flagging or removing data that may not have enough information associated with it. The product of this is a database of WQP entries with interoperability and reliability in mind.
 
-The result of this harmonization procedure is two datasets per parameter group.
-The first is a harmonized dataset that includes all of the original WQP columns
-in addition to those introduced in this workflow. The second is the output of
-all harmonization steps, including aggregation to the median value where
-simultaneous records occur. We define simultaneous records as those measured on
-the same day by the same `organizationIndentifier` at the same location with the
-same harmonized depth criteria. We believe that most users will only use this
-aggregated dataset, but we provide the unaggregated version for those who would
-like to make different decisions at any point in the tiering, flagging, or
-aggregation steps.
+The result of this harmonization procedure is two datasets per parameter group. The first is a harmonized dataset that includes all of the original WQP columns in addition to those introduced in this workflow. The second is the output of all harmonization steps, including aggregation to the median value where simultaneous records occur. We define simultaneous records as those measured on the same day by the same `organizationIndentifier` at the same location with the same harmonized depth criteria. We believe that most users will only use this aggregated dataset, but we provide the unaggregated version for those who would like to make different decisions at any point in the tiering, flagging, or aggregation steps.

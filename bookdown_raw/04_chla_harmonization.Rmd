@@ -11,49 +11,67 @@ always_allow_html: true
 # Chlorophyll *a* (chla) harmonization process
 
 ```{r echo=FALSE} 
-documented_drops <- params$documented_drops
+documented_drops <- params$documented_drops %>%
+  filter(grepl(pattern = "chla|chlorophyll", x = step, ignore.case = TRUE),
+         !((step == "chla harmonization") & short_reason == "Start"))
 chla_chars <- params$chla_chars
 ```
 
+Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
+
+The text below first walks through the pre-harmonization steps for the raw chlorophyll *a* dataset and then delves into the specifics of the harmonization process.
+
+
 ```{r echo = FALSE}
-step_order_rev <- max(documented_drops$order):min(documented_drops$order)
+# Redo the ordering of the steps, conceptualizing the pre-harmonization and
+# harmonization processes as one step
+documented_drops <- bind_rows(
+  # Make sure pre-harmonization comes first
+  documented_drops %>%
+    filter(grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order),
+  documented_drops %>%
+    filter(!grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order)) %>%
+  # New order is just row nums
+  mutate(reorder = row_number())
+
+step_order_rev <- max(documented_drops$reorder):min(documented_drops$reorder)
+
+max_steps <- max(documented_drops$reorder)
 
 step_data <- documented_drops %>%
-  group_by(step) %>%
   mutate(scaled = scale(n_rows, center = FALSE)) %>%
-  ungroup() %>%
-  mutate(order = factor(order,
+  mutate(reorder = factor(reorder,
                         levels = step_order_rev),
          rows_label = paste0(short_reason,
                              ":  ",
                              round((n_rows / 1000000), 1),
-                             " M rows")) %>%
-  filter(step == "chla harmonization") 
+                             " M rows"))
 ```
 
-
-### Initial dataset
+## Pre-harmonization of the raw chlorophyll WQP dataset
 
 ```{r echo=FALSE}
-step_0_rows <- filter(step_data,
-                      order == 0) %>%
+step_counter <- 1
+
+step_1_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 ```
 
-After the pre-harmonization process the chlorophyll *a*-only WQP dataset contains `r step_0_rows` rows. This dataset contains the following user-defined `characteristicNames`: `r chla_chars`.
-
-These names are chosen in order to select for only those measurements that pertain to chlorophyll *a*.
+At the start of the pre-harmonization process the raw chlorophyll WQP dataset contains `r step_1_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order == 0) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -62,7 +80,61 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[1]) +
+  scale_fill_manual(values = viridis(n = max_steps,
+                                     direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Missing results
+
+```{r echo = FALSE}
+step_counter <- 2
+
+step_2_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_2_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
+```
+
+Next, records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
+
+1. Both the result column and detection limit column had `NA` data
+2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
+3. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+
+`r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -73,31 +145,46 @@ step_data %>%
 <br>
 
 
-### Filter for water media
+### Filter status
 
 ```{r echo = FALSE}
-step_1_rows <- filter(step_data,
-                      order == 1) %>%
+step_counter <- 3
+
+step_3_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_1_dropped <- filter(step_data,
-                         order == 1) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+step_3_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
 ```
 
-The first step in chla harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
+The final step in pre-harmonization is to filter the `ResultStatusIdentifier` column to include only the following statuses:
+
++ `"Accepted"` 
++ `"Final"`
++ `"Historical"`
++ `"Validated"`
++ `"Preliminary"`
++ `NA`
+
+These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
+
+This step removes `r step_3_dropped` rows of data, leaving it with `r step_3_rows` rows remaining.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:1) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -106,7 +193,61 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[2:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+## Harmonization-ready chlorophyll dataset
+
+
+Once ready for harmonization, the chlorophyll *a*-only WQP dataset contains the following user-defined `characteristicNames`: `r chla_chars`.
+
+These names are chosen in order to select for only those measurements that pertain to chlorophyll *a*.
+
+<br>
+
+### Filter for water media
+
+```{r echo = FALSE}
+step_counter <- 4
+
+step_4_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_4_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+We next ensure that the media type for all chlorophyll data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -119,15 +260,17 @@ step_data %>%
 ### Document and remove fails
 
 ```{r echo = FALSE}
-step_2_rows <- filter(step_data,
-                      order == 2) %>%
+step_counter <- 5
+
+step_5_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_2_dropped <- filter(step_data,
-                         order == 2) %>%
+step_5_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
@@ -158,15 +301,15 @@ Below are pie charts that break down the number of failure detections by column.
 
 <!-- <br> -->
 
-`r step_2_dropped` rows are removed after detecting failure-related phrases and `r step_2_rows` rows remain.
+`r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:2) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -175,7 +318,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[3:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -188,15 +331,17 @@ step_data %>%
 ### Clean MDLs
 
 ```{r echo = FALSE}
-step_3_rows <- filter(step_data,
-                      order == 3) %>%
+step_counter <- 6
+
+step_6_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_3_dropped <- filter(step_data,
-                         order == 3) %>%
+step_6_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -209,15 +354,15 @@ We then use a random number between 0 and `0.5 * MDL` as the record's value movi
 
 We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
-This step should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
+Most of this step should not result in a change in rows, but we do drop records with negative measurement values. This results in `r step_6_dropped` rows being removed. The final row count after this is `r step_6_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:3) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -226,7 +371,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[4:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -240,15 +385,17 @@ step_data %>%
 ### Clean approximate values
 
 ```{r echo = FALSE}
-step_4_rows <- filter(step_data,
-                      order == 4) %>%
+step_counter <- 7
+
+step_7_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_4_dropped <- filter(step_data,
-                         order == 4) %>%
+step_7_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -263,15 +410,15 @@ We then use the approximate value as the record's value moving forward.
 
 Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
 
-This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:4) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -280,7 +427,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[5:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -293,15 +440,17 @@ step_data %>%
 ### Clean values with "greater than" data
 
 ```{r echo = FALSE}
-step_5_rows <- filter(step_data,
-                      order == 5) %>%
+step_counter <- 8
+
+step_8_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_5_dropped <- filter(step_data,
-                         order == 5) %>%
+step_8_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -316,15 +465,15 @@ We then use the "greater than" value (without `>`) as the record's value moving 
 
 Records with corrected values based on the above method are noted with a 1 in the `greater_flag` column.
 
-This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
+This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:5) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -333,7 +482,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[6:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -346,33 +495,35 @@ step_data %>%
 ### Drop unresolved NA measurements
 
 ```{r echo = FALSE}
-step_6_rows <- filter(step_data,
-                      order == 6) %>%
+step_counter <- 9
+
+step_9_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_6_dropped <- filter(step_data,
-                         order == 6) %>%
+step_9_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   # mutate(thou_dropped = number_dropped / 1000) %>%
   pull(number_dropped) %>%
   round(digits = 2) #%>%
   # paste0(., " thousand")
 ```
 
-The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to drop the remaining records with `NA` values in their `harmonized_value` column.
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
 
-`r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
+`r step_9_dropped` rows are removed. The final row count after this is `r step_9_rows`.
 
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:6) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -381,7 +532,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[7:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -394,15 +545,17 @@ step_data %>%
 ### Harmonize record units
 
 ```{r echo = FALSE}
-step_7_rows <- filter(step_data,
-                      order == 7) %>%
+step_counter <- 10
+
+step_10_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_7_dropped <- filter(step_data,
-                         order == 7) %>%
+step_10_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
@@ -436,16 +589,16 @@ Additionally we provide a set of histograms of harmonized measurements by `Chara
 
 <br>
 
-`r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
+`r step_10_dropped` rows are removed. The final row count after this is `r step_10_rows`.
 
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:7) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -454,7 +607,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[8:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -468,30 +621,32 @@ step_data %>%
 ### Clean depth data
 
 ```{r echo = FALSE}
-step_8_rows <- filter(step_data,
-                      order == 8) %>%
+step_counter <- 11
+
+step_11_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_8_dropped <- filter(step_data,
-                         order == 8) %>%
+step_11_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
 
 The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
+This should not result in a change in rows but we still check: `r step_11_dropped` rows are removed. The final row count after this is `r step_11_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:8) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -500,7 +655,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[9:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -513,15 +668,17 @@ step_data %>%
 ### Filter and tier analytical methods
 
 ```{r echo = FALSE}
-step_9_rows <- filter(step_data,
-                      order == 9) %>%
+step_counter <- 12
+
+step_12_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_9_dropped <- filter(step_data,
-                         order == 9) %>%
+step_12_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
@@ -532,7 +689,7 @@ We next review the analytical methods used in measuring chlorophyll *a*, primari
 
 However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-chlorophyll *a* measurements. Phrases used to flag and remove unrelated methods from chlorophyll *a* data are: "sulfate", "sediment", "5310", "counting", "plasma", "turbidity", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "zooplankton", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320".
 
-This process drops `r step_9_dropped` rows leaving `r step_9_rows` remaining.
+This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
 The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
@@ -561,11 +718,11 @@ At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:9) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -574,7 +731,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[10:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -587,15 +744,17 @@ step_data %>%
 ### Flag based on field methods
 
 ```{r echo = FALSE}
-step_10_rows <- filter(step_data,
-                       order == 10) %>%
+step_counter <- 13
+
+step_13_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_10_dropped <- filter(step_data,
-                         order == 10) %>%
+step_13_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -613,15 +772,15 @@ The following rules are used for chlorophyll a field sampling flags:
 + **Flag 2**: Any entry in the inclusive tier
 
 
-No records should be removed by this process and so there are `r step_10_dropped` rows dropped leaving `r step_10_rows` remaining in the harmonized chlorophyll *a* dataset.
+No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:10) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -630,7 +789,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[11:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -643,15 +802,17 @@ step_data %>%
 ### Aggregate simultaneous records
 
 ```{r echo = FALSE}
-step_11_rows <- filter(step_data,
-                       order == 11) %>%
+step_counter <- 14
+
+step_14_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_11_dropped <- filter(step_data,
-                         order == 11) %>%
+step_14_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
   round(digits = 2) %>%
@@ -662,17 +823,17 @@ The final step of chlorophyll *a* harmonization is to aggregate simultaneous obs
 
 We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
-The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns.
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
-`r step_11_dropped` rows dropped leaving `r step_11_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
+`r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:11) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -681,7 +842,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 12, direction = -1)[12:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +

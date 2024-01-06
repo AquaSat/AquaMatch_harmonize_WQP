@@ -52,7 +52,7 @@ clean_wqp_data <- function(wqp_data,
   
   # Starting values for dataset
   starting_data <- tibble(
-    step = "pre-harmonization",
+    step = NULL,
     reason = "Starting dataset",
     short_reason = "Start",
     number_dropped = 0,
@@ -90,7 +90,7 @@ clean_wqp_data <- function(wqp_data,
                   nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing)))
   
   dropped_missing <- tibble(
-    step = "pre-harmonization",
+    step = NULL,
     reason = "Removed missing results",
     short_reason = "Remove missing",
     number_dropped = nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing),
@@ -112,7 +112,7 @@ clean_wqp_data <- function(wqp_data,
                   nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status)))
   
   dropped_status <- tibble(
-    step = "pre-harmonization",
+    step = NULL,
     reason = "Keep only status = accepted/final/historical/validated/preliminary/NA",
     short_reason = "Finalized statuses",
     number_dropped = nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status),
@@ -123,56 +123,36 @@ clean_wqp_data <- function(wqp_data,
   rm(wqp_data_no_missing)
   gc()
   
-  # Remove records that don't meet needs for type
-  wqp_data_pass_media <- wqp_data_pass_status %>%
-    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
-             is.na(ActivityMediaSubdivisionName))
+  # Remove white space before export
+  wqp_data_clean <- wqp_data_pass_status %>%
+    mutate(year = year(ActivityStartDate),
+           ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
   
-  # Inform the user what we found for type checks
-  message(sprintf(paste0("Removed %s records with unacceptable type."), 
-                  nrow(wqp_data_pass_status) - nrow(wqp_data_pass_media)))
+  data_out_path <- paste0("3_harmonize/out/",
+                          unique(wqp_data_clean$parameter),
+                          "_wqp_data_aoi_ready.feather")
   
-  dropped_media <- tibble(
-    step = "pre-harmonization",
-    reason = "Keep only media = surface water/water/estuary",
-    short_reason = "Media types",
-    number_dropped = nrow(wqp_data_pass_status) - nrow(wqp_data_pass_media),
-    n_rows = nrow(wqp_data_pass_media),
-    order = 3
-  )
+  write_feather(x = wqp_data_clean, path = data_out_path)
   
   rm(wqp_data_pass_status)
   gc()
   
-  # Remove white space before export
-  wqp_data_clean <- wqp_data_pass_media %>%
-    mutate(year = year(ActivityStartDate),
-           ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
-  
-  data_out_path <- "3_harmonize/out/wqp_data_aoi_ready.feather"
-  
-  write_feather(x = wqp_data_clean, path = data_out_path)
-  
-  # Inform the user about rows dropped due to non-target location types
-  message(sprintf(paste0("Removed %s records due to non-target location types"), 
-                  nrow(wqp_data_pass_media) - nrow(wqp_data_clean)))
-  
-  dropped_location <- tibble(
-    step = "pre-harmonization",
-    reason = "Keep only location type = estuary/lake, res, impoundment/stream",
-    short_reason = "Location type",
-    number_dropped = nrow(wqp_data_pass_media) - nrow(wqp_data_clean),
-    n_rows = nrow(wqp_data_clean),
-    order = 4
-  )
-  
-  rm(wqp_data_pass_media)
-  gc()
-  
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_missing,
-                                dropped_status, dropped_media, dropped_location)
-  documented_drops_out_path <- "3_harmonize/out/clean_wqp_data_dropped_metadata.csv"
+                                dropped_status)
+  
+  # Make sure only one parameter was cleaned
+  if(length(unique(wqp_data_clean$parameter)) > 1){
+    stop("More than one parameter detected in final data frame.")
+  }
+  
+  # Identify the parameter that's been cleaned in this script:
+  compiled_dropped <- compiled_dropped %>%
+    mutate(step = paste0(unique(wqp_data_clean$parameter), "pre-harmonization"))
+  
+  documented_drops_out_path <- paste0("3_harmonize/out/clean_wqp_data_",
+                                      unique(wqp_data_clean$parameter),
+                                      "_dropped_metadata.csv")
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)

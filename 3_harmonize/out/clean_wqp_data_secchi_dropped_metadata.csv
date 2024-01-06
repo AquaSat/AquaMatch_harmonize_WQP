@@ -1,0 +1,4 @@
+reason,short_reason,number_dropped,n_rows,order,step
+Starting dataset,Start,0,3012797,0,secchipre-harmonization
+Removed missing results,Remove missing,75600,2937197,1,secchipre-harmonization
+Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,9723,2927474,2,secchipre-harmonization

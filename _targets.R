@@ -12,120 +12,108 @@ tar_option_set(
 
 # Run the R scripts with custom functions:
 tar_source(files = c(
-  "1_inventory.R",
-  "2_download.R",
   "3_harmonize.R",
   "create_bookdown.R"))
 
 # The list of targets/steps
 config_targets <- list(
   
-  # WQP config --------------------------------------------------------------
-  
-  # Things that often used to be YAMLs, and which probably should be again in 
-  # the future
-  
-  # Date range of interest
-  tar_target(p0_wq_dates,
-             list(
-               start_date = "1970-01-01",
-               end_date = Sys.Date()
-             )),
-  
-  # Define which parameter groups (and CharacteristicNames) to return from WQP. 
-  # Different options for parameter groups are represented in the first level of 
-  # 1_inventory/cfg/wqp_codes.yml. The yml file can be edited to 
-  # omit characteristic names or include others, to change top-level parameter names,
-  # or to customize parameter groupings. 
-  tar_target(p0_param_groups_select,
-             c(# "alkalinity", "cdom", "depth", "nitrogen",
-               # "ssc", "temperature", "phosphorus", "poc", silica",
-               "chlorophyll", "doc", "secchi", "tss"
-             )),
-  
-  
-  # WQP inventory -----------------------------------------------------------
-  
-  # Specify arguments to WQP queries
-  # see https://www.waterqualitydata.us/webservices_documentation for more information 
-  tar_target(p0_wqp_args,
-             list(sampleMedia = c("Water", "water"),
-                  siteType = c("Lake, Reservoir, Impoundment",
-                               "Stream",
-                               "Estuary"),
-                  # Return sites with at least one data record
-                  minresults = 1, 
-                  startDateLo = p0_wq_dates$start_date,
-                  startDateHi = p0_wq_dates$end_date)),
-  
-  
   # Targets imported from the previous pipeline: ----------------------------
+  
+  # The local directory where the first {targets} pipeline is located (i.e.,
+  # the pipeline that runs the download step)
+  tar_target(name = p0_AquaMatch_download_WQP_directory,
+             command = "../AquaMatch_download_WQP/"),
+  
+  # Confirm the presence of the {targets} WQP download pipeline
+  tar_target(name = p0_AquaMatch_download_WQP_confirm,
+             command = if(!dir.exists(p0_AquaMatch_download_WQP_directory)) {
+               # Throw an error if the pipeline does not exist
+               stop("The WQP download pipeline is not at the specified location.")
+             },
+             # The presence of the first pipeline is necessary for this one to run
+             error = "stop"),
   
   # Retrieve links to data from Google Drive
   tar_file_read(p1_wqp_params_link,
-                command = "../AquaMatch_download_WQP/1_inventory/out/p1_wqp_params_out_link.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "1_inventory/out/p1_wqp_params_out_link.csv"),
                 read = read_csv(file = !!.x)),
   
   tar_file_read(p1_wqp_inventory_aoi_link,
-                command = "../AquaMatch_download_WQP/1_inventory/out/p1_wqp_inventory_aoi_out_link.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "1_inventory/out/p1_wqp_inventory_aoi_out_link.csv"),
                 read = read_csv(file = !!.x)),
   
   tar_file_read(p1_global_grid_link,
-                command = "../AquaMatch_download_WQP/1_inventory/out/p1_global_grid_out_link.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "1_inventory/out/p1_global_grid_out_link.csv"),
                 read = read_csv(file = !!.x)),
   
   tar_file_read(p1_char_names_crosswalk_link,
-                command = "../AquaMatch_download_WQP/1_inventory/out/p1_char_names_crosswalk_out_link.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "1_inventory/out/p1_char_names_crosswalk_out_link.csv"),
                 read = read_csv(file = !!.x)),
   
   tar_file_read(p2_site_counts_link,
-                command = "../AquaMatch_download_WQP/2_download/out/p2_site_counts_out_link.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "2_download/out/p2_site_counts_out_link.csv"),
                 read = read_csv(file = !!.x)),
   
   tar_file_read(p2_wqp_data_aoi_out_links,
-                command = "../AquaMatch_download_WQP/2_download/out/p2_wqp_data_aoi_out_links.csv",
+                command = paste0(p0_AquaMatch_download_WQP_directory,
+                                 "2_download/out/p2_wqp_data_aoi_out_links.csv"),
                 read = read_csv(file = !!.x)),
   
   # Download data sets of interest:
   tar_target(p1_wqp_params,
              retrieve_data(link_table = p1_wqp_params_link,
-                           folder_pattern = "1_inventory/out/")),
+                           folder_pattern = "1_inventory/out/"),
+             packages = c("tidyverse", "googledrive")),
   
   tar_target(p1_wqp_inventory_aoi,
              retrieve_data(link_table = p1_wqp_inventory_aoi_link,
-                           folder_pattern = "1_inventory/out/")),
+                           folder_pattern = "1_inventory/out/"),
+             packages = c("tidyverse", "googledrive")),
   
   tar_target(p1_global_grid,
              retrieve_data(link_table = p1_global_grid_link,
-                           folder_pattern = "1_inventory/out/")),
+                           folder_pattern = "1_inventory/out/"),
+             packages = c("tidyverse", "googledrive")),
   
   tar_target(p1_char_names_crosswalk,
              retrieve_data(link_table = p1_char_names_crosswalk_link,
-                           folder_pattern = "1_inventory/out/")),
+                           folder_pattern = "1_inventory/out/"),
+             packages = c("tidyverse", "googledrive")),
   
   tar_target(p2_site_counts,
              retrieve_data(link_table = p2_site_counts_link,
-                           folder_pattern = "2_download/out/")),
+                           folder_pattern = "2_download/out/"),
+             packages = c("tidyverse", "googledrive")),
   
   tar_target(p2_wqp_data_aoi_chl,
              retrieve_param_data(link_table = p2_wqp_data_aoi_out_links,
                                  parameter_string = "chlorophyll"),
-             format = "feather"),
+             format = "feather",
+             packages = c("tidyverse", "googledrive", "feather")),
   
   tar_target(p2_wqp_data_aoi_doc,
              retrieve_param_data(link_table = p2_wqp_data_aoi_out_links,
                                  parameter_string = "doc"),
-             format = "feather"),
+             format = "feather",
+             packages = c("tidyverse", "googledrive", "feather")),
   
   tar_target(p2_wqp_data_aoi_sdd,
              retrieve_param_data(link_table = p2_wqp_data_aoi_out_links,
                                  parameter_string = "sdd"),
-             format = "feather"),
+             format = "feather",
+             packages = c("tidyverse", "googledrive", "feather")),
   
   tar_target(p2_wqp_data_aoi_tss,
              retrieve_param_data(link_table = p2_wqp_data_aoi_out_links,
                                  parameter_string = "tss"),
-             format = "feather")
+             format = "feather",
+             packages = c("tidyverse", "googledrive", "feather"))
   
 )
 

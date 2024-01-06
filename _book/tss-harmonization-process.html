@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>8 TSS harmonization process | _main.knit</title>
   <meta name="description" content="" />
-  <meta name="generator" content="bookdown 0.36 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
   <meta property="og:title" content="8 TSS harmonization process | _main.knit" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2023-12-12" />
+<meta name="date" content="2024-01-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -261,7 +261,7 @@ dropped record includes (but is not limited to): <code>"fail"</code>, <code>"sus
 <code>"error"</code>, <code>"beyond accept"</code>, <code>"interference"</code>, <code>"questionable"</code>,
 <code>"problem"</code>, <code>"violation"</code>, <code>"rejected"</code>, <code>"no data"</code>. Specific target
 text varies by column.</p>
-<p>162.44 thousand rows are removed and 3.63 million rows remain.</p>
+<p>162.78 thousand rows are removed and 3.64 million rows remain.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -281,7 +281,7 @@ column we use that number instead.</p>
 <p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
 value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 3.63 million.</p>
+are removed. The final row count after this is 3.64 million.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -300,7 +300,7 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 </ol>
 <p>We then use the approximate value as the record’s value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 3.63 million.</p>
+are removed. The final row count after this is 3.64 million.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -320,7 +320,7 @@ approximate cleaning</li>
 <p>We then use the “greater than” value (without <code>&gt;</code>) as the record’s value
 moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 3.63 million.</p>
+are removed. The final row count after this is 3.64 million.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -449,7 +449,7 @@ g/l
 </tbody>
 </table>
 <p>We also limit values to less than 1000 mg/L to ensure realistic data.
-126.7 thousand rows are removed. The final row count after this is 3.51
+126.86 thousand rows are removed. The final row count after this is 3.51
 million.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
 <p><br></p>
@@ -460,7 +460,7 @@ million.</p>
 then filter out methods that may have been erroneously added, were
 unclear, or which don’t meet our needs. Methods that were grouped as
 <code>"Ambiguous"</code> or <code>"Unlikely"</code> are dropped.</p>
-<p>This process drops 1873.58 million rows leaving 1.63 million remaining.</p>
+<p>This process drops 1874.2 million rows leaving 1.64 million remaining.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -470,7 +470,7 @@ unclear, or which don’t meet our needs. Methods that were grouped as
 <code>ResultSampleFractionText</code> column. We <strong>drop</strong> records with the
 following values in this column: <code>"Fixed</code>“, <code>"Volatile"</code>, <code>"Dissolved"</code>,
 or <code>"Acid Soluble"</code>.</p>
-<p>This process drops 0.15 thousand rows leaving 1.63 million remaining in
+<p>This process drops 0.15 thousand rows leaving 1.64 million remaining in
 the final harmonized TSS dataset.</p>
 <p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-21-1.png" /><!-- --></p>
 

@@ -47,7 +47,7 @@ p3_targets_list <- list(
                    # Convert list of sites by param to single df
                    site_data = bind_rows(p2_site_counts),
                    wqp_metadata = p1_wqp_inventory_aoi),
-    packages = c("tidyverse", "lubridate", "feather")),
+    packages = c("tidyverse", "feather")),
   
   tar_target(
     p3_wqp_data_aoi_ready_doc,
@@ -56,7 +56,7 @@ p3_targets_list <- list(
                    # Convert list of sites by param to single df
                    site_data = bind_rows(p2_site_counts),
                    wqp_metadata = p1_wqp_inventory_aoi),
-    packages = c("tidyverse", "lubridate", "feather")),
+    packages = c("tidyverse", "feather")),
   
   tar_target(
     p3_wqp_data_aoi_ready_sdd,
@@ -65,7 +65,7 @@ p3_targets_list <- list(
                    # Convert list of sites by param to single df
                    site_data = bind_rows(p2_site_counts),
                    wqp_metadata = p1_wqp_inventory_aoi),
-    packages = c("tidyverse", "lubridate", "feather")),
+    packages = c("tidyverse", "feather")),
   
   tar_target(
     p3_wqp_data_aoi_ready_tss,
@@ -74,7 +74,7 @@ p3_targets_list <- list(
                    # Convert list of sites by param to single df
                    site_data = bind_rows(p2_site_counts),
                    wqp_metadata = p1_wqp_inventory_aoi),
-    packages = c("tidyverse", "lubridate", "feather")),
+    packages = c("tidyverse", "feather")),
   
   # Connect cleaned data output to the pipeline
   tar_target(p3_cleaned_wqp_data_chl,
@@ -148,13 +148,12 @@ p3_targets_list <- list(
   tar_target(p3_tss_harmonized,
              harmonize_tss(raw_tss = p3_cleaned_wqp_data_tss,
                            p_codes = p3_p_codes),
-             packages = c("tidyverse", "lubridate", "pander", "feather")),
+             packages = c("tidyverse", "pander", "feather", "scales")),
   
   tar_target(p3_chla_harmonized,
              harmonize_chla(raw_chla = p3_cleaned_wqp_data_chl,
                             p_codes = p3_p_codes),
-             packages = c("tidyverse", "lubridate", "feather", "ggrepel",
-                          "scales")),
+             packages = c("tidyverse", "feather", "ggrepel", "scales")),
   
   tar_file_read(name = p3_chla_tiering_record,
                 command = p3_chla_harmonized$chla_tiering_record_path,
@@ -183,12 +182,12 @@ p3_targets_list <- list(
                            sdd_analytical_method_matchup = p3_sdd_analytical_method_matchup,
                            sdd_sample_method_matchup = p3_sdd_sample_method_matchup,
                            sdd_equipment_matchup = p3_sdd_equipment_matchup),
-             packages = c("tidyverse", "lubridate", "feather")),
+             packages = c("tidyverse", "feather", "scales")),
   
   tar_target(p3_doc_harmonized,
              harmonize_doc(raw_doc = p3_cleaned_wqp_data_doc,
                            p_codes = p3_p_codes),
-             packages = c("tidyverse", "lubridate", "feather")),
+             packages = c("tidyverse", "feather", "scales")),
   
   tar_target(p3_documented_drops,
              map_df(.x = c(p3_wqp_data_aoi_ready_chl$compiled_drops_path,

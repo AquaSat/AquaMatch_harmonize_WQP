@@ -34,7 +34,12 @@ package_installer <- function(x) {
 # map function using base lapply
 lapply(required_pkgs, package_installer)
 
-# load targets library
+# Confirm Google Drive is authorized locally
+googledrive::drive_auth()
+# Select existing account (change if starting from scratch)
+2
+
+# Load targets library to run pipeline
 library(targets)
 
 # This is a helper script to run the pipeline.

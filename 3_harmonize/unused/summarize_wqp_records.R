@@ -27,7 +27,7 @@ summarize_wqp_records <- function(wqp_data, grouping_cols, fileout){
               .groups = 'drop')
   
   # Save the summary file
-  readr::write_csv(x = summary, file = fileout)
+  write_csv(x = summary, file = fileout)
   
   return(fileout)
 }

@@ -19,7 +19,7 @@ plot_fail_pie <- function(dataset, col_name, text_size = 3){
     # Don't clutter with absent searches
     filter(record_count != 0) %>%
     mutate(perc = record_count / sum(record_count),
-           labels = scales::percent(perc)) %>% 
+           labels = percent(perc)) %>% 
     # Descending order of frequency
     arrange(desc(perc)) %>%
     mutate(word = fct_rev(fct_inorder(word)),

@@ -1,10 +1,10 @@
 step,reason,short_reason,number_dropped,n_rows,order
-tss harmonization,Starting dataset,Start,0,3795408,0
-tss harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,3632971,4
-tss harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",162437,3632971,2
-tss harmonization,Dropped rows while filtering fraction types,Fraction types,149,1632542,8
-tss harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,3632971,5
-tss harmonization,Dropped rows while harmonizing units,Harmonize units,126705,3506266,6
-tss harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,3632971,3
-tss harmonization,Filtered for only water media,Water media,0,3795408,1
-tss harmonization,Dropped rows while aggregating analytical methods,Analytical methods,1873575,1632691,7
+tss harmonization,Starting dataset,Start,0,3800584,0
+tss harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,3637808,4
+tss harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",162776,3637808,2
+tss harmonization,Dropped rows while filtering fraction types,Fraction types,149,1636593,8
+tss harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,3637808,5
+tss harmonization,Dropped rows while harmonizing units,Harmonize units,126864,3510944,6
+tss harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,3637808,3
+tss harmonization,Filtered for only water media,Water media,0,3800584,1
+tss harmonization,Dropped rows while aggregating analytical methods,Analytical methods,1874202,1636742,7

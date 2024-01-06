@@ -9,9 +9,9 @@ retrieve_data <- function(link_table, folder_pattern){
                         replacement = "3_harmonize/in/")
   
   # Run the download
-  googledrive::drive_download(file = link_table$drive_link,
-                              path = download_path,
-                              overwrite = TRUE)
+  drive_download(file = link_table$drive_link,
+                 path = download_path,
+                 overwrite = TRUE)
   
   # Read dataset into pipeline
   read_rds(download_path)
@@ -19,8 +19,6 @@ retrieve_data <- function(link_table, folder_pattern){
 
 # A function to retrieve a specific parameter datset from Google Drive
 retrieve_param_data <- function(link_table = p3_wqp_data_aoi_links, parameter_string){
-  
-  require(feather)
   
   # Isolate row with information on the specified parameter
   param_info <- link_table %>%
@@ -33,9 +31,9 @@ retrieve_param_data <- function(link_table = p3_wqp_data_aoi_links, parameter_st
                         replacement = "3_harmonize/in/")
   
   # Run the download
-  googledrive::drive_download(file = param_info$drive_link,
-                              path = download_path,
-                              overwrite = TRUE)
+  drive_download(file = param_info$drive_link,
+                 path = download_path,
+                 overwrite = TRUE)
   
   # Read dataset into pipeline
   read_feather(download_path)

@@ -898,7 +898,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   ggsave(filename = "3_harmonize/out/chla_tier_dists_postagg.png",
          plot = tier_dists,
-         width = 7, height = 3, units = "in", device = "png")
+         width = 6, height = 4, units = "in", device = "png")
   
   
   # How many records removed in aggregating simultaneous records?

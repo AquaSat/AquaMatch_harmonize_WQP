@@ -26,6 +26,9 @@ bookdown_targets_list <- list(
   tar_file(tss_harmonization_rmd,
            "bookdown_raw/07_tss_harmonization.Rmd"),
   
+  tar_file(references_rmd,
+           "bookdown_raw/references.Rmd"),
+  
   
   # Knit chapters -----------------------------------------------------------
   
@@ -90,7 +93,8 @@ bookdown_targets_list <- list(
     render(
       doc_harmonization_rmd,
       params = list(
-        documented_drops = p3_documented_drops),
+        documented_drops = p3_documented_drops,
+        doc_chars = p1_wqp_params$doc),
       output_file = "05_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -106,7 +110,7 @@ bookdown_targets_list <- list(
       sdd_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops),
-      output_file = "06_doc_harmonization",
+      output_file = "06_sdd_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
     format = 'file',
@@ -129,7 +133,18 @@ bookdown_targets_list <- list(
     packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra",
                  "rmarkdown")
   ),
-  
+
+  tar_target(
+    references,
+    render(
+      references_rmd,
+      output_file = "references",
+      output_dir = 'chapters') %>%
+      change_ext(inext = 'md', outext = 'Rmd'),
+    format = 'file',
+    cue = tar_cue("always"),
+    packages = c("bookdown", "rmarkdown", "tidyverse")
+  ),
   
   # Render book -------------------------------------------------------------
   
@@ -141,8 +156,9 @@ bookdown_targets_list <- list(
                               tiering_overview,
                               chla_harmonization_report,
                               doc_harmonization_report,
-                              sdd_harmonization_report,
-                              tss_harmonization_report)),
+                              # sdd_harmonization_report,
+                              # tss_harmonization_report,
+                              references)),
     cue = tar_cue("always")
   )
   

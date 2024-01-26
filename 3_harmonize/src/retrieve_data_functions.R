@@ -18,7 +18,8 @@ retrieve_data <- function(link_table, folder_pattern){
 }
 
 # A function to retrieve a specific parameter datset from Google Drive
-retrieve_param_data <- function(link_table = p3_wqp_data_aoi_links, parameter_string){
+retrieve_param_data <- function(link_table = p3_wqp_data_aoi_links,
+                                parameter_string){
   
   # Isolate row with information on the specified parameter
   param_info <- link_table %>%

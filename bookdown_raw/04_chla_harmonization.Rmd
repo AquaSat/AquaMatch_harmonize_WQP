@@ -41,9 +41,9 @@ step_order_rev <- max(documented_drops$reorder):min(documented_drops$reorder)
 max_steps <- max(documented_drops$reorder)
 
 step_data <- documented_drops %>%
-  mutate(scaled = scale(n_rows, center = FALSE)) %>%
-  mutate(reorder = factor(reorder,
-                        levels = step_order_rev),
+  mutate(scaled = scale(n_rows, center = FALSE),
+         reorder = factor(reorder,
+                          levels = step_order_rev),
          rows_label = paste0(short_reason,
                              ":  ",
                              round((n_rows / 1000000), 1),
@@ -401,11 +401,11 @@ step_7_dropped <- filter(step_data,
 ```
 
 Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL cleaning
-  2. The original column text contained a number
-  3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
-  
+
+1. Numeric-only version of the column is still `NA` after MDL cleaning
+2. The original column text contained a number
+3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
+
 We then use the approximate value as the record's value moving forward.
 
 Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
@@ -456,11 +456,11 @@ step_8_dropped <- filter(step_data,
 ```
 
 The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
-  2. The original column text contained a number
-  3. The original column text contained a `>`
-  
+
+1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
+2. The original column text contained a number
+3. The original column text contained a `>`
+
 We then use the "greater than" value (without `>`) as the record's value moving forward.
 
 Records with corrected values based on the above method are noted with a 1 in the `greater_flag` column.
@@ -509,7 +509,7 @@ step_9_dropped <- filter(step_data,
   # mutate(thou_dropped = number_dropped / 1000) %>%
   pull(number_dropped) %>%
   round(digits = 2) #%>%
-  # paste0(., " thousand")
+# paste0(., " thousand")
 ```
 
 The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
@@ -548,14 +548,14 @@ step_data %>%
 step_counter <- 10
 
 step_10_rows <- filter(step_data,
-                      reorder == step_counter) %>%
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
 step_10_dropped <- filter(step_data,
-                         reorder == step_counter) %>%
+                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
@@ -624,14 +624,14 @@ step_data %>%
 step_counter <- 11
 
 step_11_rows <- filter(step_data,
-                      reorder == step_counter) %>%
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
 step_11_dropped <- filter(step_data,
-                         reorder == step_counter) %>%
+                          reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -671,14 +671,14 @@ step_data %>%
 step_counter <- 12
 
 step_12_rows <- filter(step_data,
-                      reorder == step_counter) %>%
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
 step_12_dropped <- filter(step_data,
-                         reorder == step_counter) %>%
+                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
@@ -701,15 +701,15 @@ The next step towards creating analytical tiers is to then classify the methods 
 Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
 
 <br>
-  
-  <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
-  
-  | Tier | Name        | Description                                                                                                                                                                                                                                                                                            | Chl *a* details                                                                                                              |   |
-  |------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---|
-  | 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using HPLC methods                                                                                          |   |
-  | 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers                                                                                                                                                                   | Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209 |   |
-  | 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | All other records by default, including `NA` methods and *in situ* probes                                                    |   |
-  
+
+<!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
+
+| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | Chl *a* details                                                                                                              |   |
+|------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|---|
+| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using HPLC methods                                                                                          |   |
+| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers                                                                                                                                                                   | Spectrophotometer and fluorometer methods that **are also** pheophytin-corrected ***OR*** records where `USGSPCode` is 32209 |   |
+| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | All other records by default, including `NA` methods and *in situ* probes                                                    |   |
+
 <br>
 
 At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
@@ -754,7 +754,7 @@ step_13_rows <- filter(step_data,
   paste0(., " million")
 
 step_13_dropped <- filter(step_data,
-                         reorder == step_counter) %>%
+                          reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
@@ -812,7 +812,7 @@ step_14_rows <- filter(step_data,
   paste0(., " million")
 
 step_14_dropped <- filter(step_data,
-                         reorder == step_counter) %>%
+                          reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
   round(digits = 2) %>%

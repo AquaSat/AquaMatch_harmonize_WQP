@@ -148,7 +148,7 @@ clean_wqp_data <- function(wqp_data,
   
   # Identify the parameter that's been cleaned in this script:
   compiled_dropped <- compiled_dropped %>%
-    mutate(step = paste0(unique(wqp_data_clean$parameter), "pre-harmonization"))
+    mutate(step = paste0(unique(wqp_data_clean$parameter), " pre-harmonization"))
   
   documented_drops_out_path <- paste0("3_harmonize/out/clean_wqp_data_",
                                       unique(wqp_data_clean$parameter),

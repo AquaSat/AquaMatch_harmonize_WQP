@@ -936,10 +936,10 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/chla_harmonized_final.feather"
+  data_out_path <- "3_harmonize/out/chla_harmonized_final.csv"
   
-  write_feather(no_simul_chla,
-                data_out_path)
+  write_csv(no_simul_chla,
+            data_out_path)
   
   # Final dataset length:
   print(

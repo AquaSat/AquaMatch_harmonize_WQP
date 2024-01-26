@@ -4,114 +4,73 @@ output:
     html_preview: false
 params:
   documented_drops: NA
-  chla_chars: NA
+  doc_chars: NA
 always_allow_html: true
 ---
 
-# Dissolved organic carbon (DOC) harmonization process
+# DOC harmonization process
 
-```{r echo=FALSE} 
-documented_drops <- params$documented_drops
+```{r echo=FALSE}
+documented_drops <- params$documented_drops %>%
+  filter(grepl(pattern = "doc", x = step, ignore.case = TRUE),
+         !((step == "doc harmonization") & short_reason == "Start"))
 doc_chars <- params$doc_chars
 ```
 
+Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
+
+The text below first walks through the pre-harmonization steps for the raw DOC dataset and then delves into the specifics of the harmonization process.
+
 ```{r echo = FALSE}
-step_order_rev <- max(documented_drops$order):min(documented_drops$order)
+# Redo the ordering of the steps, conceptualizing the pre-harmonization and
+# harmonization processes as one step
+documented_drops <- bind_rows(
+  # Make sure pre-harmonization comes first
+  documented_drops %>%
+    filter(grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order),
+  documented_drops %>%
+    filter(!grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order)) %>%
+  # New order is just row nums
+  mutate(reorder = row_number())
+
+step_order_rev <- max(documented_drops$reorder):min(documented_drops$reorder)
+
+max_steps <- max(documented_drops$reorder)
 
 step_data <- documented_drops %>%
-  group_by(step) %>%
   mutate(scaled = scale(n_rows, center = FALSE)) %>%
-  ungroup() %>%
-  mutate(order = factor(order,
+  mutate(reorder = factor(reorder,
                         levels = step_order_rev),
          rows_label = paste0(short_reason,
                              ":  ",
                              round((n_rows / 1000000), 1),
-                             " M rows")) %>%
-  filter(step == "doc harmonization") 
+                             " M rows"))
 ```
 
-
-### Initial dataset
+## Pre-harmonization of the raw doc WQP dataset
 
 ```{r echo=FALSE}
-step_0_rows <- filter(step_data,
-                      order == 0) %>%
-  mutate(mil_row = n_rows / 1000000) %>%
-  pull(mil_row) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
-```
+step_counter <- 1
 
-After the pre-harmonization process the organic carbon-only WQP dataset contains `r step_0_rows` rows. This dataset contains the following user-defined `characteristicNames`: `r doc_chars`.
-
-The WQP doesn't have a "dissolved organic carbon" `CharacteristicName`, so we use these names in order to capture that parameter.
-
-```{r echo = FALSE}
-step_data %>%
-  filter(order == 0) %>%
-  ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
-           stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
-                  bg.color = "white", bg.r = 0.15,
-                  point.size = NA,
-                  xlim = c(-Inf, Inf),
-                  ylim =  c(-Inf, Inf),
-                  nudge_x = 0.1,
-                  hjust = "left") +
-  xlab("Step number") +
-  ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[1]) +
-  scale_x_discrete(drop = F) +
-  coord_flip() +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        legend.position = "none")
-```
-
-<br>
-
-### Filter for water media and doc fraction
-
-```{r echo = FALSE}
 step_1_rows <- filter(step_data,
-                      order == 1) %>%
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
-
-step_1_dropped <- filter(step_data,
-                         order == 1) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
 ```
 
-The first step in DOC harmonization is to ensure that:
-
-1. The media type for the data is `"water"` or `"Water"`
-2. The fraction of the carbon pool included is only dissolved organic carbon
-
-To achieve goal number 2 above, we filter the `ResultSampleFractionText` column to include only the following fractions, which correspond with dissolved organic carbon: "Dissolved", "Filterable", "Filtered, lab", "Filtered, field").
-
-Below is a pie chart that documents the number of records that were dropped for each fraction that we omitted:
-
-<br>
-
-<img src="3_harmonize/out/doc_fraction_drop_pie.png" alt="ResultSampleFractionText dropped values" width="650"/>
-
-<br>
-
-Through this process `r step_1_dropped` rows are removed. The final row count after this is `r step_1_rows`.
+At the start of the pre-harmonization process the raw DOC WQP dataset contains `r step_1_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:1) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -120,7 +79,8 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[2:1]) +
+  scale_fill_manual(values = viridis(n = max_steps,
+                                     direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -130,35 +90,41 @@ step_data %>%
 
 <br>
 
-### Remove fails and other missing data
+### Missing results
 
 ```{r echo = FALSE}
+step_counter <- 2
+
 step_2_rows <- filter(step_data,
-                      order == 2) %>%
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
 step_2_dropped <- filter(step_data,
-                         order == 2) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
   round(digits = 2) %>%
   paste0(., " thousand")
 ```
 
-In this step we filter out records based on indications that they have failed data for some reason. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultMeasureValue`, and `ResultDetectionConditionText`. Examples of text that results in a dropped record includes (but is not limited to): `"fail"`, `"suspect"`, `"error"`, `"beyond accept"`, `"interference"`, `"questionable"`, `"problem"`, `"violation"`, `"rejected"`, `"no data"`. Specific target text varies by column. 
+Next, records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
 
-`r step_2_dropped` rows are removed and `r step_2_rows` rows remain.
+1.  Both the result column and detection limit column had `NA` data
+2.  Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
+3.  The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+
+`r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:2) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -167,7 +133,189 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[3:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Filter status
+
+```{r echo = FALSE}
+step_counter <- 3
+
+step_3_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_3_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
+```
+
+The final step in pre-harmonization is to filter the `ResultStatusIdentifier` column to include only the following statuses:
+
+-   `"Accepted"`
+-   `"Final"`
+-   `"Historical"`
+-   `"Validated"`
+-   `"Preliminary"`
+-   `NA`
+
+These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
+
+This step removes `r step_3_dropped` rows of data, leaving it with `r step_3_rows` rows remaining.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+## Harmonization-ready DOC dataset
+
+Once ready for harmonization, the DOC WQP dataset contains the following user-defined `characteristicNames`: `r doc_chars`.
+
+<br>
+
+### Filter for water media
+
+```{r echo = FALSE}
+step_counter <- 4
+
+step_4_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_4_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+We next ensure that the media type for all DOC data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Document and remove fails
+
+```{r echo = FALSE}
+step_counter <- 5
+
+step_5_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_5_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " thousand")
+```
+
+In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures").
+
+After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data", "time exceed".
+
+Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
+
+<br>
+
+#### ActivityCommentText fail detects
+
+<img src="3_harmonize/out/doc_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/>
+
+#### ResultCommentText fail detects
+
+<img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
+
+#### ResultLaboratoryCommentText fail detects
+
+<img src="3_harmonize/out/doc_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/>
+
+<br>
+
+<!-- <img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
+
+<!-- <br> -->
+
+`r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -180,34 +328,38 @@ step_data %>%
 ### Clean MDLs
 
 ```{r echo = FALSE}
-step_3_rows <- filter(step_data,
-                      order == 3) %>%
+step_counter <- 6
+
+step_6_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_3_dropped <- filter(step_data,
-                         order == 3) %>%
+step_6_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
 
-In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or  `"below"`.
+In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or `"below"`.
 
 If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
 
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
+We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward. Once the process is complete we filter out any negative values in the dataset.
 
-This should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The final row count after this is `r step_3_rows`.
+We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
+
+Most of this step should not result in a change in rows, but we do drop records with negative measurement values. This results in `r step_6_dropped` rows being removed. The final row count after this is `r step_6_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:3) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -216,7 +368,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[4:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -229,37 +381,40 @@ step_data %>%
 ### Clean approximate values
 
 ```{r echo = FALSE}
-step_4_rows <- filter(step_data,
-                      order == 4) %>%
+step_counter <- 7
+
+step_7_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_4_dropped <- filter(step_data,
-                         order == 4) %>%
+step_7_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 2)
 ```
 
-
 Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-  
-  1. Numeric-only version of the column is still `NA` after MDL cleaning
-  2. The original column text contained a number
-  3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
-  
+
+1.  Numeric-only version of the column is still `NA` after MDL cleaning
+2.  The original column text contained a number
+3.  Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
+
 We then use the approximate value as the record's value moving forward.
 
-This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
+
+This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:4) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -268,7 +423,111 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[5:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Clean values with "greater than" data
+
+```{r echo = FALSE}
+step_counter <- 8
+
+step_8_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_8_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+
+1.  Numeric-only version of the column is still `NA` after MDL & approximate cleaning
+2.  The original column text contained a number
+3.  The original column text contained a `>`
+
+We then use the "greater than" value (without `>`) as the record's value moving forward.
+
+Records with corrected values based on the above method are noted with a 1 in the `greater_flag` column.
+
+This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Drop unresolved NA measurements
+
+```{r echo = FALSE}
+step_counter <- 9
+
+step_9_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_9_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  # mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(number_dropped) %>%
+  round(digits = 2) #%>%
+# paste0(., " thousand")
+```
+
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
+
+`r step_9_dropped` rows are removed. The final row count after this is `r step_9_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -281,44 +540,59 @@ step_data %>%
 ### Harmonize record units
 
 ```{r echo = FALSE}
-step_5_rows <- filter(step_data,
-                      order == 5) %>%
+step_counter <- 10
+
+step_10_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_5_dropped <- filter(step_data,
-                         order == 5) %>%
+step_10_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
   paste0(., " thousand")
-
 ```
 
-The next step in doc harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into milligrams/L:
+The next step in doc harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into mg per liter (mg/L):
 
-```{r echo=FALSE}
-tibble(ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                 'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
-       conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                      1000000, 0.000001, 60.080000)) %>%
+```{r echo=FALSE, message = FALSE}
+read_csv("../3_harmonize/out/doc_unit_table.csv") %>%
   kable() %>%
   kable_paper() %>%
   kable_styling(full_width = FALSE)
 ```
 
-We also limit values to less than 50 mg/L to ensure realistic data. `r step_5_dropped` rows are removed. The final row count after this is `r step_5_rows`.
+<br>
 
+Below is a pie chart that breaks down the different unit codes that were dropped in the unit harmonization process, and how many records were lost with each code.
+
+<br>
+
+<img src="3_harmonize/out/doc_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/>
+
+<br>
+
+Additionally we provide a set of histograms of harmonized measurements by `CharacteristicName`:
+
+<br>
+
+<img src="3_harmonize/out/doc_charname_dists.png" alt="Distribution of DOC values by CharacteristicName" width="650"/>
+
+<br>
+
+`r step_10_dropped` rows are removed. The final row count after this is `r step_10_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:5) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -327,7 +601,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[6:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -337,35 +611,35 @@ step_data %>%
 
 <br>
 
-### Filter based on analytical method
+### Clean depth data
 
 ```{r echo = FALSE}
-step_6_rows <- filter(step_data,
-                      order == 6) %>%
+step_counter <- 11
+
+step_11_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_6_dropped <- filter(step_data,
-                         order == 6) %>%
-  mutate(mil_dropped = number_dropped / 1000) %>%
-  pull(mil_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " million")
+step_11_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
 ```
 
-Our next step is to aggregate doc analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. Methods that were `NA` or were grouped as `"Ambiguous"` or `"Carbonaceous Analyzer"` are dropped.
+The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-This process drops `r step_6_dropped` rows leaving `r step_6_rows` remaining.
+This should not result in a change in rows but we still check: `r step_11_dropped` rows are removed. The final row count after this is `r step_11_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:6) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -374,7 +648,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[7:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -384,35 +658,65 @@ step_data %>%
 
 <br>
 
-### Filter based on fraction type
+### Filter and tier analytical methods
 
 ```{r echo = FALSE}
-step_7_rows <- filter(step_data,
-                       order == 7) %>%
+step_counter <- 12
+
+step_12_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 2) %>%
   paste0(., " million")
 
-step_7_dropped <- filter(step_data,
-                         order == 7) %>%
+step_12_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
   round(digits = 2) %>%
   paste0(., " thousand")
 ```
 
-The final step in our doc harmonization is filtering based on the `ResultSampleFractionText` column. We keep records with the following values in this column: `"Dissolved"`, `"Filtered, lab"`, `"Filterable"`, `"Filtered, field"`.
+We next review the analytical methods used in measuring DOC, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Analytical method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining in the final harmonized doc dataset.
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-DOC measurements. Phrases used to flag and remove unrelated methods from DOC data are: "Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity", "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids", "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)", "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water".
+
+This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
+
+The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: Combustion + infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods, Wet Oxidation+Persulfate+IR methods, Elemental Analyzer methods, or Carbonaceous Analyzer methods. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+
+-   **Combustion+IR:** Detection of "5310 B", "5310B", "415.1", "combustion" but only without "5310 C" or "5310C", "0.45u silver, persulfate IR", "0.7 um GFF, combust IR", "Laboratory Procedures for Water Quality Chemical Analysis", "CO2 formation", "Qian & Mopper 1996", or "Shimadzu TOC Analyzer" in `ResultAnalyticalMethod.MethodName`
+-   **Persulfate-UV/Heated Persulfate Oxidation+IR:** Detection of "5310 C", "5310C", "persulfate oxid", "415.2", "Ultraviolet", "Heated-Persulfate", or "UV" in `ResultAnalyticalMethod.MethodName`
+-   **Wet Oxidation+Persulfate+IR detection:** Detection of "0.45 ?um cap", "0.45um cap", "wet oxidation", "5310 D", "5310D", "415.3", "O-3100 \~ Total Organic Carbon in Water" in `ResultAnalyticalMethod.MethodName`
+-   **Elemental Analyzer:** Detection of "440" in `ResultAnalyticalMethod.MethodName`
+-   **Carbonaceous Analyzer:** Detection of "9060 A" in `ResultAnalyticalMethod.MethodName`
+
+Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
+
+<br>
+
+<!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
+
+| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | DOC details                                                                                                |     |
+|---------|---------|------------------------------------|-----------|---------|
+| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using Wet Oxidation+Persulfate+IR or Persulfate-UV/Heated Persulfate Oxidation+IR methods |     |
+| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Includes records using combustion+IR or elemental analyzer methods                                         |     |
+| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | Carbonaceous and all other records by default, including `NA` methods                                      |     |
+
+<br>
+
+At this point we export a file (`3_harmonize/out/doc_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+
+<br>
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:7) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -421,11 +725,126 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[8:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
   theme(axis.text.x = element_blank(),
         legend.position = "none")
 ```
+
+<br>
+
+
+### Flag based on field methods
+
+```{r echo = FALSE}
+step_counter <- 13
+
+step_13_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_13_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+DOC doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with "not applicable" for DOC. 
+
+No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized DOC dataset.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Aggregate simultaneous records
+
+```{r echo = FALSE}
+step_counter <- 14
+
+step_14_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_14_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  mutate(mil_dropped = number_dropped / 1000000) %>%
+  pull(mil_dropped) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+```
+
+The final step of DOC harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
+
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
+
+`r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated doc dataset.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Harmonized DOC
+
+At this point the harmonization of the DOC data from the WQP is complete and we export the final dataset for use later in the workflow.
+
+Below is a final set of histograms showing the distribution of harmonized measurements broken down by `analytical_tier` ***after*** aggregating simultaneous records.
+
+<br>
+
+<img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by analytical tier" width="650"/>
+
+<br>
 

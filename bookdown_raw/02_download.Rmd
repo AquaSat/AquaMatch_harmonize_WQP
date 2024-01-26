@@ -5,6 +5,7 @@ output:
 params:
   site_counts: NA
   global_grid: NA
+  yaml_contents: NA
 always_allow_html: true
 ---
 
@@ -13,16 +14,16 @@ always_allow_html: true
 ```{r message=FALSE, warning = FALSE, echo=FALSE}
 global_grid <- params$global_grid
 site_counts <- params$site_counts
+yaml_contents <- params$yaml_contents
 
 options(tigris_use_cache = TRUE)
 ```
 
 ### Catalogue existing data
 
-The download process begins by cataloging the existing data that is available in the WQP. To do this the user specifies parameters and their corresponding `characteristicName` for retrieving data from the WQP. Below are the current parameters and their `characteristicName` as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
+The download process begins by using the {dataRetrieval} package to catalogue the data that is available in the WQP. To do this the user selects parameters of interest and their corresponding `characteristicName` for retrieving data from the WQP. Below are the current parameters and their `characteristicName`s as defined in the configuration YAML, `1_inventory/cfg/wqp_codes.yml`. Data for these parameters are requested from the WQP within a spatial grid that is mapped in the next section.
 
 ```{r, results='asis'}
-yaml_contents <- read_yaml("../1_inventory/cfg/wqp_codes.yml")
 names_yaml <- names(yaml_contents)
 
 map_df(.x = names_yaml,
@@ -36,52 +37,14 @@ map_df(.x = names_yaml,
   collapse_rows(columns = 1, valign = "top")
 ```
 
-
-<!-- chlorophyll: -->
-
-<!-- -   "Chlorophyll" -->
-<!-- -   "Chlorophyll A" -->
-<!-- -   "Chlorophyll a" -->
-<!-- -   "Chlorophyll a (probe relative fluorescence)" -->
-<!-- -   "Chlorophyll a (probe)" -->
-<!-- -   "Chlorophyll a - Periphyton (attached)" -->
-<!-- -   "Chlorophyll a - Phytoplankton (suspended)" -->
-<!-- -   "Chlorophyll a, corrected for pheophytin" -->
-<!-- -   "Chlorophyll a, free of pheophytin" -->
-<!-- -   "Chlorophyll a, uncorrected for pheophytin" -->
-<!-- -   "Chlorophyll b" -->
-<!-- -   "Chlorophyll c" -->
-<!-- -   "Chlorophyll/Pheophytin ratio" -->
-
-<!-- secchi: -->
-
-<!-- -   "Depth, Secchi disk depth" -->
-<!-- -   "Depth, Secchi disk depth (choice list)" -->
-<!-- -   "Secchi Reading Condition (choice list)" -->
-<!-- -   "Secchi depth" -->
-<!-- -   "Water transparency, Secchi disc" -->
-
-<!-- doc: -->
-
-<!-- -   "Organic carbon" -->
-<!-- -   "Total carbon" -->
-<!-- -   "Hydrophilic fraction of organic carbon" -->
-<!-- -   "Non-purgeable Organic Carbon (NPOC)" -->
-
-<!-- tss: -->
-
-<!-- - "Total suspended solids" -->
-<!-- - "Total Particulate Matter" -->
-<!-- - "Total Suspended Particulate Matter" -->
-
 <br>
 
-### Maps of data spread:
+### Maps of data spread
 
-Maps are presented below with counts of records across a grid. The grid is how records are grouped in download requests to the Water Quality Portal. **Note:** The counts here are for raw data that are not filtered or harmonized.
+The pipeline uses a spatial grid to download data from the WQP in batches. Maps are presented below with counts of records across this spatial grid. **Note:** The counts here are for raw data that are not yet filtered or harmonized.
 
 ```{r}
-# Combine counts in each grid_id with the grid polygons
+# Combine sample counts in each grid_id with the grid polygons
 grid_counts <- left_join(x = global_grid,
                          y = site_counts %>%
                            count(grid_id),

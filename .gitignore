@@ -39,14 +39,16 @@ vignettes/*.pdf
 .Renviron
 
 # Data
-data/
+#data/ # this is required for pipeline to run, and is very small -KW
 _targets/
 
-# ignore feather files
+# ignore feather and rds files
 **.feather
+**.rds
 
 # Other
 **.DS_Store
 
-# The chapters folder created by the pipeline
+# The chapters folders created by the pipeline
 chapters/
+_book/chapters/

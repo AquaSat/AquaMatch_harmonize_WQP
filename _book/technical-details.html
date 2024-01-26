@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>1 AquaMatch data harmonization process | _main.knit</title>
+  <title>2 Technical details | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="1 AquaMatch data harmonization process | _main.knit" />
+  <meta property="og:title" content="2 Technical details | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="1 AquaMatch data harmonization process | _main.knit" />
+  <meta name="twitter:title" content="2 Technical details | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-<link rel="next" href="technical-details.html"/>
+<link rel="prev" href="index.html"/>
+<link rel="next" href="download-process.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -220,61 +220,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<!--bookdown:title:end-->
-<!--bookdown:title:start-->
-<div id="aquamatch-data-harmonization-process" class="section level1 hasAnchor" number="1">
-<h1><span class="header-section-number">1</span> AquaMatch data harmonization process<a href="index.html#aquamatch-data-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This bookdown documents the harmonization process for data downloaded from the
-<a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP)
-used to build the AquaMatch dataset, a data product of Aquasat. The WQP is a
-data warehouse for water-related data measured or observed within the United
-States and US Territories managed by the Environmental Protection Agency (EPA),
-United States Geological Survey (USGS), and the National Water Quality
-Monitoring Council (NWQMC). AquaMatch collates water quality measurements and
-observations with optical and thermal satellite data from lakeSR and riverSR.</p>
-<p>All data in this workflow are processed as parameter groups, a high-level
-grouping used in AquaMatch for specific water quality measures found in the WQP.
-This document first describes selections made while downloading WQP data using
-the {dataRetrieval} package (<strong><em>CITE</em></strong>), the “pre-harmonization” process that
-data for all parameter groups go through, and then how the chlorophyll <em>a</em>,
-dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids
-(TSS) parameter groups are each filtered and harmonized.</p>
-<p><em>Note: for the purposes of this bookdown, all terms surrounded by <code>backticks</code>
-are WQP column names. Some of these names are defined within this bookdown and a
-full list of definitions can be found in Table 7
-<a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
-<p>Data are contributed to the WQP by a wide range of data providers
-(<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling
-and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code>
-are defined by the WQP as:</p>
-<blockquote>
-<p><em>The object, property, or substance which is evaluated or enumerated by either
-a direct field measurement, a direct field observation, or by laboratory
-analysis of material collected in the field.</em></p>
-</blockquote>
-<p>Parameter groups are comprised of data with multiple <code>characteristicNames</code> in
-data from the WQP. For example, chlorophyll-related <code>characteristicNames</code>
-include “Chlorophyll a”, “Chlorophyll a, corrected for pheophytin”, “Chlorophyll
-b”, and “Chlorophyll c” among several others. Only a subset of these
-<code>characteristicNames</code> will be included in our “chlorophyll <em>a</em>” parameter group.
-As mentioned previously, measurements and observations within the WQP for a
-given parameter group are often sampled and analyzed using a variety of methods.
-Some of these methods for sampling and analysis are directly interoperable and
-others are not. The processing steps described within this bookdown walks
-through how we harmonize the data for each parameter group while flagging or
-removing data that may not have enough information associated with a measurement
-or observation. The product of this is a database of WQP entries with
-interoperability and reliability in mind.</p>
-<p>The result of this harmonization procedure is two datasets per parameter group.
-The first is a harmonized dataset that includes all of the original WQP columns
-in addition to those introduced in this workflow. The second is the output of
-all harmonization steps, including aggregation to the median value where
-simultaneous records occur. We define simultaneous records as those measured on
-the same day by the same <code>organizaionIndentifier</code> at the same location with the
-same harmonized depth criteria. We believe that most users will only use this
-aggregated dataset, but we provide the unaggregated version for those who would
-like to make different decisions at any point in the tiering, flagging, or
-aggregation steps.</p>
+<div id="technical-details" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">2</span> Technical details<a href="technical-details.html#technical-details" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>AquaSat v2 uses the {targets} workflow management R package to reimagine
+the <a href="https://github.com/GlobalHydrologyLab/AquaSat">original AquaSat
+codebase</a> (Landau, 2021).
+The framework for this workflow is based on code adapted from <a href="https://github.com/USGS-R/ds-pipelines-targets-example-wqp">this USGS
+pipeline</a>
+and has been further developed by members of the
+<a href="https://github.com/rossyndicate">ROSSyndicate</a>.</p>
+<p>Technical details on {targets} workflows are available in the <a href="https://books.ropensci.org/targets/">{targets}
+User Manual</a>. {targets} workflows
+are built upon lists of “targets”, which can be thought of as analytical
+steps written out in code. This workflow uses a targets list spread
+across multiple scripts in an effort to facilitate organization of the
+code. <code>_targets.R</code> serves as a main list of targets and references the
+other lists of targets, which are defined inside <code>3_harmonize.R</code> and
+<code>create_bookdown.R</code>. Note that the downloading and harmonizing scripts
+for WQP data are spread across two GitHub repositories:
+<a href="https://github.com/AquaSat/AquaMatch_download_WQP">AquaMatch_download_WQP</a>
+and
+<a href="https://github.com/AquaSat/AquaMatch_harmonize_WQP">AquaMatch_harmonize_WQP</a>,
+respectively.</p>
 
 </div>
             </section>
@@ -282,8 +249,8 @@ aggregation steps.</p>
           </div>
         </div>
       </div>
-
-<a href="technical-details.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="download-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

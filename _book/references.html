@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>1 AquaMatch data harmonization process | _main.knit</title>
+  <title>7 References | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="1 AquaMatch data harmonization process | _main.knit" />
+  <meta property="og:title" content="7 References | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="1 AquaMatch data harmonization process | _main.knit" />
+  <meta name="twitter:title" content="7 References | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
+<link rel="prev" href="doc-harmonization-process.html"/>
 
-<link rel="next" href="technical-details.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -220,61 +220,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<!--bookdown:title:end-->
-<!--bookdown:title:start-->
-<div id="aquamatch-data-harmonization-process" class="section level1 hasAnchor" number="1">
-<h1><span class="header-section-number">1</span> AquaMatch data harmonization process<a href="index.html#aquamatch-data-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This bookdown documents the harmonization process for data downloaded from the
-<a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP)
-used to build the AquaMatch dataset, a data product of Aquasat. The WQP is a
-data warehouse for water-related data measured or observed within the United
-States and US Territories managed by the Environmental Protection Agency (EPA),
-United States Geological Survey (USGS), and the National Water Quality
-Monitoring Council (NWQMC). AquaMatch collates water quality measurements and
-observations with optical and thermal satellite data from lakeSR and riverSR.</p>
-<p>All data in this workflow are processed as parameter groups, a high-level
-grouping used in AquaMatch for specific water quality measures found in the WQP.
-This document first describes selections made while downloading WQP data using
-the {dataRetrieval} package (<strong><em>CITE</em></strong>), the “pre-harmonization” process that
-data for all parameter groups go through, and then how the chlorophyll <em>a</em>,
-dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids
-(TSS) parameter groups are each filtered and harmonized.</p>
-<p><em>Note: for the purposes of this bookdown, all terms surrounded by <code>backticks</code>
-are WQP column names. Some of these names are defined within this bookdown and a
-full list of definitions can be found in Table 7
-<a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
-<p>Data are contributed to the WQP by a wide range of data providers
-(<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling
-and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code>
-are defined by the WQP as:</p>
-<blockquote>
-<p><em>The object, property, or substance which is evaluated or enumerated by either
-a direct field measurement, a direct field observation, or by laboratory
-analysis of material collected in the field.</em></p>
-</blockquote>
-<p>Parameter groups are comprised of data with multiple <code>characteristicNames</code> in
-data from the WQP. For example, chlorophyll-related <code>characteristicNames</code>
-include “Chlorophyll a”, “Chlorophyll a, corrected for pheophytin”, “Chlorophyll
-b”, and “Chlorophyll c” among several others. Only a subset of these
-<code>characteristicNames</code> will be included in our “chlorophyll <em>a</em>” parameter group.
-As mentioned previously, measurements and observations within the WQP for a
-given parameter group are often sampled and analyzed using a variety of methods.
-Some of these methods for sampling and analysis are directly interoperable and
-others are not. The processing steps described within this bookdown walks
-through how we harmonize the data for each parameter group while flagging or
-removing data that may not have enough information associated with a measurement
-or observation. The product of this is a database of WQP entries with
-interoperability and reliability in mind.</p>
-<p>The result of this harmonization procedure is two datasets per parameter group.
-The first is a harmonized dataset that includes all of the original WQP columns
-in addition to those introduced in this workflow. The second is the output of
-all harmonization steps, including aggregation to the median value where
-simultaneous records occur. We define simultaneous records as those measured on
-the same day by the same <code>organizaionIndentifier</code> at the same location with the
-same harmonized depth criteria. We believe that most users will only use this
-aggregated dataset, but we provide the unaggregated version for those who would
-like to make different decisions at any point in the tiering, flagging, or
-aggregation steps.</p>
+<div id="references" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">7</span> References<a href="references.html#references" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>De Cicco, L.A., Hirsch, R.M., Lorenz, D., Watkins, W.D., Johnson, M.,
+(2023). dataRetrieval: R packages for discovering and retrieving water
+data available from Federal hydrologic web services, v.2.7.13,
+<a href="doi:10.5066/P9X4L3GE" class="uri">doi:10.5066/P9X4L3GE</a></p>
+<p>Landau, W. M., (2021). The targets R package: a dynamic Make-like
+function-oriented pipeline toolkit for reproducibility and
+high-performance computing. Journal of Open Source Software, 6(57),
+2959, <a href="https://doi.org/10.21105/joss.02959" class="uri">https://doi.org/10.21105/joss.02959</a></p>
+<p>Water Quality Portal. Washington (DC): National Water Quality Monitoring
+Council, United States Geological Survey (USGS), Environmental
+Protection Agency (EPA), (2021). <a href="https://doi.org/10.5066/P9QRKUVJ" class="uri">https://doi.org/10.5066/P9QRKUVJ</a>.</p>
 
 </div>
             </section>
@@ -282,8 +240,8 @@ aggregation steps.</p>
           </div>
         </div>
       </div>
+<a href="doc-harmonization-process.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
-<a href="technical-details.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

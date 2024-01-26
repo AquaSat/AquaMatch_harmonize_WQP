@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>5 DOC harmonization process | _main.knit</title>
+  <title>7 TSS harmonization process | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.36 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="5 DOC harmonization process | _main.knit" />
+  <meta property="og:title" content="7 TSS harmonization process | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="5 DOC harmonization process | _main.knit" />
+  <meta name="twitter:title" content="7 TSS harmonization process | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="chlorophyll-a-chla-harmonization-process.html"/>
-<link rel="next" href="secchi-harmonization-process.html"/>
+<link rel="prev" href="secchi-harmonization-process.html"/>
+
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -165,26 +165,26 @@
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="doc-harmonization-process" class="section level1 hasAnchor" number="5">
-<h1><span class="header-section-number">5</span> DOC harmonization process<a href="doc-harmonization-process.html#doc-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<div id="initial-dataset-2" class="section level3 hasAnchor" number="5.0.1">
-<h3><span class="header-section-number">5.0.1</span> Initial dataset<a href="doc-harmonization-process.html#initial-dataset-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>After the pre-harmonization process the DOC-only WQP dataset contains
-2.58 million rows.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
+<div id="tss-harmonization-process" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">7</span> TSS harmonization process<a href="tss-harmonization-process.html#tss-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="initial-dataset-4" class="section level3 hasAnchor" number="7.0.1">
+<h3><span class="header-section-number">7.0.1</span> Initial dataset<a href="tss-harmonization-process.html#initial-dataset-4" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>After the pre-harmonization process the tss-only WQP dataset contains
+3.78 million rows.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="filter-for-water-media-1" class="section level3 hasAnchor" number="5.0.2">
-<h3><span class="header-section-number">5.0.2</span> Filter for water media<a href="doc-harmonization-process.html#filter-for-water-media-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The first step in DOC harmonization is to ensure that the media type for
+<div id="filter-for-water-media-3" class="section level3 hasAnchor" number="7.0.2">
+<h3><span class="header-section-number">7.0.2</span> Filter for water media<a href="tss-harmonization-process.html#filter-for-water-media-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The first step in TSS harmonization is to ensure that the media type for
 the data is <code>"water"</code> or <code>"Water"</code>. This should just be a precautionary
-step: 0 rows are removed. The final row count after this is 2.58
+step: 0 rows are removed. The final row count after this is 3.78
 million.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="remove-fails-and-other-missing-data" class="section level3 hasAnchor" number="5.0.3">
-<h3><span class="header-section-number">5.0.3</span> Remove fails and other missing data<a href="doc-harmonization-process.html#remove-fails-and-other-missing-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="remove-fails-and-other-missing-data-2" class="section level3 hasAnchor" number="7.0.3">
+<h3><span class="header-section-number">7.0.3</span> Remove fails and other missing data<a href="tss-harmonization-process.html#remove-fails-and-other-missing-data-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>In this step we filter out records based on indications that they have
 failed data for some reason. We screen the following columns:
 <code>ActivityCommentText</code>, <code>ResultLaboratoryCommentText</code>,
@@ -194,12 +194,12 @@ dropped record includes (but is not limited to): <code>"fail"</code>, <code>"sus
 <code>"error"</code>, <code>"beyond accept"</code>, <code>"interference"</code>, <code>"questionable"</code>,
 <code>"problem"</code>, <code>"violation"</code>, <code>"rejected"</code>, <code>"no data"</code>. Specific target
 text varies by column.</p>
-<p>75.44 thousand rows are removed and 2.51 million rows remain.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
+<p>160.82 thousand rows are removed and 3.61 million rows remain.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="clean-mdls-1" class="section level3 hasAnchor" number="5.0.4">
-<h3><span class="header-section-number">5.0.4</span> Clean MDLs<a href="doc-harmonization-process.html#clean-mdls-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="clean-mdls-3" class="section level3 hasAnchor" number="7.0.4">
+<h3><span class="header-section-number">7.0.4</span> Clean MDLs<a href="tss-harmonization-process.html#clean-mdls-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>In this step method detection limits (MDLs) are used to clean up the
 reported values. When a numeric value is missing for the data record
 (i.e., <code>NA</code> or text that became <code>NA</code> during an <code>as.numeric</code> call) we
@@ -214,12 +214,12 @@ column we use that number instead.</p>
 <p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
 value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.51 million.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
+are removed. The final row count after this is 3.61 million.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="clean-approximate-values-1" class="section level3 hasAnchor" number="5.0.5">
-<h3><span class="header-section-number">5.0.5</span> Clean approximate values<a href="doc-harmonization-process.html#clean-approximate-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="clean-approximate-values-3" class="section level3 hasAnchor" number="7.0.5">
+<h3><span class="header-section-number">7.0.5</span> Clean approximate values<a href="tss-harmonization-process.html#clean-approximate-values-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Cleaning approximate values involves a similar process as for MDL
 cleaning. We flag “approximated” values in the dataset. The
 <code>ResultMeasureValue</code> column gets checked for <strong>all</strong> three of the
@@ -233,13 +233,33 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 </ol>
 <p>We then use the approximate value as the record’s value moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.51 million.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
+are removed. The final row count after this is 3.61 million.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="harmonize-record-units-1" class="section level3 hasAnchor" number="5.0.6">
-<h3><span class="header-section-number">5.0.6</span> Harmonize record units<a href="doc-harmonization-process.html#harmonize-record-units-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The next step in doc harmonization is working with the units of the WQP
+<div id="clean-values-with-greater-than-data-2" class="section level3 hasAnchor" number="7.0.6">
+<h3><span class="header-section-number">7.0.6</span> Clean values with “greater than” data<a href="tss-harmonization-process.html#clean-values-with-greater-than-data-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The next step is similar to the MDL and approximate value cleaning
+processes, and follows the approximate cleaning process most closely.
+The goal is to clean up values that were entered as “greater than” some
+value. The <code>ResultMeasureValue</code> column gets checked for <strong>all</strong> three of
+the following conditions:</p>
+<ol style="list-style-type: decimal">
+<li>Numeric-only version of the column is still <code>NA</code> after MDL &amp;
+approximate cleaning</li>
+<li>The original column text contained a number</li>
+<li>The original column text contained a <code>&gt;</code></li>
+</ol>
+<p>We then use the “greater than” value (without <code>&gt;</code>) as the record’s value
+moving forward.</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 3.61 million.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="harmonize-record-units-3" class="section level3 hasAnchor" number="7.0.7">
+<h3><span class="header-section-number">7.0.7</span> Harmonize record units<a href="tss-harmonization-process.html#harmonize-record-units-3" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The next step in TSS harmonization is working with the units of the WQP
 records. These can vary widely. We create the following conversion
 table, which is used to translate units provided in WQP into
 milligrams/L:</p>
@@ -351,33 +371,41 @@ umol/L
 6.008e+01
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+g/l
+</td>
+<td style="text-align:right;">
+1.000e+06
+</td>
+</tr>
 </tbody>
 </table>
-<p>We also limit values to less than 50 mg/L to ensure realistic data.
-19.25 thousand rows are removed. The final row count after this is 2.49
+<p>We also limit values to less than 1000 mg/L to ensure realistic data.
+125.84 thousand rows are removed. The final row count after this is 3.49
 million.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-15-1.png" /><!-- --></p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="filter-based-on-analytical-method" class="section level3 hasAnchor" number="5.0.7">
-<h3><span class="header-section-number">5.0.7</span> Filter based on analytical method<a href="doc-harmonization-process.html#filter-based-on-analytical-method" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Our next step is to aggregate doc analytical methods into groups and
+<div id="filter-based-on-analytical-method-2" class="section level3 hasAnchor" number="7.0.8">
+<h3><span class="header-section-number">7.0.8</span> Filter based on analytical method<a href="tss-harmonization-process.html#filter-based-on-analytical-method-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Our next step is to aggregate TSS analytical methods into groups and
 then filter out methods that may have been erroneously added, were
-unclear, or which don’t meet our needs. Methods that were <code>NA</code> or were
-grouped as <code>"Ambiguous"</code> or <code>"Carbonaceous Analyzer"</code> are dropped.</p>
-<p>This process drops 1298.06 million rows leaving 1.19 million remaining.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-17-1.png" /><!-- --></p>
+unclear, or which don’t meet our needs. Methods that were grouped as
+<code>"Ambiguous"</code> or <code>"Unlikely"</code> are dropped.</p>
+<p>This process drops 1870.33 million rows leaving 1.62 million remaining.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="filter-based-on-fraction-type" class="section level3 hasAnchor" number="5.0.8">
-<h3><span class="header-section-number">5.0.8</span> Filter based on fraction type<a href="doc-harmonization-process.html#filter-based-on-fraction-type" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The final step in our doc harmonization is filtering based on the
-<code>ResultSampleFractionText</code> column. We keep records with the following
-values in this column: <code>"Dissolved"</code>, <code>"Filtered, lab"</code>, <code>"Filterable"</code>,
-<code>"Filtered, field"</code>.</p>
-<p>This process drops 756.6 thousand rows leaving 0.43 million remaining in
-the final harmonized doc dataset.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-19-1.png" /><!-- --></p>
+<div id="filter-based-on-fraction-type-2" class="section level3 hasAnchor" number="7.0.9">
+<h3><span class="header-section-number">7.0.9</span> Filter based on fraction type<a href="tss-harmonization-process.html#filter-based-on-fraction-type-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The final step in our TSS harmonization is filtering based on the
+<code>ResultSampleFractionText</code> column. We <strong>drop</strong> records with the
+following values in this column: <code>"Fixed</code>“, <code>"Volatile"</code>, <code>"Dissolved"</code>,
+or <code>"Acid Soluble"</code>.</p>
+<p>This process drops 0.15 thousand rows leaving 1.62 million remaining in
+the final harmonized TSS dataset.</p>
+<p><img src="chapters/07_tss_harmonization_files/figure-gfm/unnamed-chunk-21-1.png" /><!-- --></p>
 
 </div>
 </div>
@@ -386,8 +414,8 @@ the final harmonized doc dataset.</p>
           </div>
         </div>
       </div>
-<a href="chlorophyll-a-chla-harmonization-process.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="secchi-harmonization-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="secchi-harmonization-process.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

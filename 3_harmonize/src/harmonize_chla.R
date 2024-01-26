@@ -20,8 +20,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   chla <- raw_chla %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
-    filter(
-      ActivityMediaName %in% c("Water", "water")) %>%
+    # Filter out non-target media types
+    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+             is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -29,8 +30,8 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Record info on any dropped rows  
   dropped_media <- tibble(
     step = "chla harmonization",
-    reason = "Filtered for only water media",
-    short_reason = "Water media",
+    reason = "Filtered for only specific water media",
+    short_reason = "Target water media",
     number_dropped = nrow(raw_chla) - nrow(chla),
     n_rows = nrow(chla),
     order = 1
@@ -783,7 +784,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     )) %>%
     select(-field_tag)
   
-  # How many records removed while assigning field flags?
+  # How many records removed due to unlikely fraction types?
   print(
     paste0(
       "Rows removed while assigning field flags: ",
@@ -816,7 +817,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    xlab("Harmonized chl a (ug/L, log~10~ transformed)") +
+    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
@@ -864,8 +865,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     # Make sure we don't drop subgroup ID
     group_by(subgroup_id, .add = TRUE) %>%
     summarize(
-      harmonized_value = median(harmonized_value),
-      harmonized_value_sd = sd(harmonized_value)
+      harmonized_row_count = n(),
+      harmonized_value_sd = sd(harmonized_value),
+      harmonized_value = median(harmonized_value)
     ) %>%
     ungroup()
   
@@ -885,7 +887,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
-    xlab("Harmonized chl a (ug/L, log~10~ transformed)") +
+    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
@@ -896,7 +898,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   ggsave(filename = "3_harmonize/out/chla_tier_dists_postagg.png",
          plot = tier_dists,
-         width = 7, height = 3, units = "in", device = "png")
+         width = 6, height = 4, units = "in", device = "png")
   
   
   # How many records removed in aggregating simultaneous records?
@@ -934,10 +936,10 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   
   # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/chla_harmonized_final.feather"
+  data_out_path <- "3_harmonize/out/chla_harmonized_final.csv"
   
-  write_feather(no_simul_chla,
-                data_out_path)
+  write_csv(no_simul_chla,
+            data_out_path)
   
   # Final dataset length:
   print(

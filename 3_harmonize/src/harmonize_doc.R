@@ -5,7 +5,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   starting_data <- tibble(
     step = "doc harmonization",
     reason = "Starting dataset",
-    short_reason = "Starting",
+    short_reason = "Start",
     number_dropped = 0,
     n_rows = nrow(raw_doc),
     order = 0
@@ -51,7 +51,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   dropped_media <- tibble(
     step = "doc harmonization",
     reason = "Filtered for only water media & doc fraction",
-    short_reason = "Water media & doc",
+    short_reason = "Target water media & doc",
     number_dropped = nrow(raw_doc) - nrow(doc),
     n_rows = nrow(doc),
     order = 1
@@ -357,12 +357,11 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Harmonize value units ---------------------------------------------------
   
-  # Set up a lookup table so that final units are all in ug/L. 
+  # Set up a lookup table so that final units are all in mg/L. 
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
                                       'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
-    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                   1000000, 0.000001, 60.080000))
+    conversion = c(1, 1, 1, 0.001, 0.001, 0.001, 0.001, 1000, 1, 1000, 1e-09, 0.06008))
   
   unit_table_out_path <- "3_harmonize/out/doc_unit_table.csv"
   
@@ -374,7 +373,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     inner_join(x = .,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
-    mutate(harmonized_value = (ResultMeasureValue * conversion) / 1000,
+    mutate(harmonized_value = ResultMeasureValue * conversion,
            harmonized_units = "mg/L")
   
   # Plot and export unit codes that didn't make through joining
@@ -679,7 +678,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # 1.2 Persulfate-UV/Heated Persulfate Oxidation+IR detection
   
-  # Create a new column indicating detection of Combustion+IR methods text: T or F
+  # Create a new column indicating detection of Persulfate-UV methods text: T or F
   pers_uv_heated_text <- paste0(c("5310 ?C", "persulfate oxid", "415.2",
                                   "Ultraviolet", "Heated-Persulfate", "UV"),
                                 collapse = "|")
@@ -797,6 +796,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     order = 9
   )
   
+  
   # Flag field methods ------------------------------------------------------
   
   # DOC doesn't have field sampling methods that lend themselves well to
@@ -854,76 +854,129 @@ harmonize_doc <- function(raw_doc, p_codes){
          width = 8, height = 6, units = "in", device = "png")
   
   
+  # Aggregate simultaneous records ------------------------------------------
   
+  # There are full duplicates and also values occurring at the same time, location,
+  # etc. We take medians across them here
   
-  #### Outdated below 
+  # First tag aggregate subgroups with group IDs
+  grouped_doc <- field_flagged_doc %>%
+    group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
+             ActivityStartDateTime,
+             harmonized_top_depth_value, harmonized_top_depth_unit,
+             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
+             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
+             depth_flag, mdl_flag, approx_flag, greater_flag,
+             analytical_tier, field_flag, harmonized_units) %>%
+    mutate(subgroup_id = cur_group_id())
   
-  # Filter fractions --------------------------------------------------------
+  # Export the dataset with subgroup IDs for joining future aggregated product
+  # back to original raw data
+  grouped_doc_out_path <- "3_harmonize/out/doc_harmonized_grouped.feather"
   
-  # Final step in harmonization is to group and subset fractions of interest
-  doc_harmonized <- doc_filter_tiers %>%
-    mutate(
-      harmonized_fraction = case_when(
-        ResultSampleFractionText %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
-                                        'Filtered, field') ~ "Dissolved",
-        ResultSampleFractionText %in% c('Total', 'Total Recovrble', 'Total Recoverable',
-                                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
-                                        "Non-Filterable (Particle)") ~ "Total",
-        ResultSampleFractionText %in% c('Fixed') ~ "Fixed",
-        ResultSampleFractionText %in% c('Non-Filterable (Particle)') ~ 'Particle',
-        is.na(ResultSampleFractionText) | ResultSampleFractionText %in% c(" ", "Field", "Bed Sediment",
-                                                                          "Inorganic", "Organic") ~ "Ambiguous")
+  grouped_doc %>%
+    select(
+      all_of(c(raw_names,
+               "parameter_code", "group_name", "parameter_name_description",
+               "subgroup_id")),
+      group_cols()
     ) %>%
-    # Filter to dissolved fraction
-    filter(harmonized_fraction == "Dissolved")
+    write_feather(path = grouped_doc_out_path)
   
-  # How many records removed due to methods? Similar number as AquaSat(1)
+  # Now aggregate at the subgroup level to take care of simultaneous observations
+  no_simul_doc <- grouped_doc %>%
+    # Make sure we don't drop subgroup ID
+    group_by(subgroup_id, .add = TRUE) %>%
+    summarize(
+      harmonized_row_count = n(),
+      harmonized_value_sd = sd(harmonized_value),
+      harmonized_value = median(harmonized_value)
+    ) %>%
+    ungroup()
+  
+  rm(grouped_doc)
+  gc()
+  
+  # Plot harmonized measurements by Tier
+  
+  tier_dists <- no_simul_doc %>%
+    select(analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001,
+           tier_label = case_when(
+             analytical_tier == 0 ~ "Restrictive (Tier 0)",
+             analytical_tier == 1 ~ "Narrowed (Tier 1)",
+             analytical_tier == 2 ~ "Inclusive (Tier 2)"
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized DOC (mg/L, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized DOC values by analytical tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/doc_tier_dists_postagg.png",
+         plot = tier_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  
+  # How many records removed in aggregating simultaneous records?
   print(
     paste0(
-      "Rows removed due to fraction type: ",
-      nrow(doc_filter_tiers) - nrow(doc_harmonized)
+      "Rows removed while aggregating simultaneous records: ",
+      nrow(field_flagged_doc) - nrow(no_simul_doc)
     )
   )
   
-  dropped_fractions <- tibble(
+  dropped_simul <- tibble(
     step = "doc harmonization",
-    reason = "Dropped rows while filtering fraction types",
-    short_reason = "Fraction types",
-    number_dropped = nrow(doc_filter_tiers) - nrow(doc_harmonized),
-    n_rows = nrow(doc_harmonized),
-    order = 7
+    reason = "Dropped rows while aggregating simultaneous records",
+    short_reason = "Simultaneous records",
+    number_dropped = nrow(field_flagged_doc) - nrow(no_simul_doc),
+    n_rows = nrow(no_simul_doc),
+    order = 11
   )
   
   
   # Export ------------------------------------------------------------------
   
-  
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_fails,
-                                dropped_fractions, dropped_harmonization,
-                                dropped_mdls, dropped_media, dropped_methods)
+  compiled_dropped <- bind_rows(starting_data, dropped_media,
+                                dropped_fails, dropped_mdls,
+                                dropped_approximates, dropped_greater_than,
+                                dropped_na, dropped_harmonization,
+                                dropped_depths, dropped_methods,
+                                dropped_field, dropped_simul)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_doc_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/doc_harmonize_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
-  # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_doc.feather"
   
-  write_feather(doc_harmonized,
-                data_out_path)
+  # Export in memory-friendly way
+  data_out_path <- "3_harmonize/out/doc_harmonized_final.csv"
+  
+  write_csv(no_simul_doc,
+            data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(doc_harmonized)
+      nrow(no_simul_doc)
     )
   )
   
   return(list(
-    harmonized_doc_path = data_out_path,
-    compiled_drops_path = documented_drops_out_path))  
+    doc_tiering_record_path = tiering_record_out_path,
+    doc_grouped_preagg_path = grouped_doc_out_path,
+    doc_harmonized_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path
+  ))   
   
 }

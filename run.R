@@ -44,18 +44,8 @@ library(targets)
 
 # Directory handling ------------------------------------------------------
 
-# List of directories to check for and create if they don't exist
-dir_list <- c(
-  "3_harmonize/in/",
-  "3_harmonize/log/",
-  "3_harmonize/out/"
-)
-
-# Check for the directories above and create if they don't exist
-walk(.x = dir_list,
-     .f = ~ {
-       if (!dir.exists(.x)) {dir.create(.x, recursive = TRUE)}
-     })
+# Check for directory and create if it doesn't exist
+if (!dir.exists("3_harmonize/in/")) {dir.create("3_harmonize/in/")}
 
 
 # Google Drive auth -------------------------------------------------------
@@ -78,5 +68,5 @@ drive_auth()
   temp_vis$x$main$text <- paste0("Last completed: ", Sys.time())
   
   htmltools::save_html(html = temp_vis,
-                       file = "docs/current_visnetwork.html")
+                       file = "out/current_visnetwork.html")
 }

@@ -123,15 +123,6 @@ p3_targets_list <- list(
                 cue = tar_cue("always")),
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
   # Documentation of dropped records ----------------------------------------
   
   tar_target(p3_documented_drops,

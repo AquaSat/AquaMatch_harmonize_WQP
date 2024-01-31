@@ -6,8 +6,7 @@ library(tarchetypes)
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse"),
-  error = "continue"
+  packages = c("tidyverse")
 )
 
 # Run the R scripts with custom functions:
@@ -23,7 +22,8 @@ config_targets <- list(
   # The local directory where the first {targets} pipeline is located (i.e.,
   # the pipeline that runs the download step)
   tar_target(name = p0_AquaMatch_download_WQP_directory,
-             command = "../AquaMatch_download_WQP/"),
+             command = "../AquaMatch_download_WQP/",
+             cue = tar_cue("always")),
   
   # Confirm the presence of the {targets} WQP download pipeline
   tar_target(name = p0_AquaMatch_download_WQP_confirm,
@@ -31,8 +31,7 @@ config_targets <- list(
                # Throw an error if the pipeline does not exist
                stop("The WQP download pipeline is not at the specified location.")
              },
-             # The presence of the first pipeline is necessary for this one to run
-             error = "stop"),
+             cue = tar_cue("always")),
   
   # Retrieve links to data from Google Drive
   
@@ -72,6 +71,7 @@ config_targets <- list(
                            "1_inventory/out/p1_wqp_inventory_aoi_out_link.csv")
                   }
                 },
+                cue = tar_cue("always"),
                 read = read_csv(file = !!.x)),
   
   # Location of spatial grid link
@@ -85,6 +85,7 @@ config_targets <- list(
                            "1_inventory/out/p1_global_grid_out_link.csv")
                   }
                 },
+                cue = tar_cue("always"),
                 read = read_csv(file = !!.x)),
   
   # Location of CharacteristicName - parameter name crosswalk link
@@ -98,6 +99,7 @@ config_targets <- list(
                            "1_inventory/out/p1_char_names_crosswalk_out_link.csv")
                   }
                 },
+                cue = tar_cue("always"),
                 read = read_csv(file = !!.x)),
   
   # Location of inventory site counts link
@@ -111,6 +113,7 @@ config_targets <- list(
                            "2_download/out/p2_site_counts_out_link.csv")
                   }
                 },
+                cue = tar_cue("always"),
                 read = read_csv(file = !!.x)),
   
   # Location of link to downloaded WQP data from within area of interest
@@ -124,6 +127,7 @@ config_targets <- list(
                            "2_download/out/p2_wqp_data_aoi_out_links.csv")
                   }
                 },
+                cue = tar_cue("always"),
                 read = read_csv(file = !!.x)),
   
   # Download data sets of interest:

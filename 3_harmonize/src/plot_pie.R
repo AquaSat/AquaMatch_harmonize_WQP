@@ -19,7 +19,7 @@ plot_fail_pie <- function(dataset, col_name, text_size = 3){
     # Don't clutter with absent searches
     filter(record_count != 0) %>%
     mutate(perc = record_count / sum(record_count),
-           labels = scales::percent(perc)) %>% 
+           labels = percent(perc)) %>% 
     # Descending order of frequency
     arrange(desc(perc)) %>%
     mutate(word = fct_rev(fct_inorder(word)),
@@ -72,7 +72,7 @@ plot_unit_pie <- function(dataset, text_size = 3){
     # in the fill order
     replace_na(list(ResultMeasure.MeasureUnitCode = "NA", unit = "NA")) %>%
     mutate(perc = record_count / sum(record_count),
-           labels = scales::percent(perc)) %>% 
+           labels = percent(perc)) %>% 
     # Descending order of frequency
     arrange(desc(perc)) %>%
     mutate(unit = fct_rev(fct_inorder(ResultMeasure.MeasureUnitCode)),
@@ -124,7 +124,7 @@ plot_fraction_pie <- function(dataset, text_size = 3){
     # in the fill order
     replace_na(list(ResultSampleFractionText = "NA")) %>%
     mutate(perc = record_count / sum(record_count),
-           labels = scales::percent(perc)) %>% 
+           labels = percent(perc)) %>% 
     # Descending order of frequency
     arrange(desc(perc)) %>%
     mutate(unit = fct_rev(fct_inorder(ResultSampleFractionText)),

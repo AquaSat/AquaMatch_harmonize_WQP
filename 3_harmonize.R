@@ -43,8 +43,7 @@ p3_targets_list <- list(
   tar_target(p3_cleaned_wqp_data_chl,
              read_feather(p3_wqp_data_aoi_ready_chl$wqp_data_clean_path),
              packages = "feather",
-             format = "feather",
-             cue = tar_cue("always")),
+             format = "feather"),
   
   # Pre-harmonization: DOC --------------------------------------------------
   tar_target(
@@ -59,8 +58,7 @@ p3_targets_list <- list(
   tar_target(p3_cleaned_wqp_data_doc,
              read_feather(p3_wqp_data_aoi_ready_doc$wqp_data_clean_path),
              packages = "feather",
-             format = "feather",
-             cue = tar_cue("always")),
+             format = "feather"),
   
   
   # Harmonization process ---------------------------------------------------
@@ -80,8 +78,7 @@ p3_targets_list <- list(
   
   tar_file_read(name = p3_chla_tiering_record,
                 command = p3_chla_harmonized$chla_tiering_record_path,
-                read = read_csv(file = !!.x),
-                cue = tar_cue("always")),
+                read = read_csv(file = !!.x)),
   
   # Harmonized chlorophyll data containing grouping IDs for simultaneous
   # records, but not aggregated
@@ -95,8 +92,7 @@ p3_targets_list <- list(
   # final product)
   tar_file_read(name = p3_chla_agg_harmonized,
                 command = p3_chla_harmonized$chla_harmonized_path,
-                read = read_csv(file = !!.x),
-                cue = tar_cue("always")),
+                read = read_csv(file = !!.x)),
   
   
   # Harmonization: DOC ------------------------------------------------------
@@ -108,19 +104,16 @@ p3_targets_list <- list(
   
   tar_file_read(name = p3_doc_tiering_record,
                 command = p3_doc_harmonized$doc_tiering_record_path,
-                read = read_csv(file = !!.x),
-                cue = tar_cue("always")),
+                read = read_csv(file = !!.x)),
   
   tar_file_read(name = p3_doc_preagg_grouped,
                 command = p3_doc_harmonized$doc_grouped_preagg_path,
                 read = read_feather(path = !!.x),
-                cue = tar_cue("always"),
                 packages = "feather"),
   
   tar_file_read(name = p3_doc_agg_harmonized,
                 command = p3_doc_harmonized$doc_harmonized_path,
-                read = read_csv(file = !!.x),
-                cue = tar_cue("always")),
+                read = read_csv(file = !!.x)),
   
   
   # Documentation of dropped records ----------------------------------------
@@ -130,7 +123,6 @@ p3_targets_list <- list(
                            p3_wqp_data_aoi_ready_doc$compiled_drops_path,
                            p3_chla_harmonized$compiled_drops_path,
                            p3_doc_harmonized$compiled_drops_path),
-                    .f = read_csv),
-             cue = tar_cue("always"))
+                    .f = read_csv))
 )
 

@@ -1,13 +1,13 @@
 step,reason,short_reason,number_dropped,n_rows,order
-doc harmonization,Starting dataset,Start,0,2598948,0
-doc harmonization,Filtered for only water media & doc fraction,Target water media & doc,1767162,831786,1
-doc harmonization,Dropped rows containing fail-related language,"Fails, etc.",17539,814247,2
-doc harmonization,Dropped rows while cleaning MDLs,Clean MDLs,345,813902,3
-doc harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,813902,4
-doc harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,813902,5
-doc harmonization,Dropped unresolved NAs,Unresolved NAs,0,813902,6
-doc harmonization,Dropped rows while harmonizing units,Harmonize units,3794,810108,7
-doc harmonization,Dropped rows while cleaning depths,Clean depths,0,810108,8
-doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,32136,777972,9
-doc harmonization,Dropped rows while assigning field flags,Field flagging,0,777972,10
-doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,86061,691911,11
+doc harmonization,Starting dataset,Start,0,2596142,0
+doc harmonization,Filtered for only water media & doc fraction,Target water media & doc,299468,2296674,1
+doc harmonization,Dropped rows containing fail-related language,"Fails, etc.",24917,2271757,2
+doc harmonization,Dropped rows while cleaning MDLs,Clean MDLs,3210,2268547,3
+doc harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2268547,4
+doc harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,2268547,5
+doc harmonization,Dropped unresolved NAs,Unresolved NAs,0,2268547,6
+doc harmonization,Dropped rows while harmonizing units,Harmonize units,7677,2260870,7
+doc harmonization,Dropped rows while cleaning depths,Clean depths,0,2260870,8
+doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,84492,2176378,9
+doc harmonization,Dropped rows while assigning field flags,Field flagging,0,2176378,10
+doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,457045,1719333,11

@@ -37,7 +37,7 @@ pre-harmonization-of-the-raw-doc-wqp-dataset
 missing-results-1
 filter-status-1
 harmonization-ready-doc-dataset
-filter-for-water-media-1
+filter-media-and-fractions
 document-and-remove-fails-1
 activitycommenttext-fail-detects-1
 resultcommenttext-fail-detects-1

@@ -1,104 +1,174 @@
 CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,pers_uv_heated_tag,wet_ox_pers_tag,combustion_ir_tag,elemental_tag,carbonaceous_tag,analytical_tier,n
-Organic carbon,Total Organic Carbon by Combustion,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,116106
-Organic carbon,5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,104701
-Organic carbon,5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,52684
-Organic carbon,NA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,49707
-Organic carbon,NA,00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,48299
+Organic carbon,5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,470826
+Organic carbon,NA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,210152
+Organic carbon,Total Organic Carbon by Combustion,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,207727
+Organic carbon,NA,00680,FALSE,FALSE,FALSE,FALSE,FALSE,2,184674
+Organic carbon,5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,154913
+Organic carbon,UV OR HEATED PERSULFATE OXIDATION,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,63685
+Organic carbon,Low Level Total Organic Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,58257
+Organic carbon,"TOC, wet oxidation",00680,FALSE,TRUE,FALSE,FALSE,FALSE,0,52593
+Organic carbon,NA,00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,48002
+Organic carbon,analyticTOC_103N,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,41611
 Organic carbon,analyticDOC_L01N,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,40456
-Organic carbon,"DOC, 0.45u silver, persulfate IR",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,38227
+Organic carbon,"DOC, 0.45u silver, persulfate IR",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,38185
 Organic carbon,analyticDOC_102,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,36320
-Organic carbon,WET OXIDATION METHOD,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,33575
-Organic carbon,"DOC,0.45um cap,acid,persulfateIR",00681,FALSE,TRUE,FALSE,FALSE,FALSE,0,30438
-Organic carbon,"DOC, UV/persulfate/IR (USGS-NYL)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,29645
+Organic carbon,WET OXIDATION METHOD,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,34854
+Organic carbon,calcTOC_C01,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,31909
+Organic carbon,"DOC,0.45um cap,acid,persulfateIR",00681,FALSE,TRUE,FALSE,FALSE,FALSE,0,30324
 Organic carbon,analyticDOC_101,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,29558
+Organic carbon,"DOC, UV/persulfate/IR (USGS-NYL)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,28338
+Organic carbon,C,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,27527
+Organic carbon,SM5310B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,26479
+Organic carbon,N/A Calculation,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,25176
 Organic carbon,"DOC, UV/persulfate (NYWSC; ALSC)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,23866
-Organic carbon,UV OR HEATED PERSULFATE OXIDATION,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,22083
-Organic carbon,"DOC, wf, 0.45 um cap, combust IR",00681,FALSE,TRUE,FALSE,FALSE,FALSE,0,18799
-Organic carbon,"DOC, 0.7um GFF,acid,persulfateIR",00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,16821
-Organic carbon,Low Level Total Organic Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,15611
-Organic carbon,"DOC, persulfate oxidation & IR",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,6560
-Organic carbon,SM5310B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,5285
-Organic carbon,"DOC, wf, 0.7 um GFF, combust IR",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,4179
-Organic carbon,SM 5310 B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,3746
-Organic carbon,"DOC, CO2 formation & detection",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,3659
-Organic carbon,C,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3483
-Organic carbon,Unspecified Standard Grab Sample Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3119
-Organic carbon,Standard Methods Organic Carbon,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2978
-Organic carbon,Organic Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2789
+Organic carbon,Used for all methods where historical methodology may not be available.,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,22082
+Organic carbon,Not Available,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,19655
+Organic carbon,"DOC, wf, 0.45 um cap, combust IR",00681,FALSE,TRUE,FALSE,FALSE,FALSE,0,18926
+Organic carbon,"DOC, 0.7um GFF,acid,persulfateIR",00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,16786
+Organic carbon,"TOC, high-temp combustion (NWQL)",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,14238
+Organic carbon,415.2,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,13413
+Organic carbon,"Organic-C, combustion-IR method",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,11851
+Organic carbon,See QA Plan for this Project,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,11403
+Organic carbon,"TOC, EPA method",00680,FALSE,FALSE,FALSE,FALSE,FALSE,2,9371
+Organic carbon,5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,7591
+Organic carbon,EPA 415.1,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,7543
+Organic carbon,5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,7461
+Organic carbon,Organic Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,7398
+Organic carbon,415.3,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,7362
+Organic carbon,Total Organic Carbon in Water and Waste,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,7324
+Organic carbon,"DOC, persulfate oxidation & IR",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,6524
+Organic carbon,SM 5310 B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,6390
+Organic carbon,Unspecified Standard Grab Sample Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,6135
+Organic carbon,SM5310C,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,6023
+Organic carbon,415,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,5242
+Organic carbon,Volatile Halogenated Organics,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,4729
+Organic carbon,9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer,NA,FALSE,FALSE,FALSE,FALSE,TRUE,2,4722
+Organic carbon,"DOC, wf, 0.7 um GFF, combust IR",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,4186
+Organic carbon,QA Plan #900456,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,4142
+Organic carbon,EPA 415.1M,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,4071
+Organic carbon,Analytical method not available,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,4019
+Organic carbon,"CARBON, TOTAL ORGANIC (MG/L AS C)",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3526
+Organic carbon,"DOC, CO2 formation & detection",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,3500
+Organic carbon,Standard Methods Organic Carbon,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3069
+Organic carbon,calcTOC_101,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3055
+Organic carbon,"TOC, persulfate oxid (5310C; PA)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,2799
+Organic carbon,analyticTOC_L03N,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2744
+Organic carbon,SM 5310 C,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,2635
+Organic carbon,L01,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2534
+Organic carbon,"TOC, combustion (SM5310B,COWSC)",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,2415
 Organic carbon,"DOC, EPA method",00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,2406
-Organic carbon,"Organic-C, combustion-IR method",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,2380
-Organic carbon,EPA 415.1M,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,2309
-Organic carbon,Total Organic Carbon in Water and Waste,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2205
-Non-purgeable Organic Carbon (NPOC),5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,2013
-Organic carbon,EPA 415.1,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,1481
+Organic carbon,"Organic-C, combustion-IR method",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,2374
+Organic carbon,Unkn Lab Proc,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2277
+Organic carbon,"TOC, combustion (DODEC)",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,2214
+Organic carbon,"DOC, combustion, NDIR (SM5310B)",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,1770
+Organic carbon,Shimadzu TOC 5000 NPOC mode,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1731
+Organic carbon,"TOC, wu, persulfate (SM5310C;CO)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,1693
+Organic carbon,Historic Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1603
 Organic carbon,"CARBON, DISSOLVED ORGANIC (MG/L AS C)",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1369
-Organic carbon,SM 5310 C,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,1358
-Organic carbon,Historic Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1148
 Organic carbon,Dissolved Organic Carbon by Dohrmann DC-80,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1143
-Organic carbon,"DOC, combustion, NDIR (SM5310B)",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,1119
+Organic carbon,"DRBC-QAPP, EPA APPROVED",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1106
 Organic carbon,"DOC, persulfate oxid, IR (COWSC)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,1103
+Total carbon,5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,1101
+Organic carbon,Laboratory Procedures for Water Quality Chemical Analysis,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,1076
 Organic carbon,Dissolved Organic Carbon in Water by Persulfate Oxidation and Infrared Spectrometry,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,941
-Organic carbon,L01,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,852
-Organic carbon,Unknown,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,821
-Organic carbon,UNKOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,783
+Organic carbon,TOTAL ORGANIC CARBON IN WATER,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,884
+Organic carbon,Unknown,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,825
+Organic carbon,UNKOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,822
+Organic carbon,"TOC, persulfate-UV oxid (NYSDEC)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,806
 Organic carbon,TOTAL ORGANIC CARBON (TOC) PERSULFATE-ULTRAVIOLET,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,780
-Organic carbon,SM5310C,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,618
+Organic carbon,"TOC, combustion & CO2 detection",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,752
+Organic carbon,L02,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,737
+Organic carbon,R10PORTLANDHARBOR Method,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,717
+Organic carbon,415.1,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,698
+Organic carbon,SW846,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,634
 Organic carbon,"DOC, wf, cat oxid & IR detect",00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,609
-Organic carbon,415.3,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,597
+Organic carbon,Lake Trafford,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,567
+Organic carbon,Total Organic Carbon,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,564
 Organic carbon,Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,553
-Organic carbon,"DRBC-QAPP, EPA APPROVED",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,547
-Organic carbon,L02,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,547
-Organic carbon,Not Available,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,535
+Organic carbon,UNKNOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,530
 Organic carbon,Elemental Analysis Isotope Ratio Mass Spectometry,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,526
+Organic carbon,DATABASE CALCULATED TOC - METHOD 2 - 1/2 MDL,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,458
+Organic carbon,DATABASE CALCULATED TOC - METHOD 2 - MDL,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,458
+Organic carbon,DISSOLVED CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,448
+Organic carbon,LAKE COUNTY QUALITY SYSTEMS MANUAL,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,447
+Organic carbon,TOTAL ORGANIC CARBON,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,420
 Organic carbon,"DOC, wu, persulfate (SM5310C;ND)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,410
+Organic carbon,"TOC, wu, persulfate (SM5310C;ND)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,406
+Organic carbon,"TOC, wu, carbon analyzer (DODEC)",00680,FALSE,FALSE,FALSE,FALSE,FALSE,2,361
 Organic carbon,9060 AM ~ Total Volatile Organic Carbon,NA,FALSE,FALSE,FALSE,FALSE,TRUE,2,360
-Organic carbon,UNKNOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,358
 Organic carbon,CU's Kiowa Lab's Shimadzu TOC-V CSN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,348
 Organic carbon,"DOC, persulfate oxid (5310C; PA)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,344
 Organic carbon,TOC - Persulfate-Ultraviolet or Heated-Persulfate Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,323
+Organic carbon,Determination of Total Organic Carbon and Specific UV Absorbance at 254 nm in Source Water and Drinking Water,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,321
 Organic carbon,METH011.00,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,290
-Organic carbon,Laboratory Procedures for Water Quality Chemical Analysis,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,286
+Organic carbon,TOTAL CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,274
+Organic carbon,"TOC, UV/persulfate/IR (USGS-NYL)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,266
+Organic carbon,Unknown Method from Historical Data,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,266
+Organic carbon,"TOC, wu, combustion (5310B;DDEC)",00680,FALSE,FALSE,TRUE,FALSE,FALSE,1,265
 Organic carbon,RMRS LAB,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,246
-Organic carbon,Unknown Method from Historical Data,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,246
-Organic carbon,9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer,NA,FALSE,FALSE,FALSE,FALSE,TRUE,2,234
-Organic carbon,5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,227
-Organic carbon,DISSOLVED CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,226
+Organic carbon,SM185310B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,218
 Organic carbon,"DOC, wf, combustion (5310B;DDEC)",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,217
-Organic carbon,TOTAL ORGANIC CARBON,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,209
+Organic carbon,"TOC, persulfate-UV oxid (CO WSC)",00680,TRUE,FALSE,FALSE,FALSE,FALSE,0,204
+Organic carbon,EPA Method 415.1 for Total Organic Carbon in aqueous matrices,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,197
+Organic carbon,L03,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,193
 Organic carbon,"DOC, 0.7um GFF",00681,FALSE,FALSE,FALSE,FALSE,FALSE,2,190
+Organic carbon,Shimadzu TOC-V NPOC mode,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,184
+Organic carbon,Unknown - STORET DATA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,184
 Organic carbon,WRS 21A.1,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,177
-Organic carbon,See QA Plan for this Project,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,173
+Organic carbon,Hawaii historic procedures for Legacy STORET,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,175
 Organic carbon,"DOC, wf, 0.45 um capsule, HT comb IR",NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,147
-Organic carbon,TOTAL CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,133
 Organic carbon,Dissolved organic and inorganic carbon species,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,115
+Organic carbon,USGS_UNKN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,115
+Organic carbon,EPA 415.2,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,114
+Organic carbon,OEPA Method,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,102
+Organic carbon,TOC,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,102
 Organic carbon,"DOC, UV/persulfate (NYWSC; KECK)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,99
 Organic carbon,Dissolved Organic Carbon Measured by Shimadzu TOC Analyzer,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,98
-Organic carbon,L03,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,92
-Organic carbon,Unknown - STORET DATA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,92
+Organic carbon,Standard Methods for the Examination of Water and Wastewater,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,92
+Organic carbon,EPA 415.3,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,90
 Organic carbon,"Sharp, et al., 1995",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,89
+Organic carbon,Organic Carbon,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,87
+Organic carbon,DATABASE CALCULATED TOC - METHOD 2,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,84
+Organic carbon,"SM 5310 C, EPA 415.3",NA,TRUE,TRUE,FALSE,FALSE,FALSE,0,82
 Organic carbon,Shimadazu Scientific Instruments TOC 5000A,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,82
+Total carbon,NA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,82
 Organic carbon,UCSC SOP UCSCLM-011,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,79
-Organic carbon,USGS_UNKN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,76
-Organic carbon,5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,74
-Total carbon,NA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,69
 Organic carbon,"DOC, combustion (DODEC)",00681,FALSE,FALSE,TRUE,FALSE,FALSE,1,68
+Organic carbon,Legacy STORET migration; analytical procedure not specified,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,68
+Organic carbon,Procedure is unknown,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,63
+Organic carbon,415.2 M ~ Total Organic Carbon in Water,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,60
 Organic carbon,"DOC, wu, persulfate (SM5310C;CO)",00681,TRUE,FALSE,FALSE,FALSE,FALSE,0,60
 Organic carbon,Dissolved Organic Carbon by Qian & Mopper 1996 with General Oceanics MQ 1001 HTC TOC Analyzer,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,60
+Organic carbon,Field Analysis of Total Organic Carbon (originally 2334.26B),NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,53
+Total carbon,Total Organic Carbon by Combustion,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,46
+Organic carbon,Other of Unknown Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,38
 Organic carbon,DOC - Capsule Filter,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,36
+Organic carbon,EPA 9060,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,32
 Organic carbon,O1100,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,32
+Organic carbon,O-3100 ~ Total Organic Carbon in Water,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,30
+Organic carbon,Suspended Organic Carbon in Water,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,30
 Organic carbon,ANL_MTHD,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,28
-Organic carbon,O-3100 ~ Total Organic Carbon in Water,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,26
-Organic carbon,415.2 M ~ Total Organic Carbon in Water,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,24
-Organic carbon,EPA 415.2,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,22
-Organic carbon,Other or Unknown Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,22
+Organic carbon,Other or Unknown Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,26
+Organic carbon,SM 5310 B v20,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,13
+Organic carbon,USGS O-3100-83,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,13
+Organic carbon,"Total Organic Carbon by Method 415.1 or 415.2, EPA 1983",NA,TRUE,FALSE,TRUE,FALSE,FALSE,0,12
+Total carbon,SM 5310 C,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,12
 Organic carbon,EXACT FIELD OR LAB METHOD IS UNKNOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,10
+Organic carbon,O1122,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,10
 Organic carbon,"EPA: ORGANIC CARBON, TOTAL (COMBUSTION OR OXIDATION)",NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,9
-Organic carbon,EPA 415.3,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,7
+Total carbon,EPA 415.1,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,9
 Organic carbon,"DOC, wf, 0.45 cap,HT",NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,6
+Total carbon,UNKNOWN,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,6
+Total carbon,TOTAL CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,5
 Organic carbon,OX006,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,4
-Organic carbon,Other of Unknown Procedure,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,4
+Organic carbon,SM 5310 D,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,4
+Organic carbon,Total Organic Carbon in Water- Ultraviolet Oxidati,NA,TRUE,FALSE,FALSE,FALSE,FALSE,0,4
 Organic carbon,WALKLEY BLACK,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3
-Organic carbon,SM 5310 D,NA,FALSE,TRUE,FALSE,FALSE,FALSE,0,2
+Total carbon,WALKLEY BLACK,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,3
+Organic carbon,GUMO Total Organic Carbon by Combustion and Infrared Analysis,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,2
+Organic carbon,ORGANOCHLORINE PESTICIDES,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,2
 Organic carbon,ASTM D7363,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1
-Organic carbon,ORGANOCHLORINE PESTICIDES,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1
-Organic carbon,SM 5310 B v20,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,1
+Organic carbon,Acidity in Water by Titration,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1
+Organic carbon,EPA 3510C/8081A,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1
+Total carbon,DISSOLVED CARBON ANALYSIS,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,1
+Total carbon,SM 5310 B,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,1

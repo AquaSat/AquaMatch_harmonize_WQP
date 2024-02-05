@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-01-26" />
+<meta name="date" content="2024-02-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -188,7 +188,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="6.2" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonization-ready-doc-dataset"><i class="fa fa-check"></i><b>6.2</b> Harmonization-ready DOC dataset</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-for-water-media-1"><i class="fa fa-check"></i><b>6.2.1</b> Filter for water media</a></li>
+<li class="chapter" data-level="6.2.1" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-media-and-fractions"><i class="fa fa-check"></i><b>6.2.1</b> Filter media and fractions</a></li>
 <li class="chapter" data-level="6.2.2" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#document-and-remove-fails-1"><i class="fa fa-check"></i><b>6.2.2</b> Document and remove fails</a></li>
 <li class="chapter" data-level="6.2.3" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-mdls-1"><i class="fa fa-check"></i><b>6.2.3</b> Clean MDLs</a></li>
 <li class="chapter" data-level="6.2.4" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-approximate-values-1"><i class="fa fa-check"></i><b>6.2.4</b> Clean approximate values</a></li>
@@ -224,57 +224,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <!--bookdown:title:start-->
 <div id="aquamatch-data-harmonization-process" class="section level1 hasAnchor" number="1">
 <h1><span class="header-section-number">1</span> AquaMatch data harmonization process<a href="index.html#aquamatch-data-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This bookdown documents the harmonization process for data downloaded from the
-<a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP)
-used to build the AquaMatch dataset, a data product of Aquasat. The WQP is a
-data warehouse for water-related data measured or observed within the United
-States and US Territories managed by the Environmental Protection Agency (EPA),
-United States Geological Survey (USGS), and the National Water Quality
-Monitoring Council (NWQMC). AquaMatch collates water quality measurements and
-observations with optical and thermal satellite data from lakeSR and riverSR.</p>
-<p>All data in this workflow are processed as parameter groups, a high-level
-grouping used in AquaMatch for specific water quality measures found in the WQP.
-This document first describes selections made while downloading WQP data using
-the {dataRetrieval} package (<strong><em>CITE</em></strong>), the “pre-harmonization” process that
-data for all parameter groups go through, and then how the chlorophyll <em>a</em>,
-dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids
-(TSS) parameter groups are each filtered and harmonized.</p>
-<p><em>Note: for the purposes of this bookdown, all terms surrounded by <code>backticks</code>
-are WQP column names. Some of these names are defined within this bookdown and a
-full list of definitions can be found in Table 7
-<a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
-<p>Data are contributed to the WQP by a wide range of data providers
-(<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling
-and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code>
-are defined by the WQP as:</p>
+<p>This bookdown documents the harmonization process for data downloaded from the <a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP) used to build the AquaMatch dataset, a data product of AquaSat v2. The WQP is a data warehouse for water-related data measured or observed within the United States and US Territories managed by the Environmental Protection Agency (EPA), United States Geological Survey (USGS), and the National Water Quality Monitoring Council (NWQMC). AquaMatch collates water quality measurements and observations with optical and thermal satellite data from lakeSR and riverSR.</p>
+<p>All data in this workflow are processed as parameter groups, a high-level grouping used in AquaMatch for specific water quality measures found in the WQP. This document first describes selections made while downloading WQP data using the {dataRetrieval} package (<strong><em>CITE</em></strong>). It then walks through how the chlorophyll <em>a</em>, dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids (TSS) parameter groups are each prepared (“pre-harmonization”), and then filtered and harmonized.</p>
+<p><em>Note: for the purposes of this bookdown, many terms surrounded by <code>backticks</code> are column names from the dataset being referenced. Others are code snippets or data values. For those that are column names, a full list of definitions for columns present in the original WQP dataset can be found in Table 7 <a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
+<p>Data are contributed to the WQP by a wide range of data providers (<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code> are defined by the WQP as:</p>
 <blockquote>
 <p><em>The object, property, or substance which is evaluated or enumerated by either
 a direct field measurement, a direct field observation, or by laboratory
 analysis of material collected in the field.</em></p>
 </blockquote>
-<p>Parameter groups are comprised of data with multiple <code>characteristicNames</code> in
-data from the WQP. For example, chlorophyll-related <code>characteristicNames</code>
-include “Chlorophyll a”, “Chlorophyll a, corrected for pheophytin”, “Chlorophyll
-b”, and “Chlorophyll c” among several others. Only a subset of these
-<code>characteristicNames</code> will be included in our “chlorophyll <em>a</em>” parameter group.
-As mentioned previously, measurements and observations within the WQP for a
-given parameter group are often sampled and analyzed using a variety of methods.
-Some of these methods for sampling and analysis are directly interoperable and
-others are not. The processing steps described within this bookdown walks
-through how we harmonize the data for each parameter group while flagging or
-removing data that may not have enough information associated with a measurement
-or observation. The product of this is a database of WQP entries with
-interoperability and reliability in mind.</p>
-<p>The result of this harmonization procedure is two datasets per parameter group.
-The first is a harmonized dataset that includes all of the original WQP columns
-in addition to those introduced in this workflow. The second is the output of
-all harmonization steps, including aggregation to the median value where
-simultaneous records occur. We define simultaneous records as those measured on
-the same day by the same <code>organizaionIndentifier</code> at the same location with the
-same harmonized depth criteria. We believe that most users will only use this
-aggregated dataset, but we provide the unaggregated version for those who would
-like to make different decisions at any point in the tiering, flagging, or
-aggregation steps.</p>
+<p>Parameter groups are comprised of data from multiple <code>characteristicNames</code> in the WQP. For example, chlorophyll-related <code>characteristicNames</code>include “Chlorophyll a”, “Chlorophyll a, corrected for pheophytin”, “Chlorophyll b”, and “Chlorophyll c” among several others. Only a subset of these <code>characteristicNames</code> are included in our “chlorophyll <em>a</em>” parameter group. As mentioned previously, measurements and observations within the WQP for a given parameter group are often sampled and analyzed using a variety of methods. Some of these methods for sampling and analysis are directly interoperable and others are not. The processing steps described within this bookdown walk through how we harmonize the data for each parameter group while flagging or removing data that may not have enough information associated with it. The product of this is a database of WQP entries with interoperability and reliability in mind.</p>
+<p>The result of this harmonization procedure is two datasets per parameter group. The first is a harmonized dataset that includes all of the original WQP columns in addition to those introduced in this workflow. The second is the output of all harmonization steps, including aggregation to the median value where simultaneous records occur. We define simultaneous records as those measured on the same day by the same <code>organizationIndentifier</code> at the same location with the same harmonized depth criteria. We believe that most users will only use this aggregated dataset, but we provide the unaggregated version for those who would like to make different decisions at any point in the tiering, flagging, or aggregation steps.</p>
 
 </div>
             </section>

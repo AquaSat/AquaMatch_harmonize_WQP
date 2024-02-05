@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-01-26" />
+<meta name="date" content="2024-02-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -188,7 +188,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="6.2" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonization-ready-doc-dataset"><i class="fa fa-check"></i><b>6.2</b> Harmonization-ready DOC dataset</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-for-water-media-1"><i class="fa fa-check"></i><b>6.2.1</b> Filter for water media</a></li>
+<li class="chapter" data-level="6.2.1" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-media-and-fractions"><i class="fa fa-check"></i><b>6.2.1</b> Filter media and fractions</a></li>
 <li class="chapter" data-level="6.2.2" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#document-and-remove-fails-1"><i class="fa fa-check"></i><b>6.2.2</b> Document and remove fails</a></li>
 <li class="chapter" data-level="6.2.3" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-mdls-1"><i class="fa fa-check"></i><b>6.2.3</b> Clean MDLs</a></li>
 <li class="chapter" data-level="6.2.4" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-approximate-values-1"><i class="fa fa-check"></i><b>6.2.4</b> Clean approximate values</a></li>
@@ -251,7 +251,7 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>99.79 thousand rows are dropped, resulting in a final count of 2.6
+<p>99.86 thousand rows are dropped, resulting in a final count of 2.6
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -282,15 +282,69 @@ million rows remaining.</p>
 <div id="harmonization-ready-doc-dataset" class="section level2 hasAnchor" number="6.2">
 <h2><span class="header-section-number">6.2</span> Harmonization-ready DOC dataset<a href="doc-harmonization-process.html#harmonization-ready-doc-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Once ready for harmonization, the DOC WQP dataset contains the following
-user-defined <code>characteristicNames</code>: Organic carbon, Total carbon,
-Hydrophilic fraction of organic carbon, Non-purgeable Organic Carbon
-(NPOC).</p>
+user-defined <code>characteristicNames</code>: Organic carbon, Total carbon.</p>
 <p><br></p>
-<div id="filter-for-water-media-1" class="section level3 hasAnchor" number="6.2.1">
-<h3><span class="header-section-number">6.2.1</span> Filter for water media<a href="doc-harmonization-process.html#filter-for-water-media-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="filter-media-and-fractions" class="section level3 hasAnchor" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Filter media and fractions<a href="doc-harmonization-process.html#filter-media-and-fractions" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We next ensure that the media type for all DOC data is
-<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 1.767162^{6} rows
-are removed. The final row count after this is 0.83 million.</p>
+<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. Additionally at this
+step we select a subset of <code>CharacteristicName</code> and
+<code>ResultSampleFractionText</code> combinations that are relevant to DOC. These
+are:</p>
+<p><br></p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">CharacteristicName</th>
+<th align="center">ResultSampleFractionText</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Dissolved”</td>
+</tr>
+<tr class="even">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Filtered, lab”</td>
+</tr>
+<tr class="odd">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Filtered, field”</td>
+</tr>
+<tr class="even">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Filterable”</td>
+</tr>
+<tr class="odd">
+<td align="center">“Total carbon”</td>
+<td align="center">“Filterable”</td>
+</tr>
+<tr class="even">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Total”</td>
+</tr>
+<tr class="odd">
+<td align="center">“Total carbon”</td>
+<td align="center">NA</td>
+</tr>
+<tr class="even">
+<td align="center">“Total carbon”</td>
+<td align="center">“Total”</td>
+</tr>
+<tr class="odd">
+<td align="center">“Total carbon”</td>
+<td align="center">“Organic”</td>
+</tr>
+<tr class="even">
+<td align="center">“Organic carbon”</td>
+<td align="center">“Organic”</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p>299.47 thousand rows are removed. The final row count after this is 2.3
+million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -333,8 +387,8 @@ failure phrases are not mutually exclusive.</p>
 <p><br></p>
 <!-- <img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
-<p>17.54 thousand rows are removed after detecting failure-related phrases
-and 0.81 million rows remain.</p>
+<p>24.92 thousand rows are removed after detecting failure-related phrases
+and 2.27 million rows remain.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -362,8 +416,8 @@ method are assigned a 1. Finally, records where no MDL-based adjustment
 was made and which contain a numeric value below the provided MDL are
 assigned a 2.</p>
 <p>Most of this step should not result in a change in rows, but we do drop
-records with negative measurement values. This results in 345 rows being
-removed. The final row count after this is 0.81 million.</p>
+records with negative measurement values. This results in 3210 rows
+being removed. The final row count after this is 2.27 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -384,7 +438,7 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>approx_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 0.81 million.</p>
+are removed. The final row count after this is 2.27 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -406,7 +460,7 @@ moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>greater_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 0.81 million.</p>
+are removed. The final row count after this is 2.27 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -418,7 +472,7 @@ a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
 dropped.</p>
-<p>0 rows are removed. The final row count after this is 0.81 million.</p>
+<p>0 rows are removed. The final row count after this is 2.27 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -549,7 +603,7 @@ by <code>CharacteristicName</code>:</p>
 <p><br></p>
 <p><img src="3_harmonize/out/doc_charname_dists.png" alt="Distribution of DOC values by CharacteristicName" width="650"/></p>
 <p><br></p>
-<p>3.79 thousand rows are removed. The final row count after this is 0.81
+<p>7.68 thousand rows are removed. The final row count after this is 2.26
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
@@ -561,7 +615,7 @@ obtained from the WQP. The details behind this step are covered in the
 <em>Depth flags</em> section of the <em>Tiering, flagging, and quality control
 philosophy</em> chapter.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 0.81 million.</p>
+are removed. The final row count after this is 2.26 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -582,7 +636,7 @@ from DOC data are: “Oxygen”, “Nitrogen”, “Ammonia”, “Metals”, �
 “Solids”, “Temperature”, “Color in Water”, “Coliform”, “PARTICULATE
 CARBON (inorg+org)”, “5210”, “bed sed”, “bs, calc”, “5220”,
 “Suspended-Sediment in Water”.</p>
-<p>This process drops 32.14 thousand rows leaving 0.78 million remaining.</p>
+<p>This process drops 84.49 thousand rows leaving 2.18 million remaining.</p>
 <p>The next step towards creating analytical tiers is to then classify the
 methods in <code>ResultAnalyticalMethod.MethodName</code> into either: Combustion +
 infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection
@@ -670,7 +724,7 @@ comparing with analytical methods and assigning flags, unlike variables
 like chlorophyll <em>a</em>. We fill the <code>field_flag</code> column with “not
 applicable” for DOC.</p>
 <p>No records should be removed by this process and so there are 0 rows
-dropped leaving 0.78 million remaining in the harmonized DOC dataset.</p>
+dropped leaving 2.18 million remaining in the harmonized DOC dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -699,7 +753,7 @@ versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
 <code>harmonized_value_sd</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
-<p>0.09 million rows dropped leaving 0.69 million remaining in the final
+<p>0.46 million rows dropped leaving 1.72 million remaining in the final
 harmonized and aggregated doc dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
 <p><br></p>

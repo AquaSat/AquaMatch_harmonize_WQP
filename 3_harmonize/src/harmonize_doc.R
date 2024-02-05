@@ -21,15 +21,28 @@ harmonize_doc <- function(raw_doc, p_codes){
     count(ResultSampleFractionText, name = "record_count")
   
   doc <- raw_doc %>% 
-    # Link up USGS p-codes. and their common names can be useful for method lumping:
+    # Link up USGS p-codes. Their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
-      ActivityMediaName %in% c("Water", "water"),
-      # Dissolved organic carbon is not a CharacteristicName, so we must identify
-      # the fractions of the carbon pool reported that match our needs:
-      ResultSampleFractionText %in% c("Dissolved", "Filterable", "Filtered, lab",
-                                      "Filtered, field")
-    ) %>%
+      # Filter out non-target media types
+      ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+        is.na(ActivityMediaSubdivisionName)) %>%
+    # Dissolved organic carbon is not a CharacteristicName, so we must identify
+    # the fractions of the carbon pool reported that match our needs:
+    semi_join(x = .,
+              y = tribble(
+                ~CharacteristicName, ~ResultSampleFractionText,
+                "Organic carbon",                      "Dissolved",             
+                "Organic carbon",                      "Filtered, lab",             
+                "Organic carbon",                      "Filtered, field",           
+                "Organic carbon",                      "Filterable",                 
+                "Total carbon",                        "Filterable",
+                "Organic carbon",                     "Total", 
+                "Total carbon",                      NA,    
+                "Total carbon",                     "Total",     
+                "Total carbon",                   "Organic",      
+                "Organic carbon",                   "Organic"       
+              ))  %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")

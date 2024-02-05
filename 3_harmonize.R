@@ -107,6 +107,22 @@ p3_targets_list <- list(
     command = p3_chla_harmonized$chla_harmonized_path,
     read = read_csv(file = !!.x)),
   
+  # Create a copy of the csv in feather format
+  tar_file_read(
+    name = p3_chla_agg_harmonized_feather,
+    command = {
+      out_path <- gsub(x = p3_chla_harmonized$chla_harmonized_path,
+                       pattern = ".csv",
+                       replacement = ".feather")
+      write_feather(x = p3_chla_agg_harmonized,
+                    path = out_path)
+      
+      out_path
+    },
+    packages = c("targets", "feather"),
+    read = read_feather(path = !!.x)
+  ),
+  
   
   # Harmonization: DOC ------------------------------------------------------
   
@@ -133,6 +149,21 @@ p3_targets_list <- list(
     name = p3_doc_agg_harmonized,
     command = p3_doc_harmonized$doc_harmonized_path,
     read = read_csv(file = !!.x)
+  ),
+  
+  tar_file_read(
+    name = p3_doc_agg_harmonized_feather,
+    command = {
+      out_path <- gsub(x = p3_doc_harmonized$doc_harmonized_path,
+                       pattern = ".csv",
+                       replacement = ".feather")
+      write_feather(x = read_csv(file = p3_doc_harmonized$doc_harmonized_path),
+                    path = out_path)
+      
+      out_path
+    },
+    packages = c("targets", "feather"),
+    read = read_feather(path = !!.x)
   ),
   
   

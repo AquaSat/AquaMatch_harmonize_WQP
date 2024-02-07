@@ -5,7 +5,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   starting_data <- tibble(
     step = "doc harmonization",
     reason = "Starting dataset",
-    short_reason = "Starting",
+    short_reason = "Start",
     number_dropped = 0,
     n_rows = nrow(raw_doc),
     order = 0
@@ -13,20 +13,58 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Minor data prep ---------------------------------------------------------
   
+  # Grab the column names of the dataset coming in
+  raw_names <- names(raw_doc)
+  
+  # Count the number of rows in each fraction of the carbon pool:
+  full_fraction_count <- raw_doc %>%
+    count(ResultSampleFractionText, name = "record_count")
+  
   doc <- raw_doc %>% 
-    # Link up USGS p-codes. and their common names can be useful for method lumping:
+    # Link up USGS p-codes. Their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
-      # Water only
-      ActivityMediaName %in% c("Water","water"))  %>%
-    # Index for being able to track each sample
-    rowid_to_column(.,"index")
+      # Filter out non-target media types
+      ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+        is.na(ActivityMediaSubdivisionName)) %>%
+    # Dissolved organic carbon is not a CharacteristicName, so we must identify
+    # the fractions of the carbon pool reported that match our needs:
+    semi_join(x = .,
+              y = tribble(
+                ~CharacteristicName, ~ResultSampleFractionText,
+                "Organic carbon",                      "Dissolved",             
+                "Organic carbon",                      "Filtered, lab",             
+                "Organic carbon",                      "Filtered, field",           
+                "Organic carbon",                      "Filterable",                 
+                "Total carbon",                        "Filterable",
+                "Organic carbon",                     "Total", 
+                "Total carbon",                      NA,    
+                "Total carbon",                     "Total",     
+                "Total carbon",                   "Organic",      
+                "Organic carbon",                   "Organic"       
+              ))  %>%
+    # Add an index to control for cases where there's not enough identifying info
+    # to track a unique record
+    rowid_to_column(., "index")
+  
+  # Count the number of rows in each fraction of the carbon pool now that we've
+  # filtered some out:
+  reduced_fraction_count <- doc %>%
+    count(ResultSampleFractionText, name = "record_count")
+  
+  # Which fraction types got dropped, and how many counts did they have? Plot it.
+  anti_join(x = full_fraction_count,
+            y = reduced_fraction_count) %>%
+    plot_fraction_pie() %>%
+    ggsave(filename = "3_harmonize/out/doc_fraction_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
     step = "doc harmonization",
-    reason = "Filtered for only water media",
-    short_reason = "Water media",
+    reason = "Filtered for only water media & doc fraction",
+    short_reason = "Target water media & doc",
     number_dropped = nrow(raw_doc) - nrow(doc),
     n_rows = nrow(doc),
     order = 1
@@ -36,83 +74,86 @@ harmonize_doc <- function(raw_doc, p_codes){
   gc()
   
   
-  # Remove fails ------------------------------------------------------------
+  # Document and remove fail language ---------------------------------------
   
+  # The values that will be considered fails for each column:
+  fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "violation", "reject", "no data",
+    "time exceed"
+  )
+  
+  # Now get counts of fail-related string detections for each column: 
+  fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                      "ResultCommentText", "ResultMeasureValue_original",
+                      "ResultDetectionConditionText") %>%
+    # Set list item names equal to each item in the list so that map will return
+    # a named list
+    set_names() %>%
+    map(
+      .x = .,
+      .f = ~ {
+        # Pass column name into the next map()
+        col_name <- .x
+        
+        # Check each string pattern separately and count instances
+        map_df(.x = fail_text,
+               .f = ~{
+                 hit_count <- doc %>%
+                   filter(grepl(pattern = .x,
+                                x = !!sym(col_name),
+                                ignore.case = TRUE)) %>%
+                   nrow()
+                 
+                 # Return two-col df
+                 tibble(
+                   word = .x,
+                   record_count = hit_count
+                 )
+               }) %>%
+          # Ignore patterns that weren't detected
+          filter(record_count > 0)
+      }) %>%
+    # If there's any data frames with 0 rows (i.e., no fails detected) then
+    # drop them to avoid errors in the next step.
+    keep(~nrow(.) > 0)
+  
+  
+  # Plot and export the plots as png files
+  walk2(.x = fail_counts,
+        .y = names(fail_counts),
+        .f = ~ ggsave(filename = paste0("3_harmonize/out/doc_",
+                                        .y,
+                                        "_fail_pie.png"),
+                      plot = plot_fail_pie(dataset = .x, col_name = .y),
+                      width = 6, height = 6, units = "in", device = "png"))
+  
+  
+  # Now that the fails have been documented, remove them:
   doc_fails_removed <- doc %>%
-    # No failure-related field comments, slightly different list of words than
-    # lab and result list (not including things that could be used to describe
-    # field conditions like "warm", "ice", etc.):
-    filter(!grepl(pattern = paste0(c(
-      "fail", "suspect", "error", "beyond accept", "interference",
-      "questionable", "outside of accept", "problem", "contaminat",
-      "improper", "violation", "invalid", "unable", "no test", "cancelled",
-      "instrument down", "no result", "time exceed", "not accept",
-      "QC EXCEEDED"),
-      collapse = "|"),
-      x = ActivityCommentText,
-      ignore.case = T) |
-        is.na(ActivityCommentText),
-      # No failure-related lab comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
-        collapse = "|"),
-        ResultLaboratoryCommentText,
-        ignore.case = T) |
-        is.na(ResultLaboratoryCommentText),
-      # no failure-related result comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
-        collapse = "|"),
-        ResultCommentText,
-        ignore.case = T) |
-        is.na(ResultCommentText),
-      # no failure-related value comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "not done", "no reading", 
-          "not reported", "no data"),
-        collapse = "|"),
-        ResultMeasureValue_original,
-        ignore.case = T) |
-        is.na(ResultMeasureValue_original),
-      # no failure-related detection comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME"),
-        collapse = "|"),
-        ResultDetectionConditionText,
-        ignore.case = T) |
-        is.na(ResultDetectionConditionText))
+    filter(
+      if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
   
-  # How many records removed due to fails, missing data, etc.?
+  # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fails, missing data, etc.: ",
+      "Rows removed due to fail-related language: ",
       nrow(doc) - nrow(doc_fails_removed)
     )
   )
   
   dropped_fails <- tibble(
     step = "doc harmonization",
-    reason = "Dropped rows indicating fails, missing data, etc.",
+    reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
     number_dropped = nrow(doc) - nrow(doc_fails_removed),
     n_rows = nrow(doc_fails_removed),
@@ -127,7 +168,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   mdl_updates <- doc_fails_removed %>%
     # only want NAs and character value data:
     filter(is.na(ResultMeasureValue)) %>%
-    # if the value is na BUT there is non detect language in the comments...  
+    # if the value is NA BUT there is non detect language in the comments...  
     mutate(
       mdl_vals = ifelse(
         test = (is.na(ResultMeasureValue_original) & 
@@ -175,8 +216,18 @@ harmonize_doc <- function(raw_doc, p_codes){
     left_join(x = ., y = mdl_updates, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
-           harmonized_comments = ifelse(index %in% mdl_updates$index,
-                                        "Approximated using the EPA's MDL method.", NA))
+           # Flag: 0 = value not adjusted and MDL not a concern
+           #       1 = original NA value adjusted using MDL method
+           #       2 = provided value below provided MDL; not adjusted
+           mdl_flag = case_when(
+             index %in% mdl_updates$index ~ 1,
+             (!(index %in% mdl_updates$index) & DetectionQuantitationLimitMeasure.MeasureValue <= ResultMeasureValue) |
+               (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
+             DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
+             .default = NA_integer_
+           )) %>%
+    # Remove negative measurement values
+    filter(harmonized_value >= 0)
   
   dropped_mdls <- tibble(
     step = "doc harmonization",
@@ -217,7 +268,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   print(
     paste(
-      round((nrow(doc_approx)) / nrow(doc) * 100, 3),
+      round((nrow(doc_approx)) / nrow(doc_mdls_added) * 100, 3),
       '% of samples had values listed as approximated'
     )
   )
@@ -228,9 +279,8 @@ harmonize_doc <- function(raw_doc, p_codes){
     mutate(harmonized_value = ifelse(index %in% doc_approx$index,
                                      approx_value,
                                      harmonized_value),
-           harmonized_comments = ifelse(index %in% doc_approx$index,
-                                        'Value identified as "approximated" by organization.',
-                                        harmonized_comments))
+           # Flag: 1 = used approximate adjustment, 0 = value not adjusted
+           approx_flag = ifelse(index %in% doc_approx$index, 1, 0))
   
   dropped_approximates <- tibble(
     step = "doc harmonization",
@@ -242,29 +292,119 @@ harmonize_doc <- function(raw_doc, p_codes){
   )
   
   
+  
   # Clean up "greater than" values ------------------------------------------
   
-  # None present currently. Skip for now
+  greater_vals <- doc_approx_added %>%
+    filter((!index %in% mdl_updates$index) & (!index %in% doc_approx$index)) %>%
+    # Then select fields where the NUMERIC value column is NA....
+    filter(is.na(ResultMeasureValue) & 
+             # ... AND the original value column has numeric characters...
+             grepl("[0-9]", ResultMeasureValue_original) &
+             #... AND a `>` symbol
+             grepl(">", ResultMeasureValue_original))
+  
+  greater_vals$greater_value <- as.numeric(
+    str_replace_all(
+      greater_vals$ResultMeasureValue_original,
+      c("\\>" = "", "\\*" = "", "\\=" = "" )))
+  greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
+  
+  # Keep important data
+  greater_vals <- greater_vals %>%
+    select(greater_value, index)
+  
+  print(
+    paste(
+      round((nrow(greater_vals)) / nrow(doc_approx_added) * 100, 9),
+      '% of samples had values listed as being above a detection limit//greater than'
+    )
+  )
+  
+  # Replace harmonized_value field with these new values
+  doc_harmonized_values <- doc_approx_added %>%
+    left_join(x = ., y = greater_vals, by = "index") %>%
+    mutate(harmonized_value = ifelse(index %in% greater_vals$index,
+                                     greater_value, harmonized_value),
+           # Flag: 1 = used greater than adjustment, 0 = value not adjusted
+           greater_flag = ifelse(index %in% greater_vals$index, 1, 0))
+  
+  dropped_greater_than <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning 'greater than' values",
+    short_reason = "Greater thans",
+    number_dropped = nrow(doc_approx_added) - nrow(doc_harmonized_values),
+    n_rows = nrow(doc_harmonized_values),
+    order = 5
+  )
+  
+  
+  # Free up memory
+  rm(doc)
+  gc()
+  
+  
+  # Remove remaining NAs ----------------------------------------------------
+  
+  # At this point we've processed MDLs, approximate values, and values containing
+  # symbols like ">". If there are still remaining NAs in the numeric measurement
+  # column then it's time to drop them.
+  
+  doc_no_na <- doc_harmonized_values %>%
+    filter(!is.na(harmonized_value))
+  
+  dropped_na <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped unresolved NAs",
+    short_reason = "Unresolved NAs",
+    number_dropped = nrow(doc_harmonized_values) - nrow(doc_no_na),
+    n_rows = nrow(doc_no_na),
+    order = 6
+  )
+  
+  # Free up memory
+  rm(doc_harmonized_values, doc_approx_added, doc_mdls_added,
+     doc_fails_removed)
+  gc()
   
   
   # Harmonize value units ---------------------------------------------------
   
-  # Set up a lookup table so that final units are all in ug/L. 
-  unit_conversion_table <- tibble(ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                                                                    'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
-                                  conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                                                 1000000, 0.000001, 60.080000))
+  # Set up a lookup table so that final units are all in mg/L. 
+  unit_conversion_table <- tibble(
+    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
+                                      'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
+    conversion = c(1, 1, 1, 0.001, 0.001, 0.001, 0.001, 1000, 1, 1000, 1e-09, 0.06008))
   
-  doc_harmonized_units <- doc_approx_added %>%
-    inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
-    mutate(harmonized_value = (ResultMeasureValue * conversion) / 1000,
-           harmonized_units = 'mg/L')
+  unit_table_out_path <- "3_harmonize/out/doc_unit_table.csv"
   
-  # How many records removed due to values?
+  write_csv(x = unit_conversion_table,
+            file = unit_table_out_path)
+  
+  
+  converted_units_doc <- doc_no_na %>%
+    inner_join(x = .,
+               y = unit_conversion_table,
+               by = "ResultMeasure.MeasureUnitCode") %>%
+    mutate(harmonized_value = ResultMeasureValue * conversion,
+           harmonized_units = "mg/L")
+  
+  # Plot and export unit codes that didn't make through joining
+  doc_no_na %>%
+    anti_join(x = .,
+              y = unit_conversion_table,
+              by = "ResultMeasure.MeasureUnitCode")  %>%
+    count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
+    plot_unit_pie() %>%
+    ggsave(filename = "3_harmonize/out/doc_unit_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
+  
+  # How many records removed due to limits on values?
   print(
     paste0(
       "Rows removed while harmonizing units: ",
-      nrow(doc_approx_added) - nrow(doc_harmonized_units)
+      nrow(doc_no_na) - nrow(converted_units_doc)
     )
   )
   
@@ -272,220 +412,584 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Dropped rows while harmonizing units",
     short_reason = "Harmonize units",
-    number_dropped = nrow(doc_approx_added) - nrow(doc_harmonized_units),
-    n_rows = nrow(doc_harmonized_units),
-    order = 5
+    number_dropped = nrow(doc_no_na) - nrow(converted_units_doc),
+    n_rows = nrow(converted_units_doc),
+    order = 7
   )
   
   
-  # Investigate depth -------------------------------------------------------
+  # Clean and flag depth data -----------------------------------------------
   
-  # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
-                                                                                  'm', 'meters'),
-                                   depth_conversion = c(1 / 100, 0.3048, 0.3048,
-                                                        0.0254, 1, 1)) 
-  # Join depth lookup table to doc data
-  doc_harmonized_depth <- inner_join(x = doc_harmonized_units,
-                                     y = depth_conversion_table,
-                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
-    # Some depth measurements have negative values (assume that is just preference)
-    # I also added .01 meters because many samples have depth of zero assuming they were
-    # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
+  # Recode any error-related character values to NAs
+  recode_depth_na_doc <- converted_units_doc %>%
+    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                            ResultDepthHeightMeasure.MeasureValue,
+                            ActivityTopDepthHeightMeasure.MeasureValue,
+                            ActivityBottomDepthHeightMeasure.MeasureValue),
+                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                        "9999", "-9999", "-99",
+                                                        "99", "NaN"),
+                                  true = NA_character_,
+                                  false = .x)))
   
-  # We lose lots of data by keeping only data with depth measurements
+  # Reference table for unit conversion
+  depth_unit_conversion_table <- tibble(
+    depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
+    depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
+  )
+  
+  # There are four columns with potential depth data that we need to convert
+  # into meters:
+  converted_depth_units_doc <- recode_depth_na_doc %>%
+    # 1. Activity depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    # Drop conversion col to avoid interfering with next join
+    select(-depth_conversion) %>%
+    # 2. Result depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    select(-depth_conversion) %>%
+    # 3. Activity top depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_top_depth_unit = "m"
+    ) %>%
+    select(-depth_conversion) %>%
+    # 4. Activity bottom depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_bottom_depth_unit = "m"
+    )
+  
+  # Now combine the two columns with single point depth data into one and clean
+  # up values generally:
+  harmonized_depth_doc <- converted_depth_units_doc %>%
+    rowwise() %>%
+    mutate(
+      # New harmonized discrete column:
+      harmonized_discrete_depth_value = case_when(
+        # Use activity depth mainly
+        !is.na(harmonized_activity_depth_value) &
+          is.na(harmonized_result_depth_value) ~ harmonized_activity_depth_value,
+        # Missing activity depth but not result depth
+        is.na(harmonized_activity_depth_value) &
+          !is.na(harmonized_result_depth_value) ~ harmonized_result_depth_value,
+        # Disagreeing activity and result depths
+        (!is.na(harmonized_activity_depth_value) &
+           !is.na(harmonized_result_depth_value)) &
+          harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+            c(harmonized_activity_depth_value, harmonized_result_depth_value)),
+        # Both agree
+        harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
+        # Defaults to NA otherwise
+        .default = NA_real_
+      ),
+      # Indicate depth unit going along with this column
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    ungroup()
+  
+  # Create a flag system based on depth data presence/completion
+  flagged_depth_doc <- harmonized_depth_doc %>%
+    mutate(
+      depth_flag = case_when(
+        # No depths (including because of recoding above)
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 0,
+        # All columns present
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value) ~ 3,
+        # Integrated depths
+        (!is.na(harmonized_top_depth_value) |
+           !is.na(harmonized_bottom_depth_value)) &
+          is.na(harmonized_discrete_depth_value) ~ 2,
+        # Discrete depths
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 1,
+        # Discrete and integrated present
+        # Note that here using the non-combined discrete col since part of
+        # the combination process above was to create NAs when the discrete
+        # values disagree
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_top_depth_value)) |
+          ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+             !is.na(harmonized_bottom_depth_value)) ~ 3,
+        .default = NA_real_
+      )) %>%
+    # These columns are no longer necessary since the harmonization is done
+    select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+              depth_conversion))
+  
+  # Sanity check that flags are matching up with their intended qualities:
+  depth_check_table <- flagged_depth_doc %>%
+    mutate(
+      # Everything present
+      three_cols_present = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only discrete present
+      only_discrete = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only top present
+      only_top = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only bottom present
+      only_bottom = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Full integrated present
+      fully_integrated = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # No depths present
+      no_depths = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Discrete and one of the integrated
+      discrete_partial_integ = if_else(
+        (!is.na(harmonized_discrete_depth_value) &
+           !is.na(harmonized_top_depth_value) &
+           is.na(harmonized_bottom_depth_value)) |
+          (!is.na(harmonized_discrete_depth_value) &
+             is.na(harmonized_top_depth_value) &
+             !is.na(harmonized_bottom_depth_value)),
+        true = 1, false = 0)
+    ) %>%
+    count(three_cols_present, only_discrete, discrete_partial_integ,
+          only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+    arrange(depth_flag)
+  
+  depth_check_out_path <- "3_harmonize/out/doc_depth_check_table.csv"
+  
+  write_csv(x = depth_check_table,
+            file = depth_check_out_path)
+  
+  # Depth category counts:
+  depth_counts <- flagged_depth_doc %>%
+    # Using a temporary flag to aggregate depth values for count output
+    mutate(depth_agg_flag = case_when(
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 1 ~ "<=1m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 5 ~ "<=5m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value > 5 ~ ">5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 1 ~ "<=1m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 5 ~ "<=5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value > 5 ~ ">5m",
+      .default = "No or inconsistent depth"
+    )) %>%
+    count(depth_agg_flag)
+  
+  depth_counts_out_path <- "3_harmonize/out/doc_depth_counts.csv"
+  
+  write_csv(x = depth_counts, file = depth_counts_out_path)
+  
+  # Have any records been removed while processing depths?
   print(
-    paste(
-      'If we only kept samples that had depth information we would lose',
-      round((nrow(doc_harmonized_units) - nrow(doc_harmonized_depth)) / nrow(doc_harmonized_units) * 100, 1),
-      '% of samples'))
+    paste0(
+      "Rows removed due to non-target depths: ",
+      nrow(converted_units_doc) - nrow(flagged_depth_doc)
+    )
+  )
   
-  rm(doc_harmonized_depth)
-  gc()
+  dropped_depths <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while cleaning depths",
+    short_reason = "Clean depths",
+    number_dropped = nrow(converted_units_doc) - nrow(flagged_depth_doc),
+    n_rows = nrow(flagged_depth_doc),
+    order = 8
+  )
   
   
   # Aggregate and tier analytical methods -----------------------------------
   
-  doc_aggregated_methods <- doc_harmonized_units %>%
-    # Includes more phrases that are unrelated
-    filter(!grepl(
-      paste0(
-        c("Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation",
-          "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity",
-          "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids",
-          "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)",
-          "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water"),
-        collapse = "|"),
-      x = ResultAnalyticalMethod.MethodName,
-      ignore.case = TRUE)) %>%
-    mutate(method_status = case_when(
-      
-      # DOC-specific:
-      grepl("5310 B ~ Total Organic Carbon by Combustion-Infrared Method|Total Organic Carbon by Combustion|
-          5310 B ~ Total Organic Carbon by High-Temperature Combustion Method|SM5310B|
-          Organic-C, combustion-IR method|EPA 415.1|SM 5310 B|EPA 415.1M|TOC, combustion (SM5310B,COWSC)|
-          DOC, combustion, NDIR (SM5310B)|TOC, combustion & CO2 detection|415.1|TOC, wu, combustion (5310B;DDEC)|
-          SM185310B|DOC, wf, combustion (5310B;DDEC)|EPA Method 415.1 for Total Organic Carbon in aqueous matrices|
-          SM 5310 B v20|DOC, 0.45u silver, persulfate IR",
-            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310B + EPA 415.1 - Combustion + IR",
-      
-      grepl("5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method|UV OR HEATED PERSULFATE OXIDATION|
-          DOC, UV/persulfate (NYWSC; ALSC)|415.2|DOC, persulfate oxidation & IR|
-          SM5310C|SM 5310 C|TOC, persulfate oxid (5310C; PA)|TOC, wu, persulfate (SM5310C;CO)|DOC, persulfate oxid, IR (COWSC)|
-          Dissolved Organic Carbon in Water by Persulfate Oxidation and Infrared Spectrometry|TOC, persulfate-UV oxid (NYSDEC)|
-          TOTAL ORGANIC CARBON (TOC) PERSULFATE-ULTRAVIOLET|TOC - Persulfate-Ultraviolet or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;ND)|TOC, wu, persulfate (SM5310C;ND)|TOC, UV/persulfate/IR (USGS-NYL)|
-          DOC, persulfate oxid (5310C; PA)|EPA 415.2|DOC, UV/persulfate (NYWSC; KECK)|
-          5310 C ~ Total Organic Carbon by High-Temperature Combustion Method|415.2 M ~ Total Organic Carbon in Water|
-          SM 5310 C, EPA 415.3|5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;CO)", 
-            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310C + USGS O-1122-92 + EPA 415.2 - Persulfate-UV/Heated Persulfate Oxidation + IR",
-      
-      grepl("TOC, wet oxidation|WET OXIDATION METHOD|DOC,0.45um cap,acid,persulfateIR|
-    5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method|DOC, wf, 0.45 um cap, combust IR|415.3|
-    Determination of Total Organic Carbon and Specific UV Absorbance at 254 nm in Source Water and Drinking Water|
-    EPA 415.3|SM 5310 D|O-3100 ~ Total Organic Carbon in Water", 
-            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "5310D + EPA 415.3 + USGS O-3100 - Wet Oxidation + Persulfate + IR",
-      
-      grepl("440 W  ~ Determination of Carbon and Nitrogen", 
-            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "EPA 440.0",
-      
-      grepl("9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
-          EPA 9060|EPA 9060A",
-            ResultAnalyticalMethod.MethodName,ignore.case = T) ~ "EPA 9060A - Carbonaceous Analyzer",
-      (!grepl("5310 B ~ Total Organic Carbon by Combustion-Infrared Method|Total Organic Carbon by Combustion|
-          5310 B ~ Total Organic Carbon by High-Temperature Combustion Method|SM5310B|
-          Organic-C, combustion-IR method|EPA 415.1|SM 5310 B|EPA 415.1M|TOC, combustion (SM5310B,COWSC)|
-          DOC, combustion, NDIR (SM5310B)|TOC, combustion & CO2 detection|415.1|TOC, wu, combustion (5310B;DDEC)|
-          SM185310B|DOC, wf, combustion (5310B;DDEC)|EPA Method 415.1 for Total Organic Carbon in aqueous matrices|
-          SM 5310 B v20|DOC, 0.45u silver, persulfate IR|5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method|
-          UV OR HEATED PERSULFATE OXIDATION|
-          DOC, UV/persulfate (NYWSC; ALSC)|415.2|DOC, persulfate oxidation & IR|
-          SM5310C|SM 5310 C|TOC, persulfate oxid (5310C; PA)|TOC, wu, persulfate (SM5310C;CO)|DOC, persulfate oxid, IR (COWSC)|
-          Dissolved Organic Carbon in Water by Persulfate Oxidation and Infrared Spectrometry|TOC, persulfate-UV oxid (NYSDEC)|
-          TOTAL ORGANIC CARBON (TOC) PERSULFATE-ULTRAVIOLET|TOC - Persulfate-Ultraviolet or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;ND)|TOC, wu, persulfate (SM5310C;ND)|TOC, UV/persulfate/IR (USGS-NYL)|
-          DOC, persulfate oxid (5310C; PA)|EPA 415.2|DOC, UV/persulfate (NYWSC; KECK)|
-          5310 C ~ Total Organic Carbon by High-Temperature Combustion Method|415.2 M ~ Total Organic Carbon in Water|
-          SM 5310 C, EPA 415.3|5310 C ~ Total organic carbon by Persulfate-UV or Heated-Persulfate Oxidation Method|
-          DOC, wu, persulfate (SM5310C;CO)|TOC, wet oxidation|WET OXIDATION METHOD|DOC,0.45um cap,acid,persulfateIR|
-    5310 D ~ Total Organic Carbon in Water- Wet-Oxidation Method|DOC, wf, 0.45 um cap, combust IR|415.3|
-    Determination of Total Organic Carbon and Specific UV Absorbance at 254 nm in Source Water and Drinking Water|
-    EPA 415.3|SM 5310 D|O-3100 ~ Total Organic Carbon in Water|9060 A ~ Total Organic Carbon in water and wastes by Carbonaceous Analyzer|9060 AM ~ Total Volatile Organic Carbon|
-          EPA 9060|EPA 9060A",
-              # KW: include NA values in the "Ambiguous" method lump
-              ResultAnalyticalMethod.MethodName,ignore.case = T) & !is.na(ResultAnalyticalMethod.MethodName)) | is.na(ResultAnalyticalMethod.MethodName) ~ "Ambiguous"))
   
-  doc_grouped_more <- doc_aggregated_methods %>% 
-    mutate(grouped = case_when(grepl(pattern = "5310B", 
-                                     x = method_status) ~ "Combustion+IR",
-                               grepl(pattern = "5310C", 
-                                     x = method_status) ~ "Persulfate-UV/Heated Persulfate Oxidation+IR",
-                               grepl(pattern = "5310D", 
-                                     x = method_status) ~ "Wet Oxidation+Persulfate+IR",
-                               grepl(pattern = "EPA 440.0", 
-                                     x = method_status) ~ "Elemental Analyzer",
-                               grepl(pattern = "EPA 9060A", 
-                                     x = method_status) ~ "Carbonaceous Analyzer",
-                               method_status == "Ambiguous" ~ "Ambiguous"))
-  
-  rm(doc_aggregated_methods)
-  gc()
-  
-  doc_tiered <- doc_grouped_more %>%
-    mutate(tiers = case_when(grouped %in% c("Wet Oxidation+Persulfate+IR",
-                                            "Persulfate-UV/Heated Persulfate Oxidation+IR") ~ "Restrictive",
-                             grouped == "Combustion+IR" ~ "Narrowed",
-                             grouped %in% c("Ambiguous", "Carbonaceous Analyzer") ~ "Inclusive")) 
-  
-  doc_filter_tiers <- doc_tiered %>%
-    filter(tiers != "Inclusive")
-  
-  # How many records removed due to methods?
+  # Get an idea of how many analytical methods exist:
   print(
     paste0(
-      "Rows removed due to analytical method type: ",
-      nrow(doc_harmonized_units) - nrow(doc_filter_tiers)
+      "Number of doc analytical methods present: ",
+      length(unique(flagged_depth_doc$ResultAnalyticalMethod.MethodName))
     )
   )
+  
+  # Before creating analytical tiers remove any records that have unrelated
+  # data based on their method:
+  unrelated_text <- paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals",
+                             "E. coli", "Anion", "Cation", "Phosphorus",
+                             "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity",
+                             "Nitrate", "Conductance", "Alkalinity", "Chlorophyll",
+                             "Solids", "Temperature", "Color in Water",
+                             "Coliform", "PARTICULATE CARBON (inorg+org)",
+                             "5210", "bed sed", "bs, calc", "5220",
+                             "Suspended-Sediment in Water"),
+                           collapse = "|")
+  
+  doc_relevant <- flagged_depth_doc %>%
+    filter(!grepl(pattern = unrelated_text,
+                  x = ResultAnalyticalMethod.MethodName,
+                  ignore.case = TRUE))
+  
+  # 1.1 Combustion+IR detection
+  
+  # Create a new column indicating detection of Combustion+IR methods text: T or F
+  combustion_ir_text <- paste0(c("5310 ?B", "415.1",
+                                 # "combustion" but only when not in the context of
+                                 # 5310 C / 5310C
+                                 "^(?!.*5310 ?C).*combustion(?!.*5310 ?C)",
+                                 "0.45u silver, persulfate IR", "0.7 um GFF, combust IR",
+                                 "Laboratory Procedures for Water Quality Chemical Analysis",
+                                 "CO2 formation", "Qian & Mopper 1996", "Shimadzu TOC Analyzer"),
+                               collapse = "|")
+  
+  doc_tag_combustion_ir <- doc_relevant %>%
+    # TRUE if methods contain Combustion+IR related text or if the correct USGS p code
+    mutate(combustion_ir_tag = if_else(condition = grepl(pattern = combustion_ir_text,
+                                                         x = ResultAnalyticalMethod.MethodName,
+                                                         ignore.case = TRUE,
+                                                         perl = TRUE),
+                                       true = TRUE,
+                                       false = FALSE,
+                                       missing = FALSE))
+  
+  
+  # 1.2 Persulfate-UV/Heated Persulfate Oxidation+IR detection
+  
+  # Create a new column indicating detection of Persulfate-UV methods text: T or F
+  pers_uv_heated_text <- paste0(c("5310 ?C", "persulfate oxid", "415.2",
+                                  "Ultraviolet", "Heated-Persulfate", "UV"),
+                                collapse = "|")
+  
+  doc_tag_pers_uv_heated <- doc_tag_combustion_ir %>%
+    # TRUE if methods contain Persulfate-UV/Heated Persulfate Oxidation+IR
+    # related text or if the correct USGS p code
+    mutate(pers_uv_heated_tag = if_else(condition = grepl(pattern = pers_uv_heated_text,
+                                                          x = ResultAnalyticalMethod.MethodName,
+                                                          ignore.case = TRUE,
+                                                          perl = TRUE),
+                                        true = TRUE,
+                                        false = FALSE,
+                                        missing = FALSE))
+  
+  # 1.3 Wet Oxidation+Persulfate+IR detection
+  
+  # Create a new column indicating detection of Wet Oxidation+Persulfate+IR
+  # methods text: T or F
+  wet_ox_pers_text <- paste0(c(
+    "0.45 ?um cap", "wet oxidation", "5310 ?D", "415.3",
+    "O-3100 ~ Total Organic Carbon in Water"),
+    collapse = "|")
+  
+  doc_tag_wet_ox_pers <- doc_tag_pers_uv_heated %>%
+    # TRUE if methods contain Wet Oxidation+Persulfate+IR related text or if
+    # the correct USGS p code
+    mutate(wet_ox_pers_tag = if_else(condition = grepl(pattern = wet_ox_pers_text,
+                                                       x = ResultAnalyticalMethod.MethodName,
+                                                       ignore.case = TRUE,
+                                                       perl = TRUE),
+                                     true = TRUE,
+                                     false = FALSE,
+                                     missing = FALSE))
+  
+  
+  # 1.4 Elemental Analyzer detection
+  
+  # Create a new column indicating detection of elemental analyzer methods
+  # text: T or F
+  elemental_text <- 440
+  
+  doc_tag_elemental <- doc_tag_wet_ox_pers %>%
+    # TRUE if methods contain elemental analyzer related text or if
+    # the correct USGS p code
+    mutate(elemental_tag = if_else(condition = grepl(pattern = elemental_text,
+                                                     x = ResultAnalyticalMethod.MethodName,
+                                                     ignore.case = TRUE,
+                                                     perl = TRUE),
+                                   true = TRUE,
+                                   false = FALSE,
+                                   missing = FALSE))
+  
+  # 1.5 Carbonaceous Analyzer detection
+  
+  # Create a new column indicating detection of carbonaceous analyzer methods
+  # text: T or F
+  carbonaceous_text <- "9060 A"
+  
+  doc_tag_carbonaceous <- doc_tag_elemental %>%
+    # TRUE if methods contain carbonaceous analyzer related text or if
+    # the correct USGS p code
+    mutate(carbonaceous_tag = if_else(condition = grepl(pattern = carbonaceous_text,
+                                                        x = ResultAnalyticalMethod.MethodName,
+                                                        ignore.case = TRUE,
+                                                        perl = TRUE),
+                                      true = TRUE,
+                                      false = FALSE,
+                                      missing = FALSE))
+  
+  
+  # 1.6 Create tiers
+  tiered_methods_doc <- doc_tag_carbonaceous %>%
+    mutate(analytical_tier = case_when(
+      # Top tier is "Wet Oxidation+Persulfate+IR" and 
+      # "Persulfate-UV/Heated Persulfate Oxidation+IR" - checking for TRUEs
+      pers_uv_heated_tag | wet_ox_pers_tag ~ 0,
+      # Narrowed tier is Combustion+IR or elemental analyzer
+      combustion_ir_tag | elemental_tag ~ 1,
+      # Carbonaceous is sorted into inclusive, along with the remaining methods
+      carbonaceous_tag ~ 2,
+      # All else inclusive
+      .default = 2
+    ))
+  
+  # Export a record of how methods were tiered and their respective row counts
+  tiering_record <- tiered_methods_doc %>%
+    count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
+          pers_uv_heated_tag, wet_ox_pers_tag, combustion_ir_tag, elemental_tag,
+          carbonaceous_tag, analytical_tier) %>%
+    arrange(desc(n)) 
+  
+  tiering_record_out_path <- "3_harmonize/out/doc_analytical_tiering_record.csv"
+  
+  write_csv(x = tiering_record, file = tiering_record_out_path)
+  
+  
+  # Slim the tiered product
+  cleaned_tiered_methods_doc <- tiered_methods_doc %>%
+    # Drop tag columns - these are recorded and exported in tiering_record. We
+    # keep only the final tier
+    select(-contains("_tag"))
+  
+  # Confirm that no rows were lost during tiering
+  if(nrow(doc_relevant) != nrow(cleaned_tiered_methods_doc)){
+    stop("Rows were lost during analytical method tiering. This is not expected.")
+  }  
   
   dropped_methods <- tibble(
     step = "doc harmonization",
-    reason = "Dropped rows while aggregating analytical methods",
+    reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(doc_harmonized_units) - nrow(doc_filter_tiers),
-    n_rows = nrow(doc_filter_tiers),
-    order = 6
+    number_dropped = nrow(flagged_depth_doc) - nrow(cleaned_tiered_methods_doc),
+    n_rows = nrow(doc_relevant),
+    order = 9
   )
   
   
-  # Filter fractions --------------------------------------------------------
+  # Flag field methods ------------------------------------------------------
   
-  # Final step in harmonization is to group and subset fractions of interest
-  doc_harmonized <- doc_filter_tiers %>%
-    mutate(
-      harmonized_fraction = case_when(
-        ResultSampleFractionText %in% c('Dissolved', 'Filtered, lab', 'Filterable', 
-                                        'Filtered, field') ~ "Dissolved",
-        ResultSampleFractionText %in% c('Total', 'Total Recovrble', 'Total Recoverable',
-                                        'Recoverable', 'Unfiltered', "Acid Soluble", "Suspended",
-                                        "Non-Filterable (Particle)") ~ "Total",
-        ResultSampleFractionText %in% c('Fixed') ~ "Fixed",
-        ResultSampleFractionText %in% c('Non-Filterable (Particle)') ~ 'Particle',
-        is.na(ResultSampleFractionText) | ResultSampleFractionText %in% c(" ", "Field", "Bed Sediment",
-                                                                          "Inorganic", "Organic") ~ "Ambiguous")
-    ) %>%
-    # Filter to dissolved fraction
-    filter(harmonized_fraction == "Dissolved")
+  # DOC doesn't have field sampling methods that lend themselves well to
+  # comparing with analytical methods and assigning flags, unlike variables
+  # like chlorophyll a. We fill this field_flag column with "not applicable"
+  # for DOC
   
-  # How many records removed due to methods? Similar number as AquaSat(1)
+  field_flagged_doc <- cleaned_tiered_methods_doc %>%
+    mutate(field_flag = "not applicable")
+  
+  # How many records removed while assigning field flags?
   print(
     paste0(
-      "Rows removed due to fraction type: ",
-      nrow(doc_filter_tiers) - nrow(doc_harmonized)
+      "Rows removed while assigning field flags: ",
+      nrow(cleaned_tiered_methods_doc) - nrow(field_flagged_doc)
     )
   )
   
-  dropped_fractions <- tibble(
+  dropped_field <- tibble(
     step = "doc harmonization",
-    reason = "Dropped rows while filtering fraction types",
-    short_reason = "Fraction types",
-    number_dropped = nrow(doc_filter_tiers) - nrow(doc_harmonized),
-    n_rows = nrow(doc_harmonized),
-    order = 7
+    reason = "Dropped rows while assigning field flags",
+    short_reason = "Field flagging",
+    number_dropped = nrow(cleaned_tiered_methods_doc) - nrow(field_flagged_doc),
+    n_rows = nrow(field_flagged_doc),
+    order = 10
+  )
+  
+  
+  # Generate plots with harmonized dataset ----------------------------------
+  
+  # We'll generate plots now before aggregating across simultaneous records
+  # because it won't be possible to use CharacteristicName after that point.
+  
+  # Plot harmonized measurements by CharacteristicName
+  
+  plotting_subset <- field_flagged_doc %>%
+    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001)
+  
+  char_dists <- plotting_subset %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    xlab("Harmonized doc (ug/L, log~10~ transformed)") +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_charname_dists.png",
+         plot = char_dists,
+         width = 8, height = 6, units = "in", device = "png")
+  
+  
+  # Aggregate simultaneous records ------------------------------------------
+  
+  # There are full duplicates and also values occurring at the same time, location,
+  # etc. We take medians across them here
+  
+  # First tag aggregate subgroups with group IDs
+  grouped_doc <- field_flagged_doc %>%
+    group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
+             ActivityStartDateTime,
+             harmonized_top_depth_value, harmonized_top_depth_unit,
+             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
+             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
+             depth_flag, mdl_flag, approx_flag, greater_flag,
+             analytical_tier, field_flag, harmonized_units) %>%
+    mutate(subgroup_id = cur_group_id())
+  
+  # Export the dataset with subgroup IDs for joining future aggregated product
+  # back to original raw data
+  grouped_doc_out_path <- "3_harmonize/out/doc_harmonized_grouped.feather"
+  
+  grouped_doc %>%
+    select(
+      all_of(c(raw_names,
+               "parameter_code", "group_name", "parameter_name_description",
+               "subgroup_id")),
+      group_cols()
+    ) %>%
+    write_feather(path = grouped_doc_out_path)
+  
+  # Now aggregate at the subgroup level to take care of simultaneous observations
+  no_simul_doc <- grouped_doc %>%
+    # Make sure we don't drop subgroup ID
+    group_by(subgroup_id, .add = TRUE) %>%
+    summarize(
+      harmonized_row_count = n(),
+      harmonized_value_sd = sd(harmonized_value),
+      harmonized_value = median(harmonized_value)
+    ) %>%
+    ungroup()
+  
+  rm(grouped_doc)
+  gc()
+  
+  # Plot harmonized measurements by Tier
+  
+  tier_dists <- no_simul_doc %>%
+    select(analytical_tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001,
+           tier_label = case_when(
+             analytical_tier == 0 ~ "Restrictive (Tier 0)",
+             analytical_tier == 1 ~ "Narrowed (Tier 1)",
+             analytical_tier == 2 ~ "Inclusive (Tier 2)"
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized DOC (mg/L, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized DOC values by analytical tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/doc_tier_dists_postagg.png",
+         plot = tier_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  
+  # How many records removed in aggregating simultaneous records?
+  print(
+    paste0(
+      "Rows removed while aggregating simultaneous records: ",
+      nrow(field_flagged_doc) - nrow(no_simul_doc)
+    )
+  )
+  
+  dropped_simul <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while aggregating simultaneous records",
+    short_reason = "Simultaneous records",
+    number_dropped = nrow(field_flagged_doc) - nrow(no_simul_doc),
+    n_rows = nrow(no_simul_doc),
+    order = 11
   )
   
   
   # Export ------------------------------------------------------------------
   
-  
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_approximates, dropped_fails,
-                                dropped_fractions, dropped_harmonization,
-                                dropped_mdls, dropped_media, dropped_methods)
+  compiled_dropped <- bind_rows(starting_data, dropped_media,
+                                dropped_fails, dropped_mdls,
+                                dropped_approximates, dropped_greater_than,
+                                dropped_na, dropped_harmonization,
+                                dropped_depths, dropped_methods,
+                                dropped_field, dropped_simul)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_doc_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/doc_harmonize_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
-  # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_doc.feather"
   
-  write_feather(doc_harmonized,
-                data_out_path)
+  # Export in memory-friendly way
+  data_out_path <- "3_harmonize/out/doc_harmonized_final.csv"
+  
+  write_csv(no_simul_doc,
+            data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(doc_harmonized)
+      nrow(no_simul_doc)
     )
   )
   
   return(list(
-    harmonized_doc_path = data_out_path,
-    compiled_drops_path = documented_drops_out_path))  
+    doc_tiering_record_path = tiering_record_out_path,
+    doc_grouped_preagg_path = grouped_doc_out_path,
+    doc_harmonized_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path
+  ))   
   
 }

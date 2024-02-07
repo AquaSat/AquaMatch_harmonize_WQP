@@ -1,13 +1,13 @@
 step,reason,short_reason,number_dropped,n_rows,order
-chla harmonization,Starting dataset,Start,0,4377755,0
-chla harmonization,Filtered for only specific water media,Target water media,2844,4374911,1
-chla harmonization,Dropped rows containing fail-related language,"Fails, etc.",84222,4290689,2
-chla harmonization,Dropped rows while cleaning MDLs,Clean MDLs,7490,4283199,3
-chla harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,4283199,4
-chla harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,4283199,5
-chla harmonization,Dropped unresolved NAs,Unresolved NAs,0,4283199,6
-chla harmonization,Dropped rows while harmonizing units,Harmonize units,191798,4091401,7
-chla harmonization,Dropped rows while cleaning depths,Clean depths,0,4091401,8
-chla harmonization,Dropped rows while tiering analytical methods,Analytical methods,66900,4024501,9
-chla harmonization,Dropped rows while assigning field flags,Field flagging,0,4024501,10
-chla harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,1118800,2905701,11
+chla harmonization,Starting dataset,Start,0,4378664,0
+chla harmonization,Filtered for only specific water media,Target water media,2853,4375811,1
+chla harmonization,Dropped rows containing fail-related language,"Fails, etc.",84222,4291589,2
+chla harmonization,Dropped rows while cleaning MDLs,Clean MDLs,7490,4284099,3
+chla harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,4284099,4
+chla harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,4284099,5
+chla harmonization,Dropped unresolved NAs,Unresolved NAs,0,4284099,6
+chla harmonization,Dropped rows while harmonizing units,Harmonize units,191919,4092180,7
+chla harmonization,Dropped rows while cleaning depths,Clean depths,0,4092180,8
+chla harmonization,Dropped rows while tiering analytical methods,Analytical methods,66900,4025280,9
+chla harmonization,Dropped rows while assigning field flags,Field flagging,0,4025280,10
+chla harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,1118848,2906432,11

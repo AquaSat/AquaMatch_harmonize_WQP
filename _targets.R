@@ -203,7 +203,8 @@ config_targets <- list(
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
                             stable_date = "20240307"),
-    packages = c("tidyverse", "googledrive", "feather")
+    packages = c("tidyverse", "googledrive", "feather"),
+    format = "feather"
   ),
   
   # DOC
@@ -216,7 +217,8 @@ config_targets <- list(
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
                             stable_date = "20240307"),
-    packages = c("tidyverse", "googledrive", "feather")
+    packages = c("tidyverse", "googledrive", "feather"),
+    format = "feather"
   )
 )
 

@@ -1,0 +1,26 @@
+# Default: Non-ROSS users: provide email and use dynamic local versions,
+# but not stable
+default:
+  # gmail account to associate with {googledrive}
+  google_email: ""
+  # The local directory where the first {targets} pipeline is located (i.e.,
+  # the pipeline that runs the download step)
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  # Use a stable version of the chlorophyll dataset?
+  chl_use_stable: FALSE
+  doc_use_stable: FALSE
+  sdd_use_stable: FALSE
+  # Use a new stable version of files not related to specific parameters?
+  general_use_stable: FALSE
+  # What's the name of the folder on Google Drive to use?
+  drive_project_folder: ""
+# Update the stable dataset version for one or more parameters
+admin_update:
+  google_email: "therossyndicate@gmail.com"
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  chl_use_stable: TRUE
+  doc_use_stable: TRUE
+  general_use_stable: TRUE
+  drive_project_folder: "~/aquamatch_download_wqp/"
+  
+  

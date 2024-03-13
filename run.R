@@ -4,6 +4,7 @@
 
 # List of packages required for this pipeline
 required_pkgs <- c(
+  "config",
   "dataRetrieval",
   "feather",
   "janitor",

@@ -9,7 +9,10 @@ required_pkgs <- c(
   "feather",
   "janitor",
   "lubridate",
-  "ggrepel",
+  # NOTE: version 0.9.5 of ggrepel does not work with the workflow. Use version
+  # 0.9.4 instead for the time being:
+  # https://github.com/slowkow/ggrepel/issues/253
+  # "ggrepel",
   "googledrive",
   "MASS",
   "pander",

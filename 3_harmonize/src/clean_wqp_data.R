@@ -70,8 +70,7 @@ clean_wqp_data <- function(wqp_data,
               y = site_data %>%
                 select(MonitoringLocationIdentifier, CharacteristicName,
                        lon, lat, datum),
-              by = c("MonitoringLocationIdentifier", "CharacteristicName",
-                     "parameter")) %>%
+              by = c("MonitoringLocationIdentifier", "CharacteristicName")) %>%
     # Flag true missing results
     flag_missing_results(., commenttext_missing)
   

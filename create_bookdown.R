@@ -43,9 +43,10 @@ bookdown_targets_list <- list(
     render(
       download_rmd,
       params = list(
-        site_counts = bind_rows(p2_site_counts),
+        site_counts = bind_rows(p2_site_counts_chl, p2_site_counts_doc),
         global_grid = p1_global_grid,
-        yaml_contents = p1_wqp_params),
+        yaml_contents = list(chlorophyll = p1_wqp_params_chl$chlorophyll,
+                             doc = p1_wqp_params_doc$doc)),
       output_file = "02_download",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -70,7 +71,7 @@ bookdown_targets_list <- list(
       chla_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops,
-        chla_chars = p1_wqp_params$chlorophyll),
+        chla_chars = p1_wqp_params_chl$chlorophyll),
       output_file = "04_chla_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),
@@ -85,7 +86,7 @@ bookdown_targets_list <- list(
       doc_harmonization_rmd,
       params = list(
         documented_drops = p3_documented_drops,
-        doc_chars = p1_wqp_params$doc),
+        doc_chars = p1_wqp_params_doc$doc),
       output_file = "05_doc_harmonization",
       output_dir = 'chapters') %>%
       change_ext(inext = 'md', outext = 'Rmd'),

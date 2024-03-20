@@ -19,15 +19,21 @@ admin_update:
   google_email: "therossyndicate@gmail.com"
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
+  chl_stable_date: "20240306"
   doc_use_stable: TRUE
+  doc_stable_date: "20240306"
   general_use_stable: TRUE
+  general_stable_date: "20240306"
   drive_project_folder: "~/aquamatch_download_wqp/"
 # External user runs harmonization using stable datasets
 use_stable:
   google_email: ""
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
+  chl_stable_date: "20240306"
   doc_use_stable: TRUE
+  doc_stable_date: "20240306"
   general_use_stable: TRUE
+  general_stable_date: "20240306"
   drive_project_folder: ""
   

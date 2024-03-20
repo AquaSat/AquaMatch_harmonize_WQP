@@ -9,10 +9,6 @@ required_pkgs <- c(
   "feather",
   "janitor",
   "lubridate",
-  # NOTE: version 0.9.5 of ggrepel does not work with the workflow. Use version
-  # 0.9.4 instead for the time being:
-  # https://github.com/slowkow/ggrepel/issues/253
-  # "ggrepel",
   "googledrive",
   "MASS",
   "pander",
@@ -39,6 +35,19 @@ package_installer <- function(x) {
 
 # map function using base lapply
 lapply(required_pkgs, package_installer)
+
+# NOTE: version 0.9.5 of ggrepel does not work with the workflow. Use version
+# 0.9.4 instead for the time being:
+# https://github.com/slowkow/ggrepel/issues/253
+if (packageVersion("ggrepel") != "0.9.4") {
+  print("Installing package version 0.9.4 of ggrepel.")
+  
+  package_installer("devtools")
+  
+  devtools::install_version("ggrepel",
+                            version = "0.9.4",
+                            repos = "http://cran.us.r-project.org")
+}
 
 # Load packages for use below
 library(tidyverse)

@@ -87,7 +87,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$general_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$general_stable_date),
     packages = c("tidyverse", "googledrive")
   ), 
   
@@ -100,7 +100,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$chl_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -112,7 +112,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive")
   ),  
   
@@ -125,7 +125,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$chl_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -137,7 +137,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -151,7 +151,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$chl_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -163,7 +163,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -176,7 +176,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$chl_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -188,7 +188,7 @@ config_targets <- list(
                             local_folder = "3_harmonize/in",
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240306"),
+                            stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -202,7 +202,7 @@ config_targets <- list(
                             file_type = ".feather",
                             stable = p0_harmonization_config$chl_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240307"),
+                            stable_date = p0_harmonization_config$chl_stable_date),
     packages = c("tidyverse", "googledrive", "feather"),
     format = "feather"
   ),
@@ -216,7 +216,7 @@ config_targets <- list(
                             file_type = ".feather",
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
-                            stable_date = "20240307"),
+                            stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive", "feather"),
     format = "feather"
   )

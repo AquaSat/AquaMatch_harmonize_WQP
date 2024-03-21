@@ -1,0 +1,34 @@
+# Default: Non-ROSS users: provide email and use dynamic local versions,
+# but not stable
+default:
+  # gmail account to associate with {googledrive}
+  google_email: ""
+  # The local directory where the first {targets} pipeline is located (i.e.,
+  # the pipeline that runs the download step)
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  # Use a stable version of the parameter datasets?
+  chl_use_stable: FALSE
+  doc_use_stable: FALSE
+  sdd_use_stable: FALSE
+  # Use the stable version of other files created in the download step?
+  general_use_stable: FALSE
+# Update the stable dataset version for one or more parameters
+admin_update:
+  google_email: "therossyndicate@gmail.com"
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  chl_use_stable: TRUE
+  chl_stable_date: "20240306"
+  doc_use_stable: TRUE
+  doc_stable_date: "20240306"
+  general_use_stable: TRUE
+  general_stable_date: "20240306"
+# External user runs harmonization using stable datasets
+use_stable:
+  google_email: ""
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  chl_use_stable: TRUE
+  chl_stable_date: "20240306"
+  doc_use_stable: TRUE
+  doc_stable_date: "20240306"
+  general_use_stable: TRUE
+  general_stable_date: "20240306"

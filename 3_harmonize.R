@@ -29,14 +29,16 @@ p3_targets_list <- list(
     format = "feather"
   ),
   
+  
   # Pre-harmonization: chlorophyll ------------------------------------------
+  
   tar_target(
     name = p3_wqp_data_aoi_ready_chl,
     command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_formatted_chl,
-                             char_names_crosswalk = p1_char_names_crosswalk,
+                             char_names_crosswalk = p1_char_names_crosswalk_chl,
                              # Convert list of sites by param to single df
-                             site_data = bind_rows(p2_site_counts),
-                             wqp_metadata = p1_wqp_inventory_aoi),
+                             site_data = p2_site_counts_chl,
+                             wqp_metadata = p1_wqp_inventory_aoi_chl),
     packages = c("tidyverse", "feather")
   ),
   
@@ -48,14 +50,16 @@ p3_targets_list <- list(
     format = "feather"
   ),
   
+  
   # Pre-harmonization: DOC --------------------------------------------------
+  
   tar_target(
     name = p3_wqp_data_aoi_ready_doc,
     command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_formatted_doc,
-                             char_names_crosswalk = p1_char_names_crosswalk,
+                             char_names_crosswalk = p1_char_names_crosswalk_doc,
                              # Convert list of sites by param to single df
-                             site_data = bind_rows(p2_site_counts),
-                             wqp_metadata = p1_wqp_inventory_aoi),
+                             site_data = p2_site_counts_doc,
+                             wqp_metadata = p1_wqp_inventory_aoi_doc),
     packages = c("tidyverse", "feather")
   ),
   
@@ -78,6 +82,7 @@ p3_targets_list <- list(
   
   
   # Harmonization: chlorophyll ----------------------------------------------
+  
   tar_target(
     name = p3_chla_harmonized,
     command = harmonize_chla(raw_chla = p3_cleaned_wqp_data_chl,

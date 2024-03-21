@@ -53,8 +53,9 @@ harmonize_doc <- function(raw_doc, p_codes){
     count(ResultSampleFractionText, name = "record_count")
   
   # Which fraction types got dropped, and how many counts did they have? Plot it.
-  anti_join(x = full_fraction_count,
-            y = reduced_fraction_count) %>%
+  anti_join(x = raw_doc,
+            y = doc) %>%
+    count(ResultSampleFractionText, name = "record_count") %>%
     plot_fraction_pie() %>%
     ggsave(filename = "3_harmonize/out/doc_fraction_drop_pie.png",
            plot = .,

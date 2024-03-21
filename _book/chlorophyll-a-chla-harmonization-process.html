@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>5 Chlorophyll a (chla) harmonization process | _main.knit</title>
   <meta name="description" content="" />
-  <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.38 and GitBook 2.6.7" />
 
   <meta property="og:title" content="5 Chlorophyll a (chla) harmonization process | _main.knit" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-02-05" />
+<meta name="date" content="2024-03-14" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -234,7 +234,7 @@ harmonization process.</p>
 <div id="pre-harmonization-of-the-raw-chlorophyll-wqp-dataset" class="section level2 hasAnchor" number="5.1">
 <h2><span class="header-section-number">5.1</span> Pre-harmonization of the raw chlorophyll WQP dataset<a href="chlorophyll-a-chla-harmonization-process.html#pre-harmonization-of-the-raw-chlorophyll-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>At the start of the pre-harmonization process the raw chlorophyll WQP
-dataset contains 4.53 million rows.</p>
+dataset contains 4.55 million rows.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 <div id="missing-results" class="section level3 hasAnchor" number="5.1.1">
@@ -251,7 +251,7 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>81.98 thousand rows are dropped, resulting in a final count of 4.45
+<p>82.12 thousand rows are dropped, resulting in a final count of 4.46
 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -273,7 +273,7 @@ however we also include <code>NA</code> in an effort to be conservative. More
 specifically, when making decisions for this and other columns we
 occasionally retain <code>NA</code> values if removing the records would otherwise
 drop 10% or more of the available data.</p>
-<p>This step removes 73.35 thousand rows of data, leaving it with 4.38
+<p>This step removes 73.35 thousand rows of data, leaving it with 4.39
 million rows remaining.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
@@ -293,8 +293,8 @@ that pertain to chlorophyll <em>a</em>.</p>
 <div id="filter-for-water-media" class="section level3 hasAnchor" number="5.2.1">
 <h3><span class="header-section-number">5.2.1</span> Filter for water media<a href="chlorophyll-a-chla-harmonization-process.html#filter-for-water-media" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We next ensure that the media type for all chlorophyll data is
-<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 2853 rows are
-removed. The final row count after this is 4.38 million.</p>
+<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 2855 rows are
+removed. The final row count after this is 4.39 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -337,7 +337,7 @@ failure phrases are not mutually exclusive.</p>
 <!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
 <p>84.22 thousand rows are removed after detecting failure-related phrases
-and 4.29 million rows remain.</p>
+and 4.3 million rows remain.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -365,8 +365,8 @@ method are assigned a 1. Finally, records where no MDL-based adjustment
 was made and which contain a numeric value below the provided MDL are
 assigned a 2.</p>
 <p>Most of this step should not result in a change in rows, but we do drop
-records with negative measurement values. This results in 7490 rows
-being removed. The final row count after this is 4.28 million.</p>
+records with negative measurement values. This results in 7766 rows
+being removed. The final row count after this is 4.3 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -387,7 +387,7 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>approx_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.28 million.</p>
+are removed. The final row count after this is 4.3 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -409,7 +409,7 @@ moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>greater_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.28 million.</p>
+are removed. The final row count after this is 4.3 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -421,7 +421,7 @@ a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
 dropped.</p>
-<p>0 rows are removed. The final row count after this is 4.28 million.</p>
+<p>0 rows are removed. The final row count after this is 4.3 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -560,7 +560,7 @@ by <code>CharacteristicName</code>:</p>
 <p><br></p>
 <p><img src="3_harmonize/out/chla_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/></p>
 <p><br></p>
-<p>191.92 thousand rows are removed. The final row count after this is 4.09
+<p>196.94 thousand rows are removed. The final row count after this is 4.1
 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
@@ -572,7 +572,7 @@ obtained from the WQP. The details behind this step are covered in the
 <em>Depth flags</em> section of the <em>Tiering, flagging, and quality control
 philosophy</em> chapter.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.09 million.</p>
+are removed. The final row count after this is 4.1 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>

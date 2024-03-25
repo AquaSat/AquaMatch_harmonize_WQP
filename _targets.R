@@ -12,7 +12,9 @@ tar_option_set(
 # Run the R scripts with custom functions:
 tar_source(files = c(
   "src/",
-  "3_harmonize.R",
+  "3a_harmonize.R",
+  "3b_harmonize_chla.R",
+  "3c_harmonize_doc.R",
   "create_bookdown.R"))
 
 # The list of targets/steps
@@ -226,4 +228,6 @@ config_targets <- list(
 # Full targets list
 c(config_targets,
   p3_targets_list,
+  p3_chla_targets_list,
+  p3_doc_targets_list,
   bookdown_targets_list)

@@ -12,7 +12,9 @@ tar_option_set(
 # Run the R scripts with custom functions:
 tar_source(files = c(
   "src/",
-  "3_harmonize.R",
+  "3a_harmonize.R",
+  "3b_harmonize_chla.R",
+  "3c_harmonize_doc.R",
   "create_bookdown.R"))
 
 # The list of targets/steps
@@ -24,23 +26,20 @@ config_targets <- list(
   tar_target(
     name = p0_harmonization_config,
     # The config package does not like to be used with library()
-    command = config::get(config = "admin_update")
+    command = config::get(config = "admin_update"),
+    cue = tar_cue("always")
   ),
   
   
   # Import targets from the previous pipeline -------------------------------
   
-  # Grab location of the local {targets} WQP download pipeline
+  # Grab location of the local {targets} WQP download pipeline OR error if\
+  # the location doesn't exist yet
   tar_target(
     name = p0_AquaMatch_download_WQP_directory,
-    command = p0_harmonization_config$download_repo_directory,
-    cue = tar_cue("always")
-  ),
-  
-  # Confirm the existence of the local {targets} WQP download pipeline
-  tar_target(
-    name = p0_AquaMatch_download_WQP_confirm,
-    command = if(!dir.exists(p0_AquaMatch_download_WQP_directory)) {
+    command = if(dir.exists(p0_harmonization_config$download_repo_directory)){
+      p0_harmonization_config$download_repo_directory
+    } else if(!dir.exists(p0_AquaMatch_download_WQP_directory)) {
       # Throw an error if the pipeline does not exist
       stop("The WQP download pipeline is not at the specified location.")
     },
@@ -226,4 +225,6 @@ config_targets <- list(
 # Full targets list
 c(config_targets,
   p3_targets_list,
+  p3_chla_targets_list,
+  p3_doc_targets_list,
   bookdown_targets_list)

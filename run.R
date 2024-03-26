@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# Please review README.md prior to running the pipeline! It provides important
+# instructions for proper configuration.
+
 # Package handling --------------------------------------------------------
 
 # List of packages required for this pipeline

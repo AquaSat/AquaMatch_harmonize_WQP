@@ -22,12 +22,24 @@ p3_doc_targets_list <- list(
     format = "feather"
   ),
   
+  # Join in column containing site type info
+  tar_target(
+    name = p3_wqp_data_aoi_sitetype_doc,
+    command = left_join(
+      x = p3_wqp_data_aoi_formatted_doc,
+      y = p1_wqp_inventory_aoi_doc %>%
+        select(OrganizationIdentifier, MonitoringLocationIdentifier,
+               CharacteristicName, OrganizationFormalName, ProviderName,
+               MonitoringLocationTypeName)
+    )
+  ),
+  
   
   # Pre-harmonization -------------------------------------------------------
   
   tar_target(
     name = p3_wqp_data_aoi_ready_doc,
-    command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_formatted_doc,
+    command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_sitetype_doc,
                              char_names_crosswalk = p1_char_names_crosswalk_doc,
                              # Convert list of sites by param to single df
                              site_data = p2_site_counts_doc,

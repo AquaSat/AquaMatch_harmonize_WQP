@@ -856,14 +856,14 @@ harmonize_doc <- function(raw_doc, p_codes){
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
     xlab("Harmonized doc (ug/L, log~10~ transformed)") +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+    ggtitle(label = "Distribution of harmonized DOC values by CharacteristicName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
-  ggsave(filename = "3_harmonize/out/chla_charname_dists.png",
+  ggsave(filename = "3_harmonize/out/doc_charname_dists.png",
          plot = char_dists,
          width = 8, height = 6, units = "in", device = "png")
   
@@ -876,7 +876,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   # First tag aggregate subgroups with group IDs
   grouped_doc <- field_flagged_doc %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
-             ActivityStartDateTime,
+             MonitoringLocationTypeName, ActivityStartDateTime,
              harmonized_top_depth_value, harmonized_top_depth_unit,
              harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
              harmonized_discrete_depth_value, harmonized_discrete_depth_unit,

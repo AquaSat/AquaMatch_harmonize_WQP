@@ -246,6 +246,10 @@ We next ensure that the media type for all DOC data is `"Surface Water"`, `"Wate
 
 <br>
 
+<img src="3_harmonize/out/doc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="650"/>
+
+<br>
+
 `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
 ```{r echo = FALSE}

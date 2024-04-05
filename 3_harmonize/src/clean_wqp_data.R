@@ -275,4 +275,60 @@ remove_duplicates <- function(wqp_data, duplicate_definition){
 }
 
 
-
+#' @title Retrieve and clean site metadata for harmonized records
+#' 
+#' @description
+#' Function to retrieve site metadata from the WQP using organization IDs. Once
+#' metadata are retrieved they are filtered to only include sites used in the
+#' final harmonized data product.
+#' 
+#' @param dataset The harmonized data product *before* simultaneous records are
+#' aggregated. Should be a data frame including the columns `OrganizationIdentifier`
+#' and `MonitoringLocationIdentifier`.
+#' 
+#' @returns 
+#' Returns a data frame containing site metadata downloaded from the Water Portal
+#' and filtered to only include sites present in the harmonized data product.
+#' 
+get_site_info <- function(dataset){
+  
+  # Use safely() when requesting data to prepare for the possibility of failures
+  safe_pull <- safely(.f = ~whatWQPsites(organization = .x))
+  
+  # Vector of organizations whose sites we want to query (batch download process
+  # will request one org's site data at a time)
+  org_ids <- dataset %>%
+    pull(OrganizationIdentifier) %>%
+    unique()
+  
+  # Vector of site IDs that we're interested in
+  site_ids <- dataset %>%
+    pull(MonitoringLocationIdentifier) %>%
+    unique()
+  
+  # Returns a list of result/error list item pairs for each org. Each result,
+  # if not an error, will be a data frame
+  raw_org_pull <- map(
+    .x = org_ids,
+    .f = ~ safe_pull(.x)
+  )
+  
+  # Now clean the outputs of the pull:
+  site_metadata <- raw_org_pull %>%
+    # Transpose into a list with 2 items: result and error
+    transpose() %>%
+    # Keep only results
+    pluck("result") %>%
+    # Discard anything that failed
+    purrr::discard(is.null) %>%
+    # Ensure that all dfs are compatible w.r.t. column type
+    map_df(.f = ~.x %>%
+             mutate(across(everything(), ~as.character(.x)))
+    ) %>%
+    # Keep only the sites for which we've got harmonized data
+    filter(MonitoringLocationIdentifier %in% site_ids)
+  
+  # Return the final product
+  site_metadata
+  
+}

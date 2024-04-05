@@ -30,6 +30,17 @@ config_targets <- list(
     cue = tar_cue("always")
   ),
   
+  tar_target(
+    name = p0_chl_output_path,
+    command = paste0(p0_harmonization_config$drive_project_folder,
+                     "chlorophyll/")
+  ),
+  
+  tar_target(
+    name = p0_doc_output_path,
+    command = paste0(p0_harmonization_config$drive_project_folder,
+                     "doc/")
+  ), 
   
   # Import targets from the previous pipeline -------------------------------
   

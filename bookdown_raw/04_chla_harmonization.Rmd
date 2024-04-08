@@ -712,6 +712,10 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 <br>
 
+**Note**: Spectrophotometer and fluorometer methods that are labeled as pheophytin-corrected are grouped into the "Narrowed" tier. Depending on the exact implementation of EPA method 445, the correction philosophy may vary, and there is no agreed upon method to rectify inconsistencies in data entry related to these methodological differences. The final harmonization product that aggregates simultaneous records does *not* retain the `CharacteristicName` or `ResultAnalyticalMethod.MethodName` columns. However, the non-aggregated version of the harmonized dataset (`p3_chla_preagg_grouped`) includes those columns. We encourage any users that want to explicitly compare or account for pheophytin correction to use the `p3_chla_preagg_grouped` dataset. 
+
+<br>
+
 At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 
 <br>

@@ -321,7 +321,7 @@ get_site_info <- function(dataset){
     pluck("result") %>%
     # Discard anything that failed
     purrr::discard(is.null) %>%
-    # Ensure that all dfs are compatible w.r.t. column type
+    # Ensure that all dfs have compatible column types
     map_df(.f = ~.x %>%
              mutate(across(everything(), ~as.character(.x)))
     ) %>%

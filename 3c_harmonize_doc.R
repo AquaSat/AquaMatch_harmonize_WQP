@@ -29,7 +29,8 @@ p3_doc_targets_list <- list(
       x = p3_wqp_data_aoi_formatted_doc,
       y = p1_wqp_inventory_aoi_doc %>%
         select(OrganizationIdentifier, MonitoringLocationIdentifier,
-               CharacteristicName, OrganizationFormalName, ProviderName,
+               ResolvedMonitoringLocationTypeName, CharacteristicName,
+               OrganizationFormalName, ProviderName,
                MonitoringLocationTypeName)
     )
   ),
@@ -37,9 +38,17 @@ p3_doc_targets_list <- list(
   
   # Pre-harmonization -------------------------------------------------------
   
+  # Time and time zone fills
+  tar_target(
+    name = p3_wqp_data_aoi_date_time_doc,
+    command = fill_date_time(dataset = p3_wqp_data_aoi_sitetype_doc,
+                             site_data = p2_site_counts_doc),
+    packages = c("tidyverse", "lutz", "sf", "sfheaders")
+  ),
+  
   tar_target(
     name = p3_wqp_data_aoi_ready_doc,
-    command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_sitetype_doc,
+    command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_date_time_doc,
                              char_names_crosswalk = p1_char_names_crosswalk_doc,
                              # Convert list of sites by param to single df
                              site_data = p2_site_counts_doc,

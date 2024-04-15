@@ -839,12 +839,13 @@ harmonize_chla <- function(raw_chla, p_codes){
   # First tag aggregate subgroups with group IDs
   grouped_chla <- field_flagged_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
-             MonitoringLocationTypeName, ActivityStartDateTime,
-             harmonized_top_depth_value, harmonized_top_depth_unit,
-             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
-             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
-             depth_flag, mdl_flag, approx_flag, greater_flag,
-             analytical_tier, field_flag, harmonized_units) %>%
+             MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
+             ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
+             harmonized_tz, harmonized_utc, harmonized_top_depth_value,
+             harmonized_top_depth_unit, harmonized_bottom_depth_value,
+             harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
+             harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
+             greater_flag, analytical_tier, field_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product

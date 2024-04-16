@@ -893,7 +893,8 @@ harmonize_doc <- function(raw_doc, p_codes){
       all_of(c(raw_names,
                "parameter_code", "group_name", "parameter_name_description",
                "subgroup_id")),
-      group_cols()
+      group_cols(),
+      harmonized_value
     ) %>%
     write_feather(path = grouped_doc_out_path)
   

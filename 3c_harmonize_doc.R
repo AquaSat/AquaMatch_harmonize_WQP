@@ -88,6 +88,7 @@ p3_doc_targets_list <- list(
       out_path <- gsub(x = p3_doc_harmonized$doc_harmonized_path,
                        pattern = ".csv",
                        replacement = ".feather")
+      
       write_feather(x = read_csv(file = p3_doc_harmonized$doc_harmonized_path),
                     path = out_path)
       
@@ -95,6 +96,52 @@ p3_doc_targets_list <- list(
     },
     packages = c("targets", "feather"),
     read = read_feather(path = !!.x)
+  ),
+  
+  # Export
+  tar_target(
+    name = p3_doc_agg_harmonized_feather_drive_file,
+    command = export_single_file(target = p3_doc_agg_harmonized_feather,
+                                 drive_path = p0_doc_output_path,
+                                 stable = p0_harmonization_config$doc_use_stable,
+                                 google_email = p0_harmonization_config$google_email,
+                                 date_stamp = p0_harmonization_config$doc_stable_date),
+    packages = c("tidyverse", "googledrive"),
+    error = "stop"
+  ),
+  
+  
+  # Site info ---------------------------------------------------------------
+  
+  # Generate site metadata after harmonization is complete
+  tar_file_read(
+    name = p3_doc_harmonized_site_info,
+    command = {
+      # Pull and clean data
+      doc_sites <- get_site_info(dataset = p3_doc_preagg_grouped)
+      
+      out_path <- "3_harmonize/out/doc_harmonized_site_info.feather"
+      
+      doc_sites %>%
+        write_feather(path = out_path)
+      
+      out_path
+    },
+    read = read_feather(path = !!.x),
+    packages = c("tidyverse", "dataRetrieval", "feather")
+  ),
+  
+  # Export
+  tar_target(
+    name = p3_doc_site_info_drive_file,
+    command = export_single_file(target = p3_doc_harmonized_site_info,
+                                 drive_path = p0_doc_output_path,
+                                 stable = p0_harmonization_config$doc_use_stable,
+                                 google_email = p0_harmonization_config$google_email,
+                                 date_stamp = p0_harmonization_config$doc_stable_date),
+    packages = c("tidyverse", "googledrive"),
+    error = "stop"
   )
+  
 )
 

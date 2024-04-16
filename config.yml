@@ -12,23 +12,26 @@ default:
   sdd_use_stable: FALSE
   # Use the stable version of other files created in the download step?
   general_use_stable: FALSE
+  drive_project_folder: ""
 # Update the stable dataset version for one or more parameters
 admin_update:
   google_email: "therossyndicate@gmail.com"
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240306"
+  chl_stable_date: "20240402"
   doc_use_stable: TRUE
-  doc_stable_date: "20240306"
+  doc_stable_date: "20240402"
   general_use_stable: TRUE
-  general_stable_date: "20240306"
+  general_stable_date: "20240402"
+  drive_project_folder: "~/aquamatch_download_wqp/"
 # External user runs harmonization using stable datasets
 use_stable:
   google_email: ""
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240306"
+  chl_stable_date: "20240402"
   doc_use_stable: TRUE
-  doc_stable_date: "20240306"
+  doc_stable_date: "20240402"
   general_use_stable: TRUE
-  general_stable_date: "20240306"
+  general_stable_date: "20240402"
+  drive_project_folder: ""

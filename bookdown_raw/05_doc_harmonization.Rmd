@@ -709,7 +709,7 @@ However, prior to classification we check the `ResultAnalyticalMethod.MethodName
 
 This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
-The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: Combustion + infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods, Wet Oxidation+Persulfate+IR methods, Elemental Analyzer methods, or Carbonaceous Analyzer methods. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+The next step towards creating tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: Combustion + infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods, Wet Oxidation+Persulfate+IR methods, Elemental Analyzer methods, or Carbonaceous Analyzer methods. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
 -   **Combustion+IR:** Detection of "5310 B", "5310B", "415.1", "combustion" but only without "5310 C" or "5310C", "0.45u silver, persulfate IR", "0.7 um GFF, combust IR", "Laboratory Procedures for Water Quality Chemical Analysis", "CO2 formation", "Qian & Mopper 1996", or "Shimadzu TOC Analyzer" in `ResultAnalyticalMethod.MethodName`
 -   **Persulfate-UV/Heated Persulfate Oxidation+IR:** Detection of "5310 C", "5310C", "persulfate oxid", "415.2", "Ultraviolet", "Heated-Persulfate", or "UV" in `ResultAnalyticalMethod.MethodName`
@@ -731,7 +731,7 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 <br>
 
-At this point we export a file (`3_harmonize/out/doc_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+At this point we export a file (`3_harmonize/out/doc_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 
 <br>
 
@@ -829,7 +829,7 @@ step_14_dropped <- filter(step_data,
 
 The final step of DOC harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
@@ -864,10 +864,10 @@ step_data %>%
 
 At this point the harmonization of the DOC data from the WQP is complete and we export the final dataset for use later in the workflow.
 
-Below is a final set of histograms showing the distribution of harmonized measurements broken down by `analytical_tier` ***after*** aggregating simultaneous records.
+Below is a final set of histograms showing the distribution of harmonized measurements broken down by `tier` ***after*** aggregating simultaneous records.
 
 <br>
 
-<img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by analytical tier" width="650"/>
+<img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by tier" width="650"/>
 
 <br>

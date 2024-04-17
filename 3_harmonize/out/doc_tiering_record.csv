@@ -1,4 +1,4 @@
-CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,pers_uv_heated_tag,wet_ox_pers_tag,combustion_ir_tag,elemental_tag,carbonaceous_tag,analytical_tier,n
+CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,pers_uv_heated_tag,wet_ox_pers_tag,combustion_ir_tag,elemental_tag,carbonaceous_tag,tier,n
 Organic carbon,5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,484429
 Organic carbon,NA,NA,FALSE,FALSE,FALSE,FALSE,FALSE,2,210152
 Organic carbon,Total Organic Carbon by Combustion,NA,FALSE,FALSE,TRUE,FALSE,FALSE,1,209118

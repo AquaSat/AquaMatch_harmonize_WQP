@@ -1,9 +1,0 @@
-step,reason,short_reason,number_dropped,n_rows,order
-doc harmonization,Starting dataset,Starting,0,2598948,0
-doc harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2521892,4
-doc harmonization,"Dropped rows indicating fails, missing data, etc.","Fails, etc.",77056,2521892,2
-doc harmonization,Dropped rows while filtering fraction types,Fraction types,761262,437179,7
-doc harmonization,Dropped rows while harmonizing units,Harmonize units,19426,2502466,5
-doc harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,2521892,3
-doc harmonization,Filtered for only water media,Water media,0,2598948,1
-doc harmonization,Dropped rows while aggregating analytical methods,Analytical methods,1304025,1198441,6

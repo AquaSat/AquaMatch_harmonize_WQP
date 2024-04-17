@@ -665,7 +665,7 @@ step_data %>%
 
 <br>
 
-### Filter and tier analytical methods
+### Filter and tier methods
 
 ```{r echo = FALSE}
 step_counter <- 12
@@ -685,13 +685,13 @@ step_12_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next review the analytical methods used in measuring chlorophyll *a*, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Analytical method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
+We next review the analytical methods used in measuring chlorophyll *a*, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
 However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-chlorophyll *a* measurements. Phrases used to flag and remove unrelated methods from chlorophyll *a* data are: "sulfate", "sediment", "5310", "counting", "plasma", "turbidity", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "zooplankton", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320".
 
 This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
-The next step towards creating analytical tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+The next step towards creating tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: HPLC methods, spectrophotometer and fluorometer methods, or methods for which a pheophytin correction is recorded as part of the methodology. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
 + **HPLC:** Detection of "447", "chromatography", or "hplc" in the `ResultAnalyticalMethod.MethodName` or presence of 70951 or 70953 in the `USGSPCode` column
 + **Spectro/fluoro:** Detection of "445", "fluor", "Welshmeyer", "fld", "10200", "446", "trichromatic", "spectrophoto", "monochrom", "monchrom", or "spec" not as part of a word in `ResultAnalyticalMethod.MethodName`
@@ -716,7 +716,7 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 <br>
 
-At this point we export a file (`3_harmonize/out/chla_analytical_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+At this point we export a file (`3_harmonize/out/chla_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 
 <br>
 
@@ -767,12 +767,12 @@ Next we flag field sampling methods based primarily on the `SampleCollectionMeth
 
 We used the following strings to mark **in vitro** samples: "grab", "bottle", "vessel", "bucket", "jar", "composite", "integrate", "UHL001", "surface", "filter", "filtrat", "1060B", "kemmerer", "collect", "rosette", "equal width", "vertical", "van dorn", "bail", "sample", "sampling", "lab" not in the middle of another word, or a "G" on its own as shorthand for "grab". **In situ** samples were detected using "*in situ*", "probe", or "ctd".
 
-Lastly we created the field flag based on whether the sampling method used agrees with the analytical method. Flags of 0 indicated that the field sampling method is in agreement with the analytical method, 1 indicates that the field sampling methods are uncharacteristic of the analytical method, and anything with analytical tier of 2 is given a field flag of 2 due to the ambiguity associated with those observations' analytical methods and corresponding sampling methods. 
+Lastly we created the field flag based on whether the sampling method used agrees with the analytical method. Flags of 0 indicated that the field sampling method is in agreement with the analytical method, 1 indicates that the field sampling methods are uncharacteristic of the analytical method, and anything with tier of 2 is given a field flag of 2 due to the ambiguity associated with those observations' analytical methods and corresponding sampling methods. 
 
 The following rules are used for chlorophyll a field sampling flags:
 
-+ **Flag 0**: Restrictive and narrowed analytical tiers with in vitro field methods
-+ **Flag 1**: Restrictive and narrowed analytical tiers with in situ field methods
++ **Flag 0**: Restrictive and narrowed tiers with in vitro field methods
++ **Flag 1**: Restrictive and narrowed tiers with in situ field methods
 + **Flag 2**: Any entry in the inclusive tier
 
 
@@ -825,7 +825,7 @@ step_14_dropped <- filter(step_data,
 
 The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `analytical_tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
@@ -860,10 +860,10 @@ step_data %>%
 
 At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we export the final dataset for use later in the workflow.
 
-Below is a final set of histograms showing the distribution of harmonized measurements broken down by `analytical_tier` ***after*** aggregating simultaneous records.
+Below is a final set of histograms showing the distribution of harmonized measurements broken down by `tier` ***after*** aggregating simultaneous records.
 
 <br>
 
-<img src="3_harmonize/out/chla_tier_dists_postagg.png" alt="Distribution of chl *a* values by analytical tier" width="650"/>
+<img src="3_harmonize/out/chla_tier_dists_postagg.png" alt="Distribution of chl *a* values by tier" width="650"/>
 
 <br>

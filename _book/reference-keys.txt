@@ -10,7 +10,8 @@ method-tiering
 field-flags
 depth-flags
 pre-processing
-general-note
+time-and-date-handling
+general-notes
 simultaneous-records
 chlorophyll-a-chla-harmonization-process
 pre-harmonization-of-the-raw-chlorophyll-wqp-dataset

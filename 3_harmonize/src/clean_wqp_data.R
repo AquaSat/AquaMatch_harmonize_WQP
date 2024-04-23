@@ -447,7 +447,7 @@ fill_date_time <- function(dataset, site_data){
     mutate(
       temp_local_time = case_when(
         # DateTime has date only OR is NA + Date is filled + Time is empty:
-        # assign noon
+        # assign 11:59:59
         ( (!is.na(ActivityStartDateTime) & (nchar(ActivityStartDateTime) <= 10)) |
             is.na(ActivityStartDateTime) ) &
           !is.na(ActivityStartDate) &

@@ -6,7 +6,9 @@ library(tarchetypes)
 
 # Set target options:
 tar_option_set(
-  packages = c("tidyverse")
+  packages = c("tidyverse"),
+  memory = "transient",
+  garbage_collection = TRUE
 )
 
 # Run the R scripts with custom functions:

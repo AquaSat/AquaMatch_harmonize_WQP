@@ -468,18 +468,18 @@ fill_date_time <- function(dataset, site_data){
         is.na(ActivityStartDateTime) & is.na(ActivityStartDate) ~ NA_character_
       )
     ) %>%
-    # ymd_hms() below doesn't vectorize without rowwise():
-    rowwise() %>%
-    # Temporary column to generate local time
-    mutate(
-      temp_local_time = ymd_hms(temp_local_time, tz = harmonized_tz)
+    # Split-apply-combine over tz (faster than rowwise())
+    split(.$harmonized_tz) %>%
+    map_df(
+      .x = .,
+      .f = ~ .x %>%
+        mutate(temp_local_time = ymd_hms(temp_local_time,
+                                         tz = unique(harmonized_tz)))
     ) %>%
-    ungroup() %>%
     # Create a converted UTC time column
     mutate(
       harmonized_utc = with_tz(temp_local_time, "UTC")
-    )
-  
+    )   
   # Return the final product without temporary cols
   dataset_utc %>%
     select(-c(fetched_tz, temp_local_time))

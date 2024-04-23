@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>4 Tiering, flagging, and quality control philosophy | _main.knit</title>
   <meta name="description" content="" />
-  <meta name="generator" content="bookdown 0.38 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="4 Tiering, flagging, and quality control philosophy | _main.knit" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-08" />
+<meta name="date" content="2024-04-23" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -149,10 +149,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#handling-na-values"><i class="fa fa-check"></i><b>4.1</b> Handling <code>NA</code> values</a></li>
 <li class="chapter" data-level="4.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#heterogenous-data"><i class="fa fa-check"></i><b>4.2</b> Heterogenous data</a>
 <ul>
-<li class="chapter" data-level="4.2.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#analytical-method-tiering"><i class="fa fa-check"></i><b>4.2.1</b> Analytical method tiering</a></li>
+<li class="chapter" data-level="4.2.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#method-tiering"><i class="fa fa-check"></i><b>4.2.1</b> Method tiering</a></li>
 <li class="chapter" data-level="4.2.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#field-flags"><i class="fa fa-check"></i><b>4.2.2</b> Field flags</a></li>
 <li class="chapter" data-level="4.2.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#depth-flags"><i class="fa fa-check"></i><b>4.2.3</b> Depth flags</a></li>
-<li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-note"><i class="fa fa-check"></i><b>4.2.4</b> General note</a></li>
+<li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling"><i class="fa fa-check"></i><b>4.2.4</b> Time and date handling</a></li>
+<li class="chapter" data-level="4.2.5" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-notes"><i class="fa fa-check"></i><b>4.2.5</b> General notes</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#simultaneous-records"><i class="fa fa-check"></i><b>4.3</b> Simultaneous records</a></li>
 </ul></li>
@@ -173,7 +174,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.6" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#drop-unresolved-na-measurements"><i class="fa fa-check"></i><b>5.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="5.2.7" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonize-record-units"><i class="fa fa-check"></i><b>5.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="5.2.8" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#clean-depth-data"><i class="fa fa-check"></i><b>5.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="5.2.10" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="5.2.11" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.11</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.12</b> Harmonized chlorophyll a</a></li>
@@ -196,7 +197,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
@@ -263,24 +264,24 @@ analytical methods that are incompatible</li>
 with something more readily navigable we have incorporated several tiers
 and flagging systems into the AquaSat v2 dataset:</p>
 <ul>
-<li><strong>Analytical method tiering</strong>: Tiers indicating the interoperability
-of data based on the analytical method used to acquire measurements</li>
+<li><strong>Method tiering</strong>: Tiers indicating the interoperability of data
+based on the method used to acquire measurements</li>
 <li><strong>Field flags</strong>: Flags indicating whether the sample collection method
 is consistent with the analytical method</li>
 <li><strong>Depth flags</strong>: Flags indicating the type of water sampling depth
 measurement or completeness of the measurement</li>
 </ul>
-<div id="analytical-method-tiering" class="section level3 hasAnchor" number="4.2.1">
-<h3><span class="header-section-number">4.2.1</span> Analytical method tiering<a href="tiering-flagging-and-quality-control-philosophy.html#analytical-method-tiering" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The <code>ResultAnalyticalMethod.MethodName</code> column from the WQP is the
-primary column we use for determining which analytical method tier each
-record falls within. Details on how each parameter’s methods were sorted
-into tiers can be found in its corresponding harmonization chapter.</p>
-<p>The primary purpose of our analytical method tiering is to determine the
-reliability and accuracy of each analytical method across data providers
-and throughout time for each parameter in the AquaSat v2 dataset. We
-developed the following categories, which are represented in the
-<code>analytical_tier</code> column of the final dataset:</p>
+<div id="method-tiering" class="section level3 hasAnchor" number="4.2.1">
+<h3><span class="header-section-number">4.2.1</span> Method tiering<a href="tiering-flagging-and-quality-control-philosophy.html#method-tiering" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The <code>ResultAnalyticalMethod.MethodName</code> column from the WQP is often the
+primary column we use for determining which tier each record falls
+within. Details on how each parameter’s methods were sorted into tiers
+can be found in its corresponding harmonization chapter.</p>
+<p>The primary purpose of our tiering is to determine the reliability and
+accuracy of each analytical method across data providers and throughout
+time for each parameter in the AquaSat v2 dataset. We developed the
+following categories, which are represented in the <code>tier</code> column of the
+final dataset:</p>
 <ul>
 <li><strong>Tier 0: Restrictive.</strong> Data that are verifiably self-similar across
 organizations and time-periods and can be considered highly reliable
@@ -307,12 +308,12 @@ harmony with one another. “Suspect” flags are assigned when the sample
 collection method description isn’t consistent with what would be
 expected given the <code>characteristicName</code> and the
 <code>ResultAnalyticalMethod.MethodName</code> for a given record. “Inconclusive”
-or unknown flags are assigned to records with “inclusive” analytical
-tiers because these tiers include values such as <code>NA</code>, where it’s
-typically impossible to determine the appropriateness of a collection
-method for the sample record. The relationship between field flags and
-analytical tiers will vary by parameter; thus, each harmonization
-chapter contains specific information for these different cases.</p>
+or unknown flags are assigned to records with “inclusive” tiers because
+these tiers include values such as <code>NA</code>, where it’s typically impossible
+to determine the appropriateness of a collection method for the sample
+record. The relationship between field flags and tiers will vary by
+parameter; thus, each harmonization chapter contains specific
+information for these different cases.</p>
 </div>
 <div id="depth-flags" class="section level3 hasAnchor" number="4.2.3">
 <h3><span class="header-section-number">4.2.3</span> Depth flags<a href="tiering-flagging-and-quality-control-philosophy.html#depth-flags" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -376,11 +377,43 @@ any combination of discrete + top and/or bottom depths is assigned a
 certainty.</p>
 </div>
 </div>
-<div id="general-note" class="section level3 hasAnchor" number="4.2.4">
-<h3><span class="header-section-number">4.2.4</span> General note<a href="tiering-flagging-and-quality-control-philosophy.html#general-note" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Generally speaking, we avoid further classification for any WQP entry’s
-parameter methodology, tier, or flag unless there are at least 1% of
-observations with the same unresolved text.</p>
+<div id="time-and-date-handling" class="section level3 hasAnchor" number="4.2.4">
+<h3><span class="header-section-number">4.2.4</span> Time and date handling<a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We primarily rely on the <code>ActivityStartDateTime</code> column to determine the
+time and date that samples were collected. However, this column is not
+100% complete for any parameter and other columns related to time and
+date in the WQP are also incomplete and recorded inconsistently. We have
+designed a function, <code>fill_date_time()</code>, to handle these inconsistencies
+before the broader data harmonization process. It adds the columns,
+<code>harmonized_tz</code> and <code>harmonized_utc</code>, to the dataset it is provided. The
+function first transforms the provided data into a unified coordinate
+reference system and then looks up the local time zone for each
+monitoring site in the dataset. The <code>harmonized_tz</code> column is then
+generated using any timezones provided by the WQP, while filling in gaps
+in timezone data with those identified using the spatial method above.
+These are also harmonized into a single, location-based format with
+values like <code>"America/New_York"</code>. We then create a date-time formatted
+column, which is finally converted to UTC and preserved as
+<code>harmonized_utc</code>. One problem we have to address is that many records
+contain a sampling date but <strong>not</strong> time. In these instances we append
+the timestamp <code>" 11:59:59"</code> to the date (in the local timezone) before
+formatting as date-time. Very few, if any, records contain this exact
+time stamp naturally, so it can be used as a proxy to filter or flag
+“synthetic” sampling times if desired by the end user.</p>
+</div>
+<div id="general-notes" class="section level3 hasAnchor" number="4.2.5">
+<h3><span class="header-section-number">4.2.5</span> General notes<a href="tiering-flagging-and-quality-control-philosophy.html#general-notes" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<ol style="list-style-type: decimal">
+<li><p>Generally speaking, we avoid further classification for any WQP
+entry’s parameter methodology, tier, or flag unless there are at
+least 1% of observations with the same unresolved text.</p></li>
+<li><p>When building the <code>tier</code> and <code>_flag</code> columns we use temporary
+columns with <code>_tag</code> in the name to track important qualities that
+inform our tier and flag decisions. These columns are not exported
+to the final product and are intended as open-ended tools for
+tracking records, so they will vary greatly between each parameter’s
+codebase.</p></li>
+</ol>
 </div>
 </div>
 <div id="simultaneous-records" class="section level2 hasAnchor" number="4.3">

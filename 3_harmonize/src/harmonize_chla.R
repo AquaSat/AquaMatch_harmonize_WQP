@@ -614,7 +614,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     )
   )
   
-  # Before creating analytical tiers remove any records that have unrelated
+  # Before creating tiers remove any records that have unrelated
   # data based on their method:
   unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
                              "plasma", "turbidity", "coliform", "carbon",
@@ -696,7 +696,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # 1.4 Create tiers
   tiered_methods_chla <- chla_tag_pheo %>%
-    mutate(analytical_tier = case_when(
+    mutate(tier = case_when(
       # Conflicting method info
       grepl(pattern = "445", x = ResultAnalyticalMethod.MethodName) & hplc_tag ~ 2,
       # Top tier is HPLC = TRUE
@@ -713,10 +713,10 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_chla %>%
     count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
-          hplc_tag, spec_fluor_tag, pheo_corr_tag, analytical_tier) %>%
+          hplc_tag, spec_fluor_tag, pheo_corr_tag, tier) %>%
     arrange(desc(n)) 
   
-  tiering_record_out_path <- "3_harmonize/out/chla_analytical_tiering_record.csv"
+  tiering_record_out_path <- "3_harmonize/out/chla_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
@@ -776,11 +776,11 @@ harmonize_chla <- function(raw_chla, p_codes){
   field_flagged_chla <- tagged_sampling_chla %>% 
     mutate(field_flag = case_when(
       # HPLC or other lab analysis + in vitro = expected methods
-      analytical_tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
+      tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
       # HPLC or other lab analysis + in situ = UNexpected methods
-      analytical_tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
-      # The inclusive analytical tier is unknown
-      analytical_tier == 2 ~ 2
+      tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
+      # The inclusive tier is unknown
+      tier == 2 ~ 2
     )) %>%
     select(-field_tag)
   
@@ -810,7 +810,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Plot harmonized measurements by CharacteristicName
   
   plotting_subset <- field_flagged_chla %>%
-    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+    select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
   char_dists <- plotting_subset %>%
@@ -839,12 +839,13 @@ harmonize_chla <- function(raw_chla, p_codes){
   # First tag aggregate subgroups with group IDs
   grouped_chla <- field_flagged_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
-             MonitoringLocationTypeName, ActivityStartDateTime,
-             harmonized_top_depth_value, harmonized_top_depth_unit,
-             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
-             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
-             depth_flag, mdl_flag, approx_flag, greater_flag,
-             analytical_tier, field_flag, harmonized_units) %>%
+             MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
+             ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
+             harmonized_tz, harmonized_utc, harmonized_top_depth_value,
+             harmonized_top_depth_unit, harmonized_bottom_depth_value,
+             harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
+             harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
+             greater_flag, tier, field_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -878,19 +879,19 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Plot harmonized measurements by Tier
   
   tier_dists <- no_simul_chla %>%
-    select(analytical_tier, harmonized_value) %>%
+    select(tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001,
            tier_label = case_when(
-             analytical_tier == 0 ~ "Restrictive (Tier 0)",
-             analytical_tier == 1 ~ "Narrowed (Tier 1)",
-             analytical_tier == 2 ~ "Inclusive (Tier 2)"
+             tier == 0 ~ "Restrictive (Tier 0)",
+             tier == 1 ~ "Narrowed (Tier 1)",
+             tier == 2 ~ "Inclusive (Tier 2)"
            )) %>%
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by analytical tier",
+    ggtitle(label = "Distribution of harmonized chl a values by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +

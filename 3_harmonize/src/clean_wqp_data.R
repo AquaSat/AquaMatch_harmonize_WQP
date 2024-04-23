@@ -332,3 +332,156 @@ get_site_info <- function(dataset){
   site_metadata
   
 }
+
+#' @title Fill in gaps in the `ActivityStartDateTime` column and create a UTC
+#' version.
+#' 
+#' @description
+#' Function to identify and fill missing or partial data in the `ActivityStartDateTime`
+#' column and then create a harmonized version in UTC. Includes spatial join to
+#' fill timezones for data missing an `ActivityStartTime.TimeZoneCode`, convert
+#' timezones to location-based format, and provide columns containing harmonized
+#' time zone infomation and harmonized times in UTC.
+#' 
+#' @param dataset A data frame containing minimum columns `MonitoringLocationIdentifier`,
+#' `ActivityStartDateTime`, `ActivityStartDate`, `ActivityStartTime.Time`, and
+#' `ActivityStartTime.TimeZoneCode`. 
+#' 
+#' @param site_data A data frame containing site metadata for WQP monitoring sites.
+#' At minimum should contain `MonitoringLocationIdentifier`, `datum`, `lat`,
+#' `lon`.
+#' 
+#' @returns 
+#' Returns a modified version of `dataset` with the additional columns,
+#' `harmonized_tz` and `harmonized_utc`.
+#' 
+fill_date_time <- function(dataset, site_data){
+  
+  # 1. Complete the timezone records using lat/lon
+  
+  # Datum varies throughout the dataset
+  epsg_codes <- tribble(
+    ~datum, ~epsg,
+    "NAD83", 4269,
+    "WGS84", 4326,
+    "NAD27", 4267,
+    "OLDHI", 4135,
+    "WGS72", 4322,
+    # Less certain about these two but they seem to match up
+    "AMSMA", 4169,
+    "PR", 4139,
+    # Assume these are WGS84
+    "UNKWN", 4326,
+    "OTHER", 4326
+  )
+  
+  # Add EPSG codes
+  site_w_epsg <- site_data %>%
+    left_join(x = .,
+              y = epsg_codes,
+              by = "datum")
+  
+  # Unify CRS so we can have a single sf object
+  site_sf_unified <- site_w_epsg %>%
+    # Group by CRS 
+    split(f = .$datum) %>%
+    # Transform and re-stack
+    map_df(.x = .,
+           .f = ~ .x %>%
+             st_as_sf(coords = c("lon", "lat"),
+                      crs = unique(.x$epsg)) %>%
+             st_transform(crs = 4326)) 
+  
+  # Identify timezones for all unique lat/longs to fill gaps when needed. Note
+  # that this is not perfect, because the location isn't a guarantee of the
+  # timezone that was used in recording. It's our best guess
+  site_sf_unified$fetched_tz <- tz_lookup(site_sf_unified, method = "accurate")
+  
+  # Get clean site x tz data
+  site_tz <- site_sf_unified %>%
+    as_tibble() %>%
+    distinct(MonitoringLocationIdentifier, fetched_tz)
+  
+  # Big
+  rm(site_sf_unified)
+  gc()
+  
+  # Add tz data to main dataset and create col using old where possible
+  # but filling in the fetched data where needed
+  dataset_tz <- dataset %>%
+    left_join(x = ., y = site_tz) %>%
+    mutate(
+      harmonized_tz = if_else(
+        condition = is.na(ActivityStartTime.TimeZoneCode),
+        true = fetched_tz,
+        false = ActivityStartTime.TimeZoneCode
+      ),
+      # We'll want to convert the abbreviations into location-based tz:
+      harmonized_tz = case_when(
+        grepl(x = harmonized_tz, pattern = "EDT|EST") ~ "America/New_York",
+        grepl(x = harmonized_tz, pattern = "GMT") ~ "Europe/London",
+        grepl(x = harmonized_tz, pattern = "CDT|CST") ~ "America/Chicago",
+        grepl(x = harmonized_tz, pattern = "MDT|MST") ~ "America/Denver",
+        grepl(x = harmonized_tz, pattern = "ADT|AST") ~ "America/Halifax",
+        grepl(x = harmonized_tz, pattern = "BST") ~ "Europe/London",
+        grepl(x = harmonized_tz, pattern = "AKDT|AKST") ~ "America/Anchorage",
+        grepl(x = harmonized_tz, pattern = "PDT|PST") ~ "America/Los_Angeles",
+        # Not all locations in HST observe DST. All in current dataset are
+        # HI based, so using Pacific here
+        grepl(x = harmonized_tz, pattern = "HST") ~ "Pacific/Honolulu",
+        # If HDT shows up it's likely AK
+        grepl(x = harmonized_tz, pattern = "HDT") ~ "America/Adak",
+        # Suspect this is Guam Standard Time; data is prior to tz change in 2000
+        grepl(x = harmonized_tz, pattern = "GST") ~ "Pacific/Guam",
+        # Others use the tz from joining
+        .default = fetched_tz
+      )
+    ) 
+  
+  rm(dataset)
+  gc()
+  
+  # 2. Create a harmonized UTC time column that also fills in blank times with
+  # 11:59:59 AM, which we've found is used rarely or not at all in WQP data
+  dataset_utc <- dataset_tz %>%
+    mutate(
+      temp_local_time = case_when(
+        # DateTime has date only OR is NA + Date is filled + Time is empty:
+        # assign 11:59:59
+        ( (!is.na(ActivityStartDateTime) & (nchar(ActivityStartDateTime) <= 10)) |
+            is.na(ActivityStartDateTime) ) &
+          !is.na(ActivityStartDate) &
+          is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate, " 11:59:59"),
+        # DateTime has date only OR is NA + Date is filled + Time is filled:
+        # combine date + time.
+        # Note: A small subset of ActivityStartDate != dates in ActivityStartDateTime
+        ( (!is.na(ActivityStartDateTime) & (nchar(ActivityStartDateTime) <= 10)) |
+            is.na(ActivityStartDateTime) ) &
+          !is.na(ActivityStartDate) &
+          !is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate,
+                                                  " ",
+                                                  ActivityStartTime.Time),
+        # If has StartDateTime then good
+        (!is.na(ActivityStartDateTime) &
+           (nchar(ActivityStartDateTime) > 10)) ~ ActivityStartDateTime,
+        # Nothing to go on, then NA
+        is.na(ActivityStartDateTime) & is.na(ActivityStartDate) ~ NA_character_
+      )
+    ) %>%
+    # Split-apply-combine over tz (faster than rowwise())
+    split(.$harmonized_tz) %>%
+    map_df(
+      .x = .,
+      .f = ~ .x %>%
+        mutate(temp_local_time = ymd_hms(temp_local_time,
+                                         tz = unique(harmonized_tz)))
+    ) %>%
+    # Create a converted UTC time column
+    mutate(
+      harmonized_utc = with_tz(temp_local_time, "UTC")
+    )   
+  # Return the final product without temporary cols
+  dataset_utc %>%
+    select(-c(fetched_tz, temp_local_time))
+  
+}

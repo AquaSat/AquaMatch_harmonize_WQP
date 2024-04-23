@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>1 AquaMatch data harmonization process | _main.knit</title>
   <meta name="description" content="" />
-  <meta name="generator" content="bookdown 0.38 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="1 AquaMatch data harmonization process | _main.knit" />
   <meta property="og:type" content="book" />
@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-08" />
+<meta name="date" content="2024-04-23" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -149,10 +149,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#handling-na-values"><i class="fa fa-check"></i><b>4.1</b> Handling <code>NA</code> values</a></li>
 <li class="chapter" data-level="4.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#heterogenous-data"><i class="fa fa-check"></i><b>4.2</b> Heterogenous data</a>
 <ul>
-<li class="chapter" data-level="4.2.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#analytical-method-tiering"><i class="fa fa-check"></i><b>4.2.1</b> Analytical method tiering</a></li>
+<li class="chapter" data-level="4.2.1" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#method-tiering"><i class="fa fa-check"></i><b>4.2.1</b> Method tiering</a></li>
 <li class="chapter" data-level="4.2.2" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#field-flags"><i class="fa fa-check"></i><b>4.2.2</b> Field flags</a></li>
 <li class="chapter" data-level="4.2.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#depth-flags"><i class="fa fa-check"></i><b>4.2.3</b> Depth flags</a></li>
-<li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-note"><i class="fa fa-check"></i><b>4.2.4</b> General note</a></li>
+<li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling"><i class="fa fa-check"></i><b>4.2.4</b> Time and date handling</a></li>
+<li class="chapter" data-level="4.2.5" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-notes"><i class="fa fa-check"></i><b>4.2.5</b> General notes</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#simultaneous-records"><i class="fa fa-check"></i><b>4.3</b> Simultaneous records</a></li>
 </ul></li>
@@ -173,7 +174,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.6" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#drop-unresolved-na-measurements"><i class="fa fa-check"></i><b>5.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="5.2.7" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonize-record-units"><i class="fa fa-check"></i><b>5.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="5.2.8" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#clean-depth-data"><i class="fa fa-check"></i><b>5.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="5.2.10" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="5.2.11" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.11</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.12</b> Harmonized chlorophyll a</a></li>
@@ -196,7 +197,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
@@ -225,7 +226,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="aquamatch-data-harmonization-process" class="section level1 hasAnchor" number="1">
 <h1><span class="header-section-number">1</span> AquaMatch data harmonization process<a href="index.html#aquamatch-data-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>This bookdown documents the harmonization process for data downloaded from the <a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP) used to build the AquaMatch dataset, a data product of AquaSat v2. The WQP is a data warehouse for water-related data measured or observed within the United States and US Territories managed by the Environmental Protection Agency (EPA), United States Geological Survey (USGS), and the National Water Quality Monitoring Council (NWQMC). AquaMatch collates water quality measurements and observations with optical and thermal satellite data from lakeSR and riverSR.</p>
-<p>All data in this workflow are processed as parameter groups, a high-level grouping used in AquaMatch for specific water quality measures found in the WQP. This document first describes selections made while downloading WQP data using the {dataRetrieval} package (<strong><em>CITE</em></strong>). It then walks through how the chlorophyll <em>a</em>, dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids (TSS) parameter groups are each prepared (“pre-harmonization”), and then filtered and harmonized.</p>
+<p>All data in this workflow are processed as parameter groups, a high-level grouping used in AquaMatch for specific water quality measures found in the WQP. This document first describes selections made while downloading WQP data using the {dataRetrieval} package (De Cicco et al., 2023). It then walks through how the chlorophyll <em>a</em>, dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids (TSS) parameter groups are each prepared (“pre-harmonization”), and then filtered and harmonized.</p>
 <p><em>Note: for the purposes of this bookdown, many terms surrounded by <code>backticks</code> are column names from the dataset being referenced. Others are code snippets or data values. For those that are column names, a full list of definitions for columns present in the original WQP dataset can be found in Table 7 <a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
 <p>Data are contributed to the WQP by a wide range of data providers (<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code> are defined by the WQP as:</p>
 <blockquote>

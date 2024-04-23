@@ -650,7 +650,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     )
   )
   
-  # Before creating analytical tiers remove any records that have unrelated
+  # Before creating tiers remove any records that have unrelated
   # data based on their method:
   unrelated_text <- paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals",
                              "E. coli", "Anion", "Cation", "Phosphorus",
@@ -766,7 +766,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # 1.6 Create tiers
   tiered_methods_doc <- doc_tag_carbonaceous %>%
-    mutate(analytical_tier = case_when(
+    mutate(tier = case_when(
       # Top tier is "Wet Oxidation+Persulfate+IR" and 
       # "Persulfate-UV/Heated Persulfate Oxidation+IR" - checking for TRUEs
       pers_uv_heated_tag | wet_ox_pers_tag ~ 0,
@@ -782,10 +782,10 @@ harmonize_doc <- function(raw_doc, p_codes){
   tiering_record <- tiered_methods_doc %>%
     count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
           pers_uv_heated_tag, wet_ox_pers_tag, combustion_ir_tag, elemental_tag,
-          carbonaceous_tag, analytical_tier) %>%
+          carbonaceous_tag, tier) %>%
     arrange(desc(n)) 
   
-  tiering_record_out_path <- "3_harmonize/out/doc_analytical_tiering_record.csv"
+  tiering_record_out_path <- "3_harmonize/out/doc_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
@@ -847,7 +847,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Plot harmonized measurements by CharacteristicName
   
   plotting_subset <- field_flagged_doc %>%
-    select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+    select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
   char_dists <- plotting_subset %>%
@@ -876,12 +876,13 @@ harmonize_doc <- function(raw_doc, p_codes){
   # First tag aggregate subgroups with group IDs
   grouped_doc <- field_flagged_doc %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
-             MonitoringLocationTypeName, ActivityStartDateTime,
-             harmonized_top_depth_value, harmonized_top_depth_unit,
-             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
-             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
-             depth_flag, mdl_flag, approx_flag, greater_flag,
-             analytical_tier, field_flag, harmonized_units) %>%
+             MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
+             ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
+             harmonized_tz, harmonized_utc, harmonized_top_depth_value,
+             harmonized_top_depth_unit, harmonized_bottom_depth_value,
+             harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
+             harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
+             greater_flag, tier, field_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -915,19 +916,19 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Plot harmonized measurements by Tier
   
   tier_dists <- no_simul_doc %>%
-    select(analytical_tier, harmonized_value) %>%
+    select(tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001,
            tier_label = case_when(
-             analytical_tier == 0 ~ "Restrictive (Tier 0)",
-             analytical_tier == 1 ~ "Narrowed (Tier 1)",
-             analytical_tier == 2 ~ "Inclusive (Tier 2)"
+             tier == 0 ~ "Restrictive (Tier 0)",
+             tier == 1 ~ "Narrowed (Tier 1)",
+             tier == 2 ~ "Inclusive (Tier 2)"
            )) %>%
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized DOC (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized DOC values by analytical tier",
+    ggtitle(label = "Distribution of harmonized DOC values by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +

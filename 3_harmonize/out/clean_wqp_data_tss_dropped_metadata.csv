@@ -1,4 +1,0 @@
-reason,short_reason,number_dropped,n_rows,order,step
-Starting dataset,Start,0,4024736,0,tsspre-harmonization
-Removed missing results,Remove missing,216894,3807842,1,tsspre-harmonization
-Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,7258,3800584,2,tsspre-harmonization

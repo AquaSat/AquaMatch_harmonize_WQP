@@ -6,11 +6,12 @@ maps-of-data-spread
 tiering-flagging-and-quality-control-philosophy
 handling-na-values
 heterogenous-data
-analytical-method-tiering
+method-tiering
 field-flags
 depth-flags
 pre-processing
-general-note
+time-and-date-handling
+general-notes
 simultaneous-records
 chlorophyll-a-chla-harmonization-process
 pre-harmonization-of-the-raw-chlorophyll-wqp-dataset
@@ -28,7 +29,7 @@ clean-values-with-greater-than-data
 drop-unresolved-na-measurements
 harmonize-record-units
 clean-depth-data
-filter-and-tier-analytical-methods
+filter-and-tier-methods
 flag-based-on-field-methods
 aggregate-simultaneous-records
 harmonized-chlorophyll-a
@@ -48,7 +49,7 @@ clean-values-with-greater-than-data-1
 drop-unresolved-na-measurements-1
 harmonize-record-units-1
 clean-depth-data-1
-filter-and-tier-analytical-methods-1
+filter-and-tier-analytical-methods
 flag-based-on-field-methods-1
 aggregate-simultaneous-records-1
 harmonized-doc

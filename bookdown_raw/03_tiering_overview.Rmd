@@ -23,21 +23,21 @@ In addition to `NA` values, WQP entries can be heterogenous for reasons such as:
   
 In order to control for some of this variation and provide end-users with something more readily navigable we have incorporated several tiers and flagging systems into the AquaSat v2 dataset:
 
-+ **Analytical method tiering**: Tiers indicating the interoperability of data based on the analytical method used to acquire measurements
++ **Method tiering**: Tiers indicating the interoperability of data based on the method used to acquire measurements
 + **Field flags**: Flags indicating whether the sample collection method is consistent with the analytical method
 + **Depth flags**: Flags indicating the type of water sampling depth measurement or completeness of the measurement
 
-### Analytical method tiering
-The `ResultAnalyticalMethod.MethodName` column from the WQP is the primary column we use for determining which analytical method tier each record falls within. Details on how each parameter's methods were sorted into tiers can be found in its corresponding harmonization chapter.
+### Method tiering
+The `ResultAnalyticalMethod.MethodName` column from the WQP is often the primary column we use for determining which tier each record falls within. Details on how each parameter's methods were sorted into tiers can be found in its corresponding harmonization chapter.
 
-The primary purpose of our analytical method tiering is to determine the reliability and accuracy of each analytical method across data providers and throughout time for each parameter in the AquaSat v2 dataset. We developed the following categories, which are represented in the `analytical_tier` column of the final dataset: 
+The primary purpose of our tiering is to determine the reliability and accuracy of each analytical method across data providers and throughout time for each parameter in the AquaSat v2 dataset. We developed the following categories, which are represented in the `tier` column of the final dataset: 
 
 + **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable
 + **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers
 + **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of method descriptions for any given parameter. Because this tier represents many analytical methods, direct interoperability between samples is not guaranteed.
 
 ### Field flags
-The `field_flag` column is used to check if the sample collection method (`SampleCollectionMethod.MethodName`) is reasonable (flag = 0), suspect (flag = 1), or inconclusive (flag = 2).  "Reasonable" flags mean that the sample collection method and the analytical method or tier are in harmony with one another. "Suspect" flags are assigned when the sample collection method description isn't consistent with what would be expected given the `characteristicName` and the `ResultAnalyticalMethod.MethodName` for a given record. "Inconclusive" or unknown flags are assigned to records with "inclusive" analytical tiers because these tiers include values such as `NA`, where it's typically impossible to determine the appropriateness of a collection method for the sample record. The relationship between field flags and analytical tiers will vary by parameter; thus, each harmonization chapter contains specific information for these different cases.
+The `field_flag` column is used to check if the sample collection method (`SampleCollectionMethod.MethodName`) is reasonable (flag = 0), suspect (flag = 1), or inconclusive (flag = 2).  "Reasonable" flags mean that the sample collection or observation method and the analytical method are in harmony with one another. "Suspect" flags are assigned when the sample collection method description isn't consistent with what would be expected given the `characteristicName` and the `ResultAnalyticalMethod.MethodName` for a given record. "Inconclusive" or unknown flags are assigned to records with "inclusive" tiers because these tiers include values such as `NA`, where it's typically impossible to determine the appropriateness of a collection method for the sample record. The relationship between field flags and tiers will vary by parameter; thus, each harmonization chapter contains specific information for these different cases.
 
 ### Depth flags
 There are four columns that explicitly contain depth information for a given WQP entry, all of which contain a variety of measurement units. Below is a list of the four columns and their definitions according to the [{dataRetrieval} package documentation](https://rconnect.usgs.gov/dataRetrieval/reference/readWQPqw.html).
@@ -65,8 +65,14 @@ This pre-processing results in three "harmonized" columns reporting water sampli
 
 Sample depth flags are assigned using the harmonized depth columns that result from the pre-processing steps above. If the record has no depth listed it is assigned a `depth_flag` of 0. A record with only discrete depth listed in the `harmonized_discrete_depth_value` is given a `depth_flag` of 1. A record with top and/or bottom depth (`harmonized_top_depth_value`, `harmonized_bottom_depth_value`), indicating an integrated sample, is assigned a `depth_flag` of 2, and any combination of discrete + top and/or bottom depths is assigned a `depth_flag` of 3, since the sample depth(s) can not be reconciled with certainty. 
 
-### General note
-Generally speaking, we avoid further classification for any WQP entry's parameter methodology, tier, or flag unless there are at least 1% of observations with the same unresolved text.
+### Time and date handling
+We primarily rely on the `ActivityStartDateTime` column to determine the time and date that samples were collected. However, this column is not 100% complete for any parameter and other columns related to time and date in the WQP are also incomplete and recorded inconsistently. We have designed a function, `fill_date_time()`, to handle these inconsistencies before the broader data harmonization process. It adds the columns `harmonized_tz` and `harmonized_utc` to the dataset. The function first transforms the provided data into a unified coordinate reference system and then looks up the local time zone for each monitoring site in the dataset. The `harmonized_tz` column is then generated using any timezones provided by the WQP, while filling in gaps in timezone data with those identified using the spatial method above. These are also harmonized into a single, location-based Olson timezone format with values like `"America/New_York"`. We then create a date-time formatted column, which is finally converted to UTC and preserved as `harmonized_utc`. One problem we have to address is that many records contain a sampling date but **not** time. In these instances we append the timestamp `" 11:59:59"` to the date (in the local timezone) before formatting as date-time. Very few, if any, records contain this exact time stamp naturally, so it can be used as a proxy to filter or flag "synthetic" sampling times if desired by the end user.
+
+### General notes
+
+1. Generally speaking, we avoid further classification for any WQP entry's parameter methodology, tier, or flag unless there are at least 1% of observations with the same unresolved text.
+
+2. When building the `tier` and `_flag` columns we use temporary columns with `_tag` in the name to track important qualities that inform our tier and flag decisions. These columns are not exported to the final product and are intended as open-ended tools for tracking records, so they will vary greatly between each parameter's codebase.
 
 ## Simultaneous records
 The WQP contains records that can be considered true duplicates and others where multiple non-identical measurements are recorded at the same time, place, and depth by the same organization. We deal with these within each parameter's harmonization step by taking the median value from simultaneous observations. We also report the standard deviation and the total number of entries contributing to the median in the `harmonized_value_sd` and `harmonized_row_count` columns of the final dataset.

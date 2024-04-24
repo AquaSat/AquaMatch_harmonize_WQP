@@ -803,7 +803,7 @@ step_data %>%
 
 <br>
 
-### Aggregate simultaneous records
+### Miscellaneous flag
 
 ```{r echo = FALSE}
 step_counter <- 14
@@ -816,6 +816,55 @@ step_14_rows <- filter(step_data,
   paste0(., " million")
 
 step_14_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
+
+Some parameters will have additional flagging requirements that chlorophyll *a* does not, so we include this placeholder to maintain the same columns across all parameter data products.
+
+No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized chlorophyll *a* dataset.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Aggregate simultaneous records
+
+```{r echo = FALSE}
+step_counter <- 15
+
+step_15_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_15_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%

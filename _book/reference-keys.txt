@@ -10,6 +10,7 @@ method-tiering
 field-flags
 depth-flags
 pre-processing
+miscellaneous-flags
 time-and-date-handling
 general-notes
 simultaneous-records
@@ -31,6 +32,7 @@ harmonize-record-units
 clean-depth-data
 filter-and-tier-methods
 flag-based-on-field-methods
+miscellaneous-flag
 aggregate-simultaneous-records
 harmonized-chlorophyll-a
 doc-harmonization-process

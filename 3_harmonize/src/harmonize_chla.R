@@ -802,6 +802,24 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
+  # Miscellaneous flag ------------------------------------------------------
+  
+  # This is a flag that isn't currently needed for chla, but other parameters
+  # will use it.
+  
+  misc_flagged_chla <- field_flagged_chla %>%
+    mutate(misc_flag = NA_character_)
+  
+  dropped_misc <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows while assigning misc flags",
+    short_reason = "Misc flagging",
+    number_dropped = nrow(field_flagged_chla) - nrow(misc_flagged_chla),
+    n_rows = nrow(misc_flagged_chla),
+    order = 11
+  )
+  
+  
   # Generate plots with harmonized dataset ----------------------------------
   
   # We'll generate plots now before aggregating across simultaneous records
@@ -809,7 +827,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Plot harmonized measurements by CharacteristicName
   
-  plotting_subset <- field_flagged_chla %>%
+  plotting_subset <- misc_flagged_chla %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
@@ -837,7 +855,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # etc. We take medians across them here
   
   # First tag aggregate subgroups with group IDs
-  grouped_chla <- field_flagged_chla %>%
+  grouped_chla <- misc_flagged_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
@@ -907,7 +925,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Rows removed while aggregating simultaneous records: ",
-      nrow(field_flagged_chla) - nrow(no_simul_chla)
+      nrow(misc_flagged_chla) - nrow(no_simul_chla)
     )
   )
   
@@ -915,9 +933,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(field_flagged_chla) - nrow(no_simul_chla),
+    number_dropped = nrow(misc_flagged_chla) - nrow(no_simul_chla),
     n_rows = nrow(no_simul_chla),
-    order = 11
+    order = 12
   )
   
   
@@ -929,7 +947,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                                 dropped_approximates, dropped_greater_than,
                                 dropped_na, dropped_harmonization,
                                 dropped_depths, dropped_methods,
-                                dropped_field, dropped_simul)
+                                dropped_field, dropped_misc, dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/chla_harmonize_dropped_metadata.csv"
   

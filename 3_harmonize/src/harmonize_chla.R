@@ -352,7 +352,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     inner_join(x = .,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
-    mutate(harmonized_value = ResultMeasureValue * conversion,
+    mutate(harmonized_value = harmonized_value * conversion,
            harmonized_units = "ug/L")
   
   # Plot and export unit codes that didn't make through joining

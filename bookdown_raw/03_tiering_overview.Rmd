@@ -23,8 +23,8 @@ In addition to `NA` values, WQP entries can be heterogenous for reasons such as:
   
 In order to control for some of this variation and provide end-users with something more readily navigable we have incorporated several tiers and flagging systems into the AquaSat v2 dataset:
 
-+ **Method tiering**: Tiers indicating the interoperability of data based on the method used to acquire measurements
-+ **Field flags**: Flags typically indicating whether the sample collection method is consistent with the analytical method. When there is no analytical aspect to the parameter (e.g., secchi disk depth) this column provides additional information that may be helpful for interpretation of the value given any field comments or methodological differences in data collection reported in the WQP entry. Given these differences, flag values and their meaning may differ by parameter and as a result, flag values will be explained in the documentation for each parameter.
++ **Method tiering**: Tiers indicating the veracity of data based on the method used to acquire measurements, thereby allowing for the identification of self-similar samples
++ **Field flags**: Flags typically indicating whether the sample collection method is consistent with the analytical method. When there is no analytical aspect to the parameter (e.g., secchi disk depth) this column provides additional information that may be helpful for interpretation of the value given any field comments or methodological differences in data collection reported in the WQP entry. Given these differences, flag values and their meaning may differ by parameter and as a result, flag values will be explained in the documentation for each parameter
 + **Depth flags**: Flags indicating the type of water sampling depth measurement or completeness of the measurement
 + **Miscellaneous flags**: Flags that will vary in meaning and use by parameter. Some variables will not use them
 
@@ -33,9 +33,9 @@ The `ResultAnalyticalMethod.MethodName` column from the WQP is often the primary
 
 The primary purpose of our tiering is to determine the reliability and accuracy of each analytical method across data providers and throughout time for each parameter in the AquaSat v2 dataset. We developed the following categories, which are represented in the `tier` column of the final dataset: 
 
-+ **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable
-+ **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers
-+ **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of method descriptions for any given parameter. Because this tier represents many analytical methods, direct interoperability between samples is not guaranteed.
++ **Tier 0: Restrictive.** Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable
++ **Tier 1: Narrowed.** Data that we have good reason to believe are self-similar, but for which we can't verify full compatibility across data providers
++ **Tier 2: Inclusive.** Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of method descriptions for any given parameter. Because this tier represents many analytical methods, direct compatibility between samples is not guaranteed.
 
 ### Field flags
 The `field_flag` column is used to check if the sample collection method (`SampleCollectionMethod.MethodName`) is reasonable (flag = 0), suspect (flag = 1), or inconclusive (flag = 2).  "Reasonable" flags mean that the sample collection or observation method and the analytical method are in harmony with one another. "Suspect" flags are assigned when the sample collection method description isn't consistent with what would be expected given the `characteristicName` and the `ResultAnalyticalMethod.MethodName` for a given record. "Inconclusive" or unknown flags are assigned to records with "inclusive" tiers because these tiers include values such as `NA`, where it's typically impossible to determine the appropriateness of a collection method for the sample record. The relationship between field flags and tiers will vary by parameter; thus, each harmonization chapter contains specific information for these different cases.

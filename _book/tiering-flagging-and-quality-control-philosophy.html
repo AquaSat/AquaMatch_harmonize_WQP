@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-23" />
+<meta name="date" content="2024-04-24" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -266,14 +266,18 @@ analytical methods that are incompatible</li>
 with something more readily navigable we have incorporated several tiers
 and flagging systems into the AquaSat v2 dataset:</p>
 <ul>
-<li><strong>Method tiering</strong>: Tiers indicating the interoperability of data
-based on the method used to acquire measurements</li>
+<li><strong>Method tiering</strong>: Tiers indicating the veracity of data based on the
+method used to acquire measurements, thereby allowing for the
+identification of self-similar samples</li>
 <li><strong>Field flags</strong>: Flags typically indicating whether the sample
 collection method is consistent with the analytical method. When there
 is no analytical aspect to the parameter (e.g., secchi disk depth)
-this column generally reflects considerations for interpretation of
-the value given any field comments or methodological differences in
-data collection</li>
+this column provides additional information that may be helpful for
+interpretation of the value given any field comments or methodological
+differences in data collection reported in the WQP entry. Given these
+differences, flag values and their meaning may differ by parameter and
+as a result, flag values will be explained in the documentation for
+each parameter</li>
 <li><strong>Depth flags</strong>: Flags indicating the type of water sampling depth
 measurement or completeness of the measurement</li>
 <li><strong>Miscellaneous flags</strong>: Flags that will vary in meaning and use by
@@ -292,18 +296,17 @@ following categories, which are represented in the <code>tier</code> column of t
 final dataset:</p>
 <ul>
 <li><strong>Tier 0: Restrictive.</strong> Data that are verifiably self-similar across
-organizations and time-periods and can be considered highly reliable
-and interoperable</li>
+organizations and time-periods and can be considered highly reliable</li>
 <li><strong>Tier 1: Narrowed.</strong> Data that we have good reason to believe are
-self-similar, but for which we can’t verify full interoperability
-across data providers</li>
+self-similar, but for which we can’t verify full compatibility across
+data providers</li>
 <li><strong>Tier 2: Inclusive.</strong> Data that are assumed to be reliable and are
 harmonized to our best ability given the information available from
 the data provider. This tier includes <code>NA</code> or non-resolvable
 descriptions for the analytical method, which often make up the
 majority of method descriptions for any given parameter. Because this
-tier represents many analytical methods, direct interoperability
-between samples is not guaranteed.</li>
+tier represents many analytical methods, direct compatibility between
+samples is not guaranteed.</li>
 </ul>
 </div>
 <div id="field-flags" class="section level3 hasAnchor" number="4.2.2">
@@ -387,12 +390,12 @@ certainty.</p>
 </div>
 <div id="miscellaneous-flags" class="section level3 hasAnchor" number="4.2.4">
 <h3><span class="header-section-number">4.2.4</span> Miscellaneous flags<a href="tiering-flagging-and-quality-control-philosophy.html#miscellaneous-flags" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The <code>misc_flag</code> column is included as a flexible, optional flag column
-in order to note important information that isn’t covered by the tiering
-and flags defined above. Some parameters, like chlorophyll <em>a</em>, will not
-use this column at all and will therefore just contain <code>NA</code> values in
-places of flags. Values and their meaning will differ by parameter and
-as a result, flag values will be explained in the documentation for each
+<p>The <code>misc_flag</code> column is included as a flexible flag column in order to
+note important information that isn’t covered by the tiering and flags
+defined above. Some parameters, like chlorophyll <em>a</em>, will not use this
+column at all and will therefore just contain <code>NA</code> values in places of
+flags. Values and their meaning will differ by parameter and as a
+result, flag values will be explained in the documentation for each
 parameter.</p>
 </div>
 <div id="time-and-date-handling" class="section level3 hasAnchor" number="4.2.5">

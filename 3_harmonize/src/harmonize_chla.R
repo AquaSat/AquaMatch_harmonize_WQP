@@ -744,16 +744,17 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Flag field methods ------------------------------------------------------
   
   # Strings to use in determining sampling procedure
-  in_vitro_pattern <- paste0(c("grab", "bottle", "vessel", "bucket", "jar", "composite",
-                               "integrate", "UHL001", "surface", "filter", "filtrat",
-                               "1060B", "kemmerer", "collect", "rosette", "equal width",
-                               "vertical", "van dorn", "bail", "sample",
-                               "sampling",
-                               # "lab" not in the middle of another word
-                               "\\blab", 
-                               # G on its own for "grab"
-                               "^g$"),
-                             collapse = "|")
+  in_vitro_pattern <- paste0(
+    c("grab", "bottle", "vessel", "bucket", "jar", "composite",
+      "integrate", "UHL001", "surface", "filter", "filtrat",
+      "1060B", "kemmerer", "collect", "rosette", "equal width",
+      "vertical", "van dorn", "bail", "sample",
+      "sampling",
+      # "lab" not in the middle of another word
+      "\\blab", 
+      # G on its own for "grab"
+      "^g$"),
+    collapse = "|")
   
   in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
                             collapse = "|")
@@ -820,6 +821,23 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
+  # Unrealistic values ------------------------------------------------------
+  
+  # We remove unrealistically high values prior to the final data export
+  # This is based on Wetzel (2001), Chapter 15, Figure 19
+  
+  realistic_chla <- misc_flagged_chla %>%
+    filter(harmonized_value <= 1000)
+  
+  dropped_unreal <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows with unrealistic values",
+    short_reason = "Unrealistic values",
+    number_dropped = nrow(misc_flagged_chla) - nrow(realistic_chla),
+    n_rows = nrow(realistic_chla),
+    order = 12
+  )
+  
   # Generate plots with harmonized dataset ----------------------------------
   
   # We'll generate plots now before aggregating across simultaneous records
@@ -827,7 +845,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Plot harmonized measurements by CharacteristicName
   
-  plotting_subset <- misc_flagged_chla %>%
+  plotting_subset <- realistic_chla %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
@@ -855,7 +873,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # etc. We take medians across them here
   
   # First tag aggregate subgroups with group IDs
-  grouped_chla <- misc_flagged_chla %>%
+  grouped_chla <- realistic_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
@@ -925,7 +943,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste0(
       "Rows removed while aggregating simultaneous records: ",
-      nrow(misc_flagged_chla) - nrow(no_simul_chla)
+      nrow(realistic_chla) - nrow(no_simul_chla)
     )
   )
   
@@ -933,9 +951,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(misc_flagged_chla) - nrow(no_simul_chla),
+    number_dropped = nrow(realistic_chla) - nrow(no_simul_chla),
     n_rows = nrow(no_simul_chla),
-    order = 12
+    order = 13
   )
   
   
@@ -947,7 +965,8 @@ harmonize_chla <- function(raw_chla, p_codes){
                                 dropped_approximates, dropped_greater_than,
                                 dropped_na, dropped_harmonization,
                                 dropped_depths, dropped_methods,
-                                dropped_field, dropped_misc, dropped_simul)
+                                dropped_field, dropped_misc, dropped_unreal,
+                                dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/chla_harmonize_dropped_metadata.csv"
   

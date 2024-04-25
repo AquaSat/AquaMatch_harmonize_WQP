@@ -178,8 +178,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="5.2.10" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="5.2.11" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#miscellaneous-flag"><i class="fa fa-check"></i><b>5.2.11</b> Miscellaneous flag</a></li>
-<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.12</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.13</b> Harmonized chlorophyll a</a></li>
+<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#remove-unrealistic-values"><i class="fa fa-check"></i><b>5.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="5.2.14" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.14</b> Harmonized chlorophyll a</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html"><i class="fa fa-check"></i><b>6</b> DOC harmonization process</a>
@@ -728,8 +729,17 @@ dataset.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="aggregate-simultaneous-records" class="section level3 hasAnchor" number="5.2.12">
-<h3><span class="header-section-number">5.2.12</span> Aggregate simultaneous records<a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="remove-unrealistic-values" class="section level3 hasAnchor" number="5.2.12">
+<h3><span class="header-section-number">5.2.12</span> Remove unrealistic values<a href="chlorophyll-a-chla-harmonization-process.html#remove-unrealistic-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Before finalizing the dataset we remove chlorophyll <em>a</em> values that are
+beyond a realistic threshold. We use 1000 ug/L as our cutoff for removal
+(Wetzel, 2001, Chapter 15, Figure 19).</p>
+<p>7659 rows are removed. The final row count after this is 4.08 million.</p>
+<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="aggregate-simultaneous-records" class="section level3 hasAnchor" number="5.2.13">
+<h3><span class="header-section-number">5.2.13</span> Aggregate simultaneous records<a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The final step of chlorophyll <em>a</em> harmonization is to aggregate
 simultaneous observations. Any group of samples determined to be
 simultaneous are simplified into a single record containing the median
@@ -754,11 +764,11 @@ well and match make joins between dataset versions.</p>
 recorded in the <code>harmonized_row_count</code> column.</p>
 <p>0 rows dropped leaving 4.09 million remaining in the final harmonized
 and aggregated chlorophyll <em>a</em> dataset.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
+<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="harmonized-chlorophyll-a" class="section level3 hasAnchor" number="5.2.13">
-<h3><span class="header-section-number">5.2.13</span> Harmonized chlorophyll a<a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="harmonized-chlorophyll-a" class="section level3 hasAnchor" number="5.2.14">
+<h3><span class="header-section-number">5.2.14</span> Harmonized chlorophyll a<a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>At this point the harmonization of the chlorophyll <em>a</em> data from the WQP
 is complete and we export the final dataset for use later in the
 workflow.</p>

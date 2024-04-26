@@ -9,6 +9,13 @@ params:
 always_allow_html: true
 ---
 
+<!-- Image settings -->
+
+```{r setup-chunk, include=FALSE}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 300)
+```
+
 # Download process
 
 ```{r message=FALSE, warning = FALSE, echo=FALSE}

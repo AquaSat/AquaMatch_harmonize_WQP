@@ -8,6 +8,13 @@ params:
 always_allow_html: true
 ---
 
+<!-- Image settings -->
+
+```{r setup-chunk, include=FALSE}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 300)
+```
+
 # DOC harmonization process
 
 ```{r echo=FALSE}

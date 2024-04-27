@@ -905,9 +905,13 @@ harmonize_chla <- function(raw_chla, p_codes){
     summarize(
       harmonized_row_count = n(),
       harmonized_value_sd = sd(harmonized_value),
-      harmonized_value = median(harmonized_value)
+      harmonized_value = mean(harmonized_value)
     ) %>%
-    ungroup()
+    mutate(
+      harmonized_value_cv = harmonized_value_sd / harmonized_value
+    ) %>%
+    ungroup() %>%
+    select(-harmonized_value_sd)
   
   rm(grouped_chla)
   gc()

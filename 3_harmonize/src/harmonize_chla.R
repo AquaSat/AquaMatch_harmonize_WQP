@@ -905,7 +905,10 @@ harmonize_chla <- function(raw_chla, p_codes){
     summarize(
       harmonized_row_count = n(),
       harmonized_value_sd = sd(harmonized_value),
-      harmonized_value = mean(harmonized_value)
+      harmonized_value = mean(harmonized_value),
+      lon = unique(lon),
+      lat = unique(lat),
+      datum = unique(datum)
     ) %>%
     mutate(
       harmonized_value_cv = harmonized_value_sd / harmonized_value

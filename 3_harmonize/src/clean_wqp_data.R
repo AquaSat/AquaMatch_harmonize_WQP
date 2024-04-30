@@ -39,15 +39,15 @@ clean_wqp_data <- function(wqp_data,
                            site_data,
                            # match_table,
                            wqp_metadata,
-                           commenttext_missing = c('analysis lost', 'not analyzed',
-                                                   'not recorded', 'not collected',
-                                                   'no measurement taken'),
-                           duplicate_definition = c('OrganizationIdentifier',
-                                                    'MonitoringLocationIdentifier',
-                                                    'ActivityStartDate',
-                                                    'ActivityStartTime.Time',
-                                                    'CharacteristicName',
-                                                    'ResultSampleFractionText'),
+                           commenttext_missing = c("analysis lost", "not analyzed",
+                                                   "not recorded", "not collected",
+                                                   "no measurement taken"),
+                           duplicate_definition = c("OrganizationIdentifier",
+                                                    "MonitoringLocationIdentifier",
+                                                    "ActivityStartDate",
+                                                    "ActivityStartTime.Time",
+                                                    "CharacteristicName",
+                                                    "ResultSampleFractionText"),
                            remove_duplicated_rows = FALSE){
   
   # Starting values for dataset
@@ -103,7 +103,7 @@ clean_wqp_data <- function(wqp_data,
   # Remove records that don't meet needs for status
   wqp_data_pass_status <- wqp_data_no_missing %>%
     filter(ResultStatusIdentifier %in%
-             c('Accepted', 'Final', 'Historical', 'Validated', 'Preliminary')|
+             c("Accepted", "Final", "Historical", "Validated", "Preliminary")|
              is.na(ResultStatusIdentifier))
   
   # Inform the user what we found for status checks

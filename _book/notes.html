@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>2 Technical details | _main.knit</title>
+  <title>7 Notes | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2 Technical details | _main.knit" />
+  <meta property="og:title" content="7 Notes | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2 Technical details | _main.knit" />
+  <meta name="twitter:title" content="7 Notes | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
-<link rel="next" href="download-process.html"/>
+<link rel="prev" href="doc-harmonization-process.html"/>
+<link rel="next" href="references.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -225,40 +225,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="technical-details" class="section level1 hasAnchor" number="2">
-<h1><span class="header-section-number">2</span> Technical details<a href="technical-details.html#technical-details" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>AquaSat v2 uses the {targets} workflow management R package (Landau,
-2021) to reimagine the <a href="https://github.com/GlobalHydrologyLab/AquaSat">original AquaSat
-codebase</a>. The framework
-for this workflow is based on code adapted from <a href="https://github.com/USGS-R/ds-pipelines-targets-example-wqp">this USGS
-pipeline</a>
-and has been further developed by members of the
-<a href="https://github.com/rossyndicate">ROSSyndicate</a>.</p>
-<p>Technical details on {targets} workflows are available in the <a href="https://books.ropensci.org/targets/">{targets}
-User Manual</a>. {targets} workflows
-are built upon lists of “targets”, which can be thought of as analytical
-steps written out in code. This workflow uses a targets list spread
-across multiple scripts in an effort to facilitate organization of the
-code. <code>_targets.R</code> serves as a main list of targets and references the
-other lists of targets, which are defined inside <code>3_harmonize.R</code> and
-<code>create_bookdown.R</code>. Note that the downloading and harmonizing scripts
-for WQP data are spread across two GitHub repositories:
-<a href="https://github.com/AquaSat/AquaMatch_download_WQP">AquaMatch_download_WQP</a>
-and
-<a href="https://github.com/AquaSat/AquaMatch_harmonize_WQP">AquaMatch_harmonize_WQP</a>,
-respectively.</p>
-<p>We recommend using the latest version of R for the best performance when
-running the pipeline.</p>
+<div id="notes" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">7</span> Notes<a href="notes.html#notes" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Any use of trade, firm, or product names is for descriptive purposes
+only and does not imply endorsement by the U.S. Government.</p>
 
-<!-- Image settings -->
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="download-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="doc-harmonization-process.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

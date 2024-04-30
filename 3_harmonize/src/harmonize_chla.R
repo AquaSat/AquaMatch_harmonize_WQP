@@ -21,7 +21,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     # Filter out non-target media types
-    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+    filter(ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
              is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
@@ -173,7 +173,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(chla_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -235,7 +235,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(chla_approx)) / nrow(chla_mdls_added) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -282,7 +282,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(greater_vals)) / nrow(chla_approx_added) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -870,7 +870,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Aggregate simultaneous records ------------------------------------------
   
   # There are full duplicates and also values occurring at the same time, location,
-  # etc. We take medians across them here
+  # etc. We take means across them here
   
   # First tag aggregate subgroups with group IDs
   grouped_chla <- realistic_chla %>%
@@ -910,17 +910,27 @@ harmonize_chla <- function(raw_chla, p_codes){
       lat = unique(lat),
       datum = unique(datum)
     ) %>%
+    # Calculate coefficient of variation
     mutate(
       harmonized_value_cv = harmonized_value_sd / harmonized_value
     ) %>%
     ungroup() %>%
-    select(-harmonized_value_sd)
+    select(
+      # No longer needed
+      -harmonized_value_sd,
+      # Reorder a few cols so they're at the end
+      -c(subgroup_id, harmonized_row_count, harmonized_units,
+         harmonized_value, harmonized_value_cv, lat, lon, datum),
+      c(subgroup_id, harmonized_row_count, harmonized_units,
+        harmonized_value, harmonized_value_cv, lat, lon, datum)
+    )
   
   rm(grouped_chla)
   gc()
   
-  # Plot harmonized measurements by Tier
+  # Plot harmonized measurements by Tier:
   
+  # 1. Harmonized values
   tier_dists <- no_simul_chla %>%
     select(tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001,
@@ -943,6 +953,45 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   ggsave(filename = "3_harmonize/out/chla_tier_dists_postagg.png",
          plot = tier_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  # 2: Harmonized CVs
+  # Count NA CVs in each tier for plotting:
+  na_labels <- no_simul_chla %>%
+    filter(is.na(harmonized_value_cv)) %>%
+    count(tier)
+  
+  tier_0 <- filter(na_labels, tier == 0)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_1 <- filter(na_labels, tier == 1)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_2 <- filter(na_labels, tier == 2)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_cv_dists <- no_simul_chla %>%
+    select(tier, harmonized_value_cv) %>%
+    mutate(plot_value = harmonized_value_cv + 0.001,
+           tier_label = case_when(
+             tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
+             tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
+             tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a CVs by tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_tier_cv_dists_postagg.png",
+         plot = tier_cv_dists,
          width = 6, height = 4, units = "in", device = "png")
   
   

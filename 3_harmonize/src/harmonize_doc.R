@@ -25,7 +25,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
       # Filter out non-target media types
-      ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+      ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
         is.na(ActivityMediaSubdivisionName)) %>%
     # Dissolved organic carbon is not a CharacteristicName, so we must identify
     # the fractions of the carbon pool reported that match our needs:
@@ -208,7 +208,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(doc_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -270,7 +270,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(doc_approx)) / nrow(doc_mdls_added) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -318,7 +318,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(greater_vals)) / nrow(doc_approx_added) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -373,8 +373,8 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Set up a lookup table so that final units are all in mg/L. 
   unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                                      'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
+    ResultMeasure.MeasureUnitCode = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L", "mg/m3",
+                                      "ppb", "mg/cm3", "ug/ml", "mg/ml", "ppt", "umol/L"),
     conversion = c(1, 1, 1, 0.001, 0.001, 0.001, 0.001, 1000, 1, 1000, 1e-09, 0.06008))
   
   unit_table_out_path <- "3_harmonize/out/doc_unit_table.csv"
@@ -871,7 +871,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Aggregate simultaneous records ------------------------------------------
   
   # There are full duplicates and also values occurring at the same time, location,
-  # etc. We take medians across them here
+  # etc. We take means across them here
   
   # First tag aggregate subgroups with group IDs
   grouped_doc <- field_flagged_doc %>%
@@ -906,9 +906,25 @@ harmonize_doc <- function(raw_doc, p_codes){
     summarize(
       harmonized_row_count = n(),
       harmonized_value_sd = sd(harmonized_value),
-      harmonized_value = median(harmonized_value)
+      harmonized_value = mean(harmonized_value),
+      lon = unique(lon),
+      lat = unique(lat),
+      datum = unique(datum)
     ) %>%
-    ungroup()
+    # Calculate coefficient of variation
+    mutate(
+      harmonized_value_cv = harmonized_value_sd / harmonized_value
+    ) %>%
+    ungroup() %>%
+    select(
+      # No longer needed
+      -harmonized_value_sd,
+      # Reorder a few cols so they're at the end
+      -c(subgroup_id, harmonized_row_count, harmonized_units,
+         harmonized_value, harmonized_value_cv, lat, lon, datum),
+      c(subgroup_id, harmonized_row_count, harmonized_units,
+        harmonized_value, harmonized_value_cv, lat, lon, datum)
+    )
   
   rm(grouped_doc)
   gc()

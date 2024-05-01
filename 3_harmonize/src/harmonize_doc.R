@@ -870,8 +870,8 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Aggregate simultaneous records ------------------------------------------
   
-  # There are full duplicates and also values occurring at the same time, location,
-  # etc. We take means across them here
+  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
+  # We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
   grouped_doc <- field_flagged_doc %>%
@@ -911,7 +911,7 @@ harmonize_doc <- function(raw_doc, p_codes){
       lat = unique(lat),
       datum = unique(datum)
     ) %>%
-    # Calculate coefficient of variation
+    # Calculate coefficient of variation as the standard deviation divided by the mean value (`harmonized_value` in this case)
     mutate(
       harmonized_value_cv = harmonized_value_sd / harmonized_value
     ) %>%

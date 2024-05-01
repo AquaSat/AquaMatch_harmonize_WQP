@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-30" />
+<meta name="date" content="2024-05-01" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -745,12 +745,13 @@ beyond a realistic threshold. We use 1000 ug/L as our cutoff for removal
 simultaneous observations. Any group of samples determined to be
 simultaneous are simplified into a single record containing the mean and
 coefficient of variation (CV) of the group. These can be either true
-duplicate records or records with non-identical values recorded at the
-same time and place and by the same organization. The CV can be used to
-filter the dataset based on the amount of variability that is tolerable
-to specific use cases. Note, however, that many entries will have a CV
-that is <code>NA</code> or 0 because there are too few records to calculate the CV
-or because the records all have the same <code>harmonized_value</code>.</p>
+duplicate entries in the WQP or records with non-identical values
+recorded at the same time and place and by the same organization (field
+and/or lab replicates/duplicates). The CV can be used to filter the
+dataset based on the amount of variability that is tolerable to specific
+use cases. Note, however, that many entries will have a CV that is <code>NA</code>
+because there are no duplicates or 0 because the records are duplicates
+and all entires have the same <code>harmonized_value</code>.</p>
 <p>We identify simultaneous records to aggregate by creating identical
 subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter</code>,
 <code>OrganizationIdentifier</code>, <code>MonitoringLocationIdentifier</code>,

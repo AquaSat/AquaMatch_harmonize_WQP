@@ -838,6 +838,22 @@ harmonize_doc <- function(raw_doc, p_codes){
     order = 10
   )
   
+  # Miscellaneous flag ------------------------------------------------------
+  
+  # This is a flag that isn't currently needed for doc, but other parameters
+  # will use it.
+  
+  misc_flagged_doc <- field_flagged_doc %>%
+    mutate(misc_flag = NA_character_)
+  
+  dropped_misc <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while assigning misc flags",
+    short_reason = "Misc flagging",
+    number_dropped = nrow(field_flagged_doc) - nrow(misc_flagged_doc),
+    n_rows = nrow(misc_flagged_doc),
+    order = 11
+  )
   
   # Generate plots with harmonized dataset ----------------------------------
   
@@ -846,7 +862,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Plot harmonized measurements by CharacteristicName
   
-  plotting_subset <- field_flagged_doc %>%
+  plotting_subset <- misc_flagged_doc %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
@@ -874,7 +890,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   # We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
-  grouped_doc <- field_flagged_doc %>%
+  grouped_doc <- misc_flagged_doc %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
@@ -882,7 +898,7 @@ harmonize_doc <- function(raw_doc, p_codes){
              harmonized_top_depth_unit, harmonized_bottom_depth_value,
              harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
              harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
-             greater_flag, tier, field_flag, harmonized_units) %>%
+             greater_flag, tier, field_flag, misc_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -911,20 +927,21 @@ harmonize_doc <- function(raw_doc, p_codes){
       lat = unique(lat),
       datum = unique(datum)
     ) %>%
-    # Calculate coefficient of variation as the standard deviation divided by the mean value (`harmonized_value` in this case)
+    # Calculate coefficient of variation as the standard deviation divided by
+    # the mean value (harmonized_value in this case)
     mutate(
       harmonized_value_cv = harmonized_value_sd / harmonized_value
     ) %>%
     ungroup() %>%
     select(
       # No longer needed
-      -harmonized_value_sd,
-      # Reorder a few cols so they're at the end
-      -c(subgroup_id, harmonized_row_count, harmonized_units,
-         harmonized_value, harmonized_value_cv, lat, lon, datum),
+      -harmonized_value_sd) %>%
+    relocate(
       c(subgroup_id, harmonized_row_count, harmonized_units,
-        harmonized_value, harmonized_value_cv, lat, lon, datum)
+        harmonized_value, harmonized_value_cv, lat, lon, datum),
+      .after = misc_flag
     )
+  
   
   rm(grouped_doc)
   gc()
@@ -960,7 +977,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste0(
       "Rows removed while aggregating simultaneous records: ",
-      nrow(field_flagged_doc) - nrow(no_simul_doc)
+      nrow(misc_flagged_doc) - nrow(no_simul_doc)
     )
   )
   
@@ -968,9 +985,9 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(field_flagged_doc) - nrow(no_simul_doc),
+    number_dropped = nrow(misc_flagged_doc) - nrow(no_simul_doc),
     n_rows = nrow(no_simul_doc),
-    order = 11
+    order = 12
   )
   
   
@@ -982,7 +999,7 @@ harmonize_doc <- function(raw_doc, p_codes){
                                 dropped_approximates, dropped_greater_than,
                                 dropped_na, dropped_harmonization,
                                 dropped_depths, dropped_methods,
-                                dropped_field, dropped_simul)
+                                dropped_field, dropped_misc, dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/doc_harmonize_dropped_metadata.csv"
   

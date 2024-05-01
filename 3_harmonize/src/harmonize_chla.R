@@ -881,7 +881,7 @@ harmonize_chla <- function(raw_chla, p_codes){
              harmonized_top_depth_unit, harmonized_bottom_depth_value,
              harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
              harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
-             greater_flag, tier, field_flag, harmonized_units) %>%
+             greater_flag, tier, field_flag, misc_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -910,7 +910,8 @@ harmonize_chla <- function(raw_chla, p_codes){
       lat = unique(lat),
       datum = unique(datum)
     ) %>%
-    # Calculate coefficient of variation as the standard deviation divided by the mean value (`harmonized_value` in this case)
+    # Calculate coefficient of variation as the standard deviation divided by
+    # the mean value (harmonized_value in this case)
     mutate(
       harmonized_value_cv = harmonized_value_sd / harmonized_value
     ) %>%
@@ -921,7 +922,7 @@ harmonize_chla <- function(raw_chla, p_codes){
       relocate(
       c(subgroup_id, harmonized_row_count, harmonized_units,
         harmonized_value, harmonized_value_cv, lat, lon, datum),
-        .after = insert_column_name_here
+        .after = misc_flag
     )
   
   rm(grouped_chla)

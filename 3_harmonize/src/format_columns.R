@@ -27,24 +27,24 @@
 #' 
 format_columns <- function(wqp_data, 
                            vars_to_numeric = c(
-                             'ResultMeasureValue',
-                                               'DetectionQuantitationLimitMeasure.MeasureValue'
-                             ),
+                             "ResultMeasureValue",
+                             "DetectionQuantitationLimitMeasure.MeasureValue"
+                           ),
                            drop_vars = NULL){
   
   # Some vars should not be dropped because they are needed in downstream 
   # harmonization steps.
-  keep_vars <- c('CharacteristicName', 'ResultMeasureValue',
-                 'DetectionQuantitationLimitMeasure.MeasureValue',
-                 'ResultDetectionConditionText', 'ResultCommentText,',
-                 'ResultMeasure.MeasureUnitCode')
+  keep_vars <- c("CharacteristicName", "ResultMeasureValue",
+                 "DetectionQuantitationLimitMeasure.MeasureValue",
+                 "ResultDetectionConditionText", "ResultCommentText,",
+                 "ResultMeasure.MeasureUnitCode")
   if(any(drop_vars %in% keep_vars)){
     drop_vars_to_keep <- keep_vars[keep_vars %in% drop_vars]
     stop(sprintf(paste0("Certain variables cannot be dropped. Please ",
                         "remove the following variables from drop_vars: \n%s\n"),
                  drop_vars_to_keep))
   }
- 
+  
   # Coerce variables to numeric, but first, retain original values in a new column
   wqp_data_out <- wqp_data %>%
     mutate(across(all_of(vars_to_numeric), ~., .names = "{col}_original"),

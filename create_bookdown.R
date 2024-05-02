@@ -3,7 +3,7 @@ bookdown_targets_list <- list(
   
   # Track files -------------------------------------------------------------
   
-  tar_file(index, 'index.Rmd'),
+  tar_file(index, "index.Rmd"),
   
   tar_file(technical_details_rmd,
            "bookdown_raw/01_technical_details.Rmd"),
@@ -20,6 +20,9 @@ bookdown_targets_list <- list(
   tar_file(doc_harmonization_rmd,
            "bookdown_raw/05_doc_harmonization.Rmd"),
   
+  tar_file(notes_rmd,
+           "bookdown_raw/notes.Rmd"),
+  
   tar_file(references_rmd,
            "bookdown_raw/references.Rmd"),
   
@@ -31,9 +34,9 @@ bookdown_targets_list <- list(
     render(
       technical_details_rmd,
       output_file = "01_technical_details",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     cue = tar_cue("always"),
     packages = "rmarkdown"
   ),
@@ -48,9 +51,9 @@ bookdown_targets_list <- list(
         yaml_contents = list(chlorophyll = p1_wqp_params_chl$chlorophyll,
                              doc = p1_wqp_params_doc$doc)),
       output_file = "02_download",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     packages = c("tidyverse", "sf", "tigris", "kableExtra", "rmarkdown")
   ),
   
@@ -59,9 +62,9 @@ bookdown_targets_list <- list(
     render(
       tiering_overview_rmd,
       output_file = "03_tiering_overview",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     packages = c("tidyverse", "bookdown", "rmarkdown")
   ),
   
@@ -73,9 +76,9 @@ bookdown_targets_list <- list(
         documented_drops = p3_documented_drops,
         chla_chars = p1_wqp_params_chl$chlorophyll),
       output_file = "04_chla_harmonization",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra",
                  "rmarkdown")
   ),
@@ -88,11 +91,22 @@ bookdown_targets_list <- list(
         documented_drops = p3_documented_drops,
         doc_chars = p1_wqp_params_doc$doc),
       output_file = "05_doc_harmonization",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra",
                  "rmarkdown")
+  ),
+  
+  tar_target(
+    notes,
+    render(
+      notes_rmd,
+      output_file = "notes",
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
+    packages = c("bookdown", "rmarkdown", "tidyverse")
   ),
 
   tar_target(
@@ -100,9 +114,9 @@ bookdown_targets_list <- list(
     render(
       references_rmd,
       output_file = "references",
-      output_dir = 'chapters') %>%
-      change_ext(inext = 'md', outext = 'Rmd'),
-    format = 'file',
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
     packages = c("bookdown", "rmarkdown", "tidyverse")
   ),
   
@@ -116,6 +130,7 @@ bookdown_targets_list <- list(
                               tiering_overview,
                               chla_harmonization_report,
                               doc_harmonization_report,
+                              notes,
                               references)),
     cue = tar_cue("always")
   )

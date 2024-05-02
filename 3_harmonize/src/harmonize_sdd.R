@@ -163,7 +163,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(sdd_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -215,7 +215,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   print(
     paste(
       round((nrow(sdd_approx)) / nrow(sdd_mdls_added) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -226,7 +226,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
                                      approx_value,
                                      harmonized_value),
            harmonized_comments = ifelse(index %in% sdd_approx$index,
-                                        'Value identified as "approximated" by organization.',
+                                        "Value identified as 'approximated' by organization.",
                                         harmonized_comments))
   
   dropped_approximates <- tibble(
@@ -263,7 +263,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
   print(
     paste(
       round((nrow(greater_vals)) / nrow(sdd_approx_added) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -273,7 +273,7 @@ harmonize_sdd <- function(raw_sdd, p_codes,
     mutate(harmonized_value = ifelse(index %in% greater_vals$index,
                                      greater_value, harmonized_value),
            harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        'Value identified as being greater than listed value.',
+                                        "Value identified as being greater than listed value.",
                                         harmonized_comments))
   
   dropped_greater_than <- tibble(

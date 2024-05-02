@@ -161,7 +161,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(tss_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -213,7 +213,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   print(
     paste(
       round((nrow(tss_approx)) / nrow(tss) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -224,7 +224,7 @@ harmonize_tss <- function(raw_tss, p_codes){
                                      approx_value,
                                      harmonized_value),
            harmonized_comments = ifelse(index %in% tss_approx$index,
-                                        'Value identified as "approximated" by organization.',
+                                        "Value identified as 'approximated' by organization.",
                                         harmonized_comments))
   
   dropped_approximates <- tibble(
@@ -261,7 +261,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   print(
     paste(
       round((nrow(greater_vals)) / nrow(tss) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -271,7 +271,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     mutate(harmonized_value = ifelse(index %in% greater_vals$index,
                                      greater_value, harmonized_value),
            harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        'Value identified as being greater than listed value.',
+                                        "Value identified as being greater than listed value.",
                                         harmonized_comments))
   
   dropped_greater_than <- tibble(
@@ -292,19 +292,19 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Set up a lookup table so that final units are all in ug/L... 
   unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                                      'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L',
-                                      'g/l'),
+    ResultMeasure.MeasureUnitCode = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L", "mg/m3",
+                                      "ppb", "mg/cm3", "ug/ml", "mg/ml", "ppt", "umol/L",
+                                      "g/l"),
     conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,
                    1000, 1000000, 0.000001, 60.080000, 1000000)
   )
   
   tss_harmonized_units <- tss_harmonized_values %>%
     # Drop unlikely units using an inner join
-    inner_join(unit_conversion_table, by = 'ResultMeasure.MeasureUnitCode') %>%
+    inner_join(unit_conversion_table, by = "ResultMeasure.MeasureUnitCode") %>%
     # To avoid editing the tss_lookup, we convert ug/l to mg/l here:
     mutate(harmonized_value = (harmonized_value * conversion) / 1000,
-           harmonized_units = 'mg/L')
+           harmonized_units = "mg/L")
   
   # How many records removed due to values?
   print(
@@ -327,14 +327,14 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Investigate depth -------------------------------------------------------
   
   # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c('cm', 'feet', 'ft', 'in',
-                                                                                  'm', 'meters'),
+  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c("cm", "feet", "ft", "in",
+                                                                                  "m", "meters"),
                                    depth_conversion = c(1 / 100, 0.3048, 0.3048,
                                                         0.0254, 1, 1)) 
   # Join depth lookup table to tss data
   tss_harmonized_depth <- inner_join(x = tss_harmonized_units,
                                      y = depth_conversion_table,
-                                     by = c('ActivityDepthHeightMeasure.MeasureUnitCode')) %>%
+                                     by = c("ActivityDepthHeightMeasure.MeasureUnitCode")) %>%
     # Some depth measurements have negative values (assume that is just preference)
     # I also added .01 meters because many samples have depth of zero assuming they were
     # taken directly at the surface
@@ -343,9 +343,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   # We lose lots of data by keeping only data with depth measurements
   print(
     paste(
-      'If we only kept samples that had depth information we would lose',
+      "If we only kept samples that had depth information we would lose",
       round((nrow(tss_harmonized_units) - nrow(tss_harmonized_depth)) / nrow(tss_harmonized_units) * 100, 1),
-      '% of samples'))
+      "% of samples"))
   
   rm(tss_harmonized_depth)
   gc()
@@ -450,7 +450,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   # many of the remaining fractions are open to interpretation, and doesn't want to 
   # filter them out
   tss_remove_fractions <- tss_filter_aggregates %>%
-    filter(!ResultSampleFractionText %in% c('Fixed', 'Volatile', 'Dissolved', 'Acid Soluble'))
+    filter(!ResultSampleFractionText %in% c("Fixed", "Volatile", "Dissolved", "Acid Soluble"))
   
   # How many records removed due to fraction?
   print(

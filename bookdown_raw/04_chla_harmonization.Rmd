@@ -8,6 +8,14 @@ params:
 always_allow_html: true
 ---
 
+<!-- Image settings -->
+
+```{r setup-chunk, include=FALSE}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 300)
+```
+
+
 # Chlorophyll *a* (chla) harmonization process
 
 ```{r echo=FALSE} 
@@ -852,7 +860,7 @@ step_data %>%
 
 <br>
 
-### Aggregate simultaneous records
+### Remove unrealistic values
 
 ```{r echo = FALSE}
 step_counter <- 15
@@ -866,17 +874,64 @@ step_15_rows <- filter(step_data,
 
 step_15_dropped <- filter(step_data,
                           reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 2)
+```
+
+Before finalizing the dataset we remove chlorophyll *a* values that are beyond a realistic threshold. We use 1000 ug/L as our cutoff for removal (Wetzel, 2001, Chapter 15, Figure 19).
+
+`r step_15_dropped` rows are removed. The final row count after this is `r step_15_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Aggregate simultaneous records
+
+```{r echo = FALSE}
+step_counter <- 16
+
+step_16_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 2) %>%
+  paste0(., " million")
+
+step_16_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
   round(digits = 2) %>%
   paste0(., " million")
 ```
 
-The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the median and standard deviation of the group. These can be either true duplicate records or records with non-identical values recorded at the same time and place and by the same organization.
+The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
 We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
-The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_sd` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
 `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
 
@@ -909,10 +964,13 @@ step_data %>%
 
 At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we export the final dataset for use later in the workflow.
 
-Below is a final set of histograms showing the distribution of harmonized measurements broken down by `tier` ***after*** aggregating simultaneous records.
+Below is a final set of histograms showing the distribution of harmonized measurements (top) and CVs (bottom) broken down by `tier` ***after*** aggregating simultaneous records.
 
 <br>
 
 <img src="3_harmonize/out/chla_tier_dists_postagg.png" alt="Distribution of chl *a* values by tier" width="650"/>
+
+
+<img src="3_harmonize/out/chla_tier_cv_dists_postagg.png" alt="Distribution of chl *a* CVs by tier" width="650"/>
 
 <br>

@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-23" />
+<meta name="date" content="2024-05-01" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -31,7 +31,7 @@
   
   
 <link rel="prev" href="chlorophyll-a-chla-harmonization-process.html"/>
-<link rel="next" href="references.html"/>
+<link rel="next" href="notes.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -178,8 +178,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="5.2.10" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="5.2.11" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#miscellaneous-flag"><i class="fa fa-check"></i><b>5.2.11</b> Miscellaneous flag</a></li>
-<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.12</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.13</b> Harmonized chlorophyll a</a></li>
+<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#remove-unrealistic-values"><i class="fa fa-check"></i><b>5.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="5.2.14" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.14</b> Harmonized chlorophyll a</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html"><i class="fa fa-check"></i><b>6</b> DOC harmonization process</a>
@@ -205,7 +206,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>7</b> References</a></li>
+<li class="chapter" data-level="7" data-path="notes.html"><a href="notes.html"><i class="fa fa-check"></i><b>7</b> Notes</a></li>
+<li class="chapter" data-level="8" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>8</b> References</a></li>
 </ul>
 
       </nav>
@@ -737,10 +739,15 @@ dropped leaving 2.19 million remaining in the harmonized DOC dataset.</p>
 <h3><span class="header-section-number">6.2.11</span> Aggregate simultaneous records<a href="doc-harmonization-process.html#aggregate-simultaneous-records-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The final step of DOC harmonization is to aggregate simultaneous
 observations. Any group of samples determined to be simultaneous are
-simplified into a single record containing the median and standard
-deviation of the group. These can be either true duplicate records or
-records with non-identical values recorded at the same time and place
-and by the same organization.</p>
+simplified into a single record containing the mean and coefficient of
+variation (CV) of the group. These can be either true duplicate entries
+in the WQP or records with non-identical values recorded at the same
+time and place and by the same organization (field and/or lab
+replicates/duplicates). The CV can be used to filter the dataset based
+on the amount of variability that is tolerable to specific use cases.
+Note, however, that many entries will have a CV that is <code>NA</code> because
+there are no duplicates or 0 because the records are duplicates and all
+entries have the same <code>harmonized_value</code>.</p>
 <p>We identify simultaneous records to aggregate by creating identical
 subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter</code>,
 <code>OrganizationIdentifier</code>, <code>MonitoringLocationIdentifier</code>,
@@ -755,7 +762,7 @@ also provide a copy of the AquaMatch dataset prior to its aggregation
 <code>subgroup_id</code> column, so that users can use the disaggregated data as
 well and match make joins between dataset versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
-<code>harmonized_value_sd</code> columns. The number of rows used per group is
+<code>harmonized_value_cv</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
 <p>0.34 million rows dropped leaving 1.85 million remaining in the final
 harmonized and aggregated doc dataset.</p>
@@ -782,7 +789,7 @@ simultaneous records.</p>
         </div>
       </div>
 <a href="chlorophyll-a-chla-harmonization-process.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="notes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

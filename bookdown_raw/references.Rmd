@@ -12,3 +12,5 @@ De Cicco, L.A., Hirsch, R.M., Lorenz, D., Watkins, W.D., Johnson, M., (2023). da
 Landau, W. M., (2021). The targets R package: a dynamic Make-like function-oriented pipeline toolkit for reproducibility and high-performance computing. Journal of Open Source Software, 6(57), 2959, https://doi.org/10.21105/joss.02959
 
 Water Quality Portal. Washington (DC): National Water Quality Monitoring Council, United States Geological Survey (USGS), Environmental Protection Agency (EPA), (2021). https://doi.org/10.5066/P9QRKUVJ.
+
+Wetzel, Robert G. 2001. Limnology: Lake and River Ecosystems. 3rd ed. San Diego: Academic Press.

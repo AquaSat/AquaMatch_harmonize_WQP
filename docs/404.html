@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>2 Technical details | _main.knit</title>
+  <title>Page not found | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2 Technical details | _main.knit" />
+  <meta property="og:title" content="Page not found | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2 Technical details | _main.knit" />
+  <meta name="twitter:title" content="Page not found | _main.knit" />
   
   
   
@@ -23,15 +23,15 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-04-23" />
+<meta name="date" content="2024-05-01" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
-<link rel="next" href="download-process.html"/>
+
+
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -178,8 +178,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.9" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods"><i class="fa fa-check"></i><b>5.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="5.2.10" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods"><i class="fa fa-check"></i><b>5.2.10</b> Flag based on field methods</a></li>
 <li class="chapter" data-level="5.2.11" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#miscellaneous-flag"><i class="fa fa-check"></i><b>5.2.11</b> Miscellaneous flag</a></li>
-<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.12</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.13</b> Harmonized chlorophyll a</a></li>
+<li class="chapter" data-level="5.2.12" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#remove-unrealistic-values"><i class="fa fa-check"></i><b>5.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="5.2.13" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records"><i class="fa fa-check"></i><b>5.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="5.2.14" data-path="chlorophyll-a-chla-harmonization-process.html"><a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a"><i class="fa fa-check"></i><b>5.2.14</b> Harmonized chlorophyll a</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html"><i class="fa fa-check"></i><b>6</b> DOC harmonization process</a>
@@ -205,7 +206,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>7</b> References</a></li>
+<li class="chapter" data-level="7" data-path="notes.html"><a href="notes.html"><i class="fa fa-check"></i><b>7</b> Notes</a></li>
+<li class="chapter" data-level="8" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>8</b> References</a></li>
 </ul>
 
       </nav>
@@ -223,37 +225,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="technical-details" class="section level1 hasAnchor" number="2">
-<h1><span class="header-section-number">2</span> Technical details<a href="technical-details.html#technical-details" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>AquaSat v2 uses the {targets} workflow management R package (Landau,
-2021) to reimagine the <a href="https://github.com/GlobalHydrologyLab/AquaSat">original AquaSat
-codebase</a>. The framework
-for this workflow is based on code adapted from <a href="https://github.com/USGS-R/ds-pipelines-targets-example-wqp">this USGS
-pipeline</a>
-and has been further developed by members of the
-<a href="https://github.com/rossyndicate">ROSSyndicate</a>.</p>
-<p>Technical details on {targets} workflows are available in the <a href="https://books.ropensci.org/targets/">{targets}
-User Manual</a>. {targets} workflows
-are built upon lists of “targets”, which can be thought of as analytical
-steps written out in code. This workflow uses a targets list spread
-across multiple scripts in an effort to facilitate organization of the
-code. <code>_targets.R</code> serves as a main list of targets and references the
-other lists of targets, which are defined inside <code>3_harmonize.R</code> and
-<code>create_bookdown.R</code>. Note that the downloading and harmonizing scripts
-for WQP data are spread across two GitHub repositories:
-<a href="https://github.com/AquaSat/AquaMatch_download_WQP">AquaMatch_download_WQP</a>
-and
-<a href="https://github.com/AquaSat/AquaMatch_harmonize_WQP">AquaMatch_harmonize_WQP</a>,
-respectively.</p>
-
+<div id="page-not-found" class="section level1">
+<h1>Page not found</h1>
+<p>The page you requested cannot be found (perhaps it was moved or renamed).</p>
+<p>You may want to try searching to find the page's new location, or use
+the table of contents to find the page you are looking for.</p>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="download-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

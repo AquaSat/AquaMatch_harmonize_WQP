@@ -10,4 +10,5 @@ doc harmonization,Dropped rows while harmonizing units,Harmonize units,7720,2279
 doc harmonization,Dropped rows while cleaning depths,Clean depths,0,2279420,8
 doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,84995,2194425,9
 doc harmonization,Dropped rows while assigning field flags,Field flagging,0,2194425,10
-doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,343013,1851412,11
+doc harmonization,Dropped rows while assigning misc flags,Misc flagging,0,2194425,11
+doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,343013,1851412,12

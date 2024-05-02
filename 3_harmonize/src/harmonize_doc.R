@@ -25,7 +25,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
       # Filter out non-target media types
-      ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+      ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
         is.na(ActivityMediaSubdivisionName)) %>%
     # Dissolved organic carbon is not a CharacteristicName, so we must identify
     # the fractions of the carbon pool reported that match our needs:
@@ -208,7 +208,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(doc_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -270,7 +270,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(doc_approx)) / nrow(doc_mdls_added) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -318,7 +318,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste(
       round((nrow(greater_vals)) / nrow(doc_approx_added) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -373,8 +373,8 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Set up a lookup table so that final units are all in mg/L. 
   unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c('mg/L', 'mg/l', 'ppm', 'ug/l', 'ug/L', 'mg/m3',
-                                      'ppb', 'mg/cm3', 'ug/ml', 'mg/ml', 'ppt', 'umol/L'),
+    ResultMeasure.MeasureUnitCode = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L", "mg/m3",
+                                      "ppb", "mg/cm3", "ug/ml", "mg/ml", "ppt", "umol/L"),
     conversion = c(1, 1, 1, 0.001, 0.001, 0.001, 0.001, 1000, 1, 1000, 1e-09, 0.06008))
   
   unit_table_out_path <- "3_harmonize/out/doc_unit_table.csv"
@@ -838,6 +838,22 @@ harmonize_doc <- function(raw_doc, p_codes){
     order = 10
   )
   
+  # Miscellaneous flag ------------------------------------------------------
+  
+  # This is a flag that isn't currently needed for doc, but other parameters
+  # will use it.
+  
+  misc_flagged_doc <- field_flagged_doc %>%
+    mutate(misc_flag = NA_character_)
+  
+  dropped_misc <- tibble(
+    step = "doc harmonization",
+    reason = "Dropped rows while assigning misc flags",
+    short_reason = "Misc flagging",
+    number_dropped = nrow(field_flagged_doc) - nrow(misc_flagged_doc),
+    n_rows = nrow(misc_flagged_doc),
+    order = 11
+  )
   
   # Generate plots with harmonized dataset ----------------------------------
   
@@ -846,7 +862,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Plot harmonized measurements by CharacteristicName
   
-  plotting_subset <- field_flagged_doc %>%
+  plotting_subset <- misc_flagged_doc %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
@@ -870,11 +886,11 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Aggregate simultaneous records ------------------------------------------
   
-  # There are full duplicates and also values occurring at the same time, location,
-  # etc. We take medians across them here
+  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
+  # We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
-  grouped_doc <- field_flagged_doc %>%
+  grouped_doc <- misc_flagged_doc %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
@@ -882,7 +898,7 @@ harmonize_doc <- function(raw_doc, p_codes){
              harmonized_top_depth_unit, harmonized_bottom_depth_value,
              harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
              harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
-             greater_flag, tier, field_flag, harmonized_units) %>%
+             greater_flag, tier, field_flag, misc_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -906,9 +922,26 @@ harmonize_doc <- function(raw_doc, p_codes){
     summarize(
       harmonized_row_count = n(),
       harmonized_value_sd = sd(harmonized_value),
-      harmonized_value = median(harmonized_value)
+      harmonized_value = mean(harmonized_value),
+      lon = unique(lon),
+      lat = unique(lat),
+      datum = unique(datum)
     ) %>%
-    ungroup()
+    # Calculate coefficient of variation as the standard deviation divided by
+    # the mean value (harmonized_value in this case)
+    mutate(
+      harmonized_value_cv = harmonized_value_sd / harmonized_value
+    ) %>%
+    ungroup() %>%
+    select(
+      # No longer needed
+      -harmonized_value_sd) %>%
+    relocate(
+      c(subgroup_id, harmonized_row_count, harmonized_units,
+        harmonized_value, harmonized_value_cv, lat, lon, datum),
+      .after = misc_flag
+    )
+  
   
   rm(grouped_doc)
   gc()
@@ -944,7 +977,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste0(
       "Rows removed while aggregating simultaneous records: ",
-      nrow(field_flagged_doc) - nrow(no_simul_doc)
+      nrow(misc_flagged_doc) - nrow(no_simul_doc)
     )
   )
   
@@ -952,9 +985,9 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(field_flagged_doc) - nrow(no_simul_doc),
+    number_dropped = nrow(misc_flagged_doc) - nrow(no_simul_doc),
     n_rows = nrow(no_simul_doc),
-    order = 11
+    order = 12
   )
   
   
@@ -966,7 +999,7 @@ harmonize_doc <- function(raw_doc, p_codes){
                                 dropped_approximates, dropped_greater_than,
                                 dropped_na, dropped_harmonization,
                                 dropped_depths, dropped_methods,
-                                dropped_field, dropped_simul)
+                                dropped_field, dropped_misc, dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/doc_harmonize_dropped_metadata.csv"
   

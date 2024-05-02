@@ -21,7 +21,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     # Filter out non-target media types
-    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+    filter(ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
              is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
@@ -173,7 +173,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(mdl_updates)) / nrow(chla_fails_removed) * 100, 1),
-      '% of samples had values listed as being below a detection limit'
+      "% of samples had values listed as being below a detection limit"
     )
   )
   
@@ -235,7 +235,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(chla_approx)) / nrow(chla_mdls_added) * 100, 3),
-      '% of samples had values listed as approximated'
+      "% of samples had values listed as approximated"
     )
   )
   
@@ -282,7 +282,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   print(
     paste(
       round((nrow(greater_vals)) / nrow(chla_approx_added) * 100, 9),
-      '% of samples had values listed as being above a detection limit//greater than'
+      "% of samples had values listed as being above a detection limit//greater than"
     )
   )
   
@@ -352,7 +352,7 @@ harmonize_chla <- function(raw_chla, p_codes){
     inner_join(x = .,
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
-    mutate(harmonized_value = ResultMeasureValue * conversion,
+    mutate(harmonized_value = harmonized_value * conversion,
            harmonized_units = "ug/L")
   
   # Plot and export unit codes that didn't make through joining
@@ -744,16 +744,17 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Flag field methods ------------------------------------------------------
   
   # Strings to use in determining sampling procedure
-  in_vitro_pattern <- paste0(c("grab", "bottle", "vessel", "bucket", "jar", "composite",
-                               "integrate", "UHL001", "surface", "filter", "filtrat",
-                               "1060B", "kemmerer", "collect", "rosette", "equal width",
-                               "vertical", "van dorn", "bail", "sample",
-                               "sampling",
-                               # "lab" not in the middle of another word
-                               "\\blab", 
-                               # G on its own for "grab"
-                               "^g$"),
-                             collapse = "|")
+  in_vitro_pattern <- paste0(
+    c("grab", "bottle", "vessel", "bucket", "jar", "composite",
+      "integrate", "UHL001", "surface", "filter", "filtrat",
+      "1060B", "kemmerer", "collect", "rosette", "equal width",
+      "vertical", "van dorn", "bail", "sample",
+      "sampling",
+      # "lab" not in the middle of another word
+      "\\blab", 
+      # G on its own for "grab"
+      "^g$"),
+    collapse = "|")
   
   in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
                             collapse = "|")
@@ -820,6 +821,23 @@ harmonize_chla <- function(raw_chla, p_codes){
   )
   
   
+  # Unrealistic values ------------------------------------------------------
+  
+  # We remove unrealistically high values prior to the final data export
+  # This is based on Wetzel (2001), Chapter 15, Figure 19
+  
+  realistic_chla <- misc_flagged_chla %>%
+    filter(harmonized_value <= 1000)
+  
+  dropped_unreal <- tibble(
+    step = "chla harmonization",
+    reason = "Dropped rows with unrealistic values",
+    short_reason = "Unrealistic values",
+    number_dropped = nrow(misc_flagged_chla) - nrow(realistic_chla),
+    n_rows = nrow(realistic_chla),
+    order = 12
+  )
+  
   # Generate plots with harmonized dataset ----------------------------------
   
   # We'll generate plots now before aggregating across simultaneous records
@@ -827,7 +845,7 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Plot harmonized measurements by CharacteristicName
   
-  plotting_subset <- misc_flagged_chla %>%
+  plotting_subset <- realistic_chla %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
@@ -851,11 +869,11 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Aggregate simultaneous records ------------------------------------------
   
-  # There are full duplicates and also values occurring at the same time, location,
-  # etc. We take medians across them here
+  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
+  # We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
-  grouped_chla <- misc_flagged_chla %>%
+  grouped_chla <- realistic_chla %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartDateTime, ActivityStartTime.TimeZoneCode,
@@ -863,7 +881,7 @@ harmonize_chla <- function(raw_chla, p_codes){
              harmonized_top_depth_unit, harmonized_bottom_depth_value,
              harmonized_bottom_depth_unit, harmonized_discrete_depth_value,
              harmonized_discrete_depth_unit, depth_flag, mdl_flag, approx_flag,
-             greater_flag, tier, field_flag, harmonized_units) %>%
+             greater_flag, tier, field_flag, misc_flag, harmonized_units) %>%
     mutate(subgroup_id = cur_group_id())
   
   # Export the dataset with subgroup IDs for joining future aggregated product
@@ -887,15 +905,32 @@ harmonize_chla <- function(raw_chla, p_codes){
     summarize(
       harmonized_row_count = n(),
       harmonized_value_sd = sd(harmonized_value),
-      harmonized_value = median(harmonized_value)
+      harmonized_value = mean(harmonized_value),
+      lon = unique(lon),
+      lat = unique(lat),
+      datum = unique(datum)
     ) %>%
-    ungroup()
+    # Calculate coefficient of variation as the standard deviation divided by
+    # the mean value (harmonized_value in this case)
+    mutate(
+      harmonized_value_cv = harmonized_value_sd / harmonized_value
+    ) %>%
+    ungroup() %>%
+    select(
+      # No longer needed
+      -harmonized_value_sd) %>%
+      relocate(
+      c(subgroup_id, harmonized_row_count, harmonized_units,
+        harmonized_value, harmonized_value_cv, lat, lon, datum),
+        .after = misc_flag
+    )
   
   rm(grouped_chla)
   gc()
   
-  # Plot harmonized measurements by Tier
+  # Plot harmonized measurements by Tier:
   
+  # 1. Harmonized values
   tier_dists <- no_simul_chla %>%
     select(tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001,
@@ -920,12 +955,51 @@ harmonize_chla <- function(raw_chla, p_codes){
          plot = tier_dists,
          width = 6, height = 4, units = "in", device = "png")
   
+  # 2: Harmonized CVs
+  # Count NA CVs in each tier for plotting:
+  na_labels <- no_simul_chla %>%
+    filter(is.na(harmonized_value_cv)) %>%
+    count(tier)
+  
+  tier_0 <- filter(na_labels, tier == 0)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_1 <- filter(na_labels, tier == 1)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_2 <- filter(na_labels, tier == 2)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_cv_dists <- no_simul_chla %>%
+    select(tier, harmonized_value_cv) %>%
+    mutate(plot_value = harmonized_value_cv + 0.001,
+           tier_label = case_when(
+             tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
+             tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
+             tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a CVs by tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/chla_tier_cv_dists_postagg.png",
+         plot = tier_cv_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
   
   # How many records removed in aggregating simultaneous records?
   print(
     paste0(
       "Rows removed while aggregating simultaneous records: ",
-      nrow(misc_flagged_chla) - nrow(no_simul_chla)
+      nrow(realistic_chla) - nrow(no_simul_chla)
     )
   )
   
@@ -933,9 +1007,9 @@ harmonize_chla <- function(raw_chla, p_codes){
     step = "chla harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(misc_flagged_chla) - nrow(no_simul_chla),
+    number_dropped = nrow(realistic_chla) - nrow(no_simul_chla),
     n_rows = nrow(no_simul_chla),
-    order = 12
+    order = 13
   )
   
   
@@ -947,7 +1021,8 @@ harmonize_chla <- function(raw_chla, p_codes){
                                 dropped_approximates, dropped_greater_than,
                                 dropped_na, dropped_harmonization,
                                 dropped_depths, dropped_methods,
-                                dropped_field, dropped_misc, dropped_simul)
+                                dropped_field, dropped_misc, dropped_unreal,
+                                dropped_simul)
   
   documented_drops_out_path <- "3_harmonize/out/chla_harmonize_dropped_metadata.csv"
   

@@ -28,10 +28,11 @@ config_targets <- list(
   tar_target(
     name = p0_harmonization_config,
     # The config package does not like to be used with library()
-    command = config::get(config = "admin_update"),
+    command = config::get(config = "use_stable"),
     cue = tar_cue("always")
   ),
   
+  # Set Google Drive directory paths for parameter objects
   tar_target(
     name = p0_chl_output_path,
     command = paste0(p0_harmonization_config$drive_project_folder,
@@ -46,7 +47,7 @@ config_targets <- list(
   
   # Import targets from the previous pipeline -------------------------------
   
-  # Grab location of the local {targets} WQP download pipeline OR error if\
+  # Grab location of the local {targets} WQP download pipeline OR error if
   # the location doesn't exist yet
   tar_target(
     name = p0_AquaMatch_download_WQP_directory,

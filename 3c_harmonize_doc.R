@@ -110,11 +110,14 @@ p3_doc_targets_list <- list(
   # Export
   tar_target(
     name = p3_doc_agg_harmonized_feather_drive_file,
-    command = export_single_file(target = p3_doc_agg_harmonized_feather,
-                                 drive_path = p0_doc_output_path,
-                                 stable = p0_harmonization_config$doc_use_stable,
-                                 google_email = p0_harmonization_config$google_email,
-                                 date_stamp = p0_harmonization_config$doc_stable_date),
+    command = {
+      p0_check_doc_drive
+      export_single_file(target = p3_doc_agg_harmonized_feather,
+                         drive_path = p0_doc_output_path,
+                         stable = p0_harmonization_config$doc_use_stable,
+                         google_email = p0_harmonization_config$google_email,
+                         date_stamp = p0_harmonization_config$doc_stable_date)
+      },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
   ),
@@ -143,11 +146,14 @@ p3_doc_targets_list <- list(
   # Export
   tar_target(
     name = p3_doc_site_info_drive_file,
-    command = export_single_file(target = p3_doc_harmonized_site_info,
-                                 drive_path = p0_doc_output_path,
-                                 stable = p0_harmonization_config$doc_use_stable,
-                                 google_email = p0_harmonization_config$google_email,
-                                 date_stamp = p0_harmonization_config$doc_stable_date),
+    command = {
+      p0_check_doc_drive
+      export_single_file(target = p3_doc_harmonized_site_info,
+                         drive_path = p0_doc_output_path,
+                         stable = p0_harmonization_config$doc_use_stable,
+                         google_email = p0_harmonization_config$google_email,
+                         date_stamp = p0_harmonization_config$doc_stable_date)
+      },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
   )

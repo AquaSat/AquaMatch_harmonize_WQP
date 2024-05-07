@@ -37,6 +37,9 @@ retrieve_data <- function(target, id_df, local_folder, stable,
   # Local file download location
   local_path <- file.path(local_folder, paste0(target, file_type))
   
+  # Make the directory if it does not exist:
+  if(!dir.exists(local_folder)) {dir.create(local_folder)}
+  
   # Get file contents of the Google Drive folder specified. If stable == TRUE
   # then append "stable/" to go to the subfolder for stable products.
   if(stable){

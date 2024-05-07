@@ -1,5 +1,6 @@
-# Default: Non-ROSS users: provide email and use dynamic local versions,
-# but not stable
+# Default: Non-ROSS users: provide email and drive folder and use dynamic local versions,
+# but not stable. You will need to create the specified drive folder if it does
+# not already exist
 default:
   # gmail account to associate with {googledrive}
   google_email: ""
@@ -13,6 +14,18 @@ default:
   # Use the stable version of other files created in the download step?
   general_use_stable: FALSE
   drive_project_folder: ""
+# External user runs harmonization using stable datasets, creates harmonized 
+# datasets in their own Google Drive
+use_stable:
+  google_email: ""
+  download_repo_directory: "../AquaMatch_download_WQP/"
+  chl_use_stable: TRUE
+  chl_stable_date: "20240402"
+  doc_use_stable: TRUE
+  doc_stable_date: "20240402"
+  general_use_stable: TRUE
+  general_stable_date: "202404"
+  drive_project_folder: ""
 # Update the stable dataset version for one or more parameters
 admin_update:
   google_email: "therossyndicate@gmail.com"
@@ -24,14 +37,3 @@ admin_update:
   general_use_stable: TRUE
   general_stable_date: "20240402"
   drive_project_folder: "~/aquamatch_download_wqp/"
-# External user runs harmonization using stable datasets
-use_stable:
-  google_email: ""
-  download_repo_directory: "../AquaMatch_download_WQP/"
-  chl_use_stable: TRUE
-  chl_stable_date: "20240402"
-  doc_use_stable: TRUE
-  doc_stable_date: "20240402"
-  general_use_stable: TRUE
-  general_stable_date: "20240402"
-  drive_project_folder: ""

@@ -75,25 +75,18 @@ library(googledrive)
 library(targets)
 
 
-# Directory handling ------------------------------------------------------
-
-# Check for directory and create if it doesn't exist
-if (!dir.exists("3_harmonize/in/")) {dir.create("3_harmonize/in/")}
-
-
 # Google Drive auth -------------------------------------------------------
 
 # Confirm Google Drive is authorized locally
 drive_auth()
 # Select existing account (change if starting from scratch)
-2
 
 
 # Run pipeline ------------------------------------------------------------
 
 # This is a helper script to run the pipeline.
 {
-  tar_make()
+  tar_make(p3_chla_agg_harmonized_feather_drive_file)
   
   # Create a network diagram of the workflow, with a completion timestamp
   temp_vis <- tar_visnetwork()

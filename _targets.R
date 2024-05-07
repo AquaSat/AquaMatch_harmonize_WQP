@@ -45,18 +45,63 @@ config_targets <- list(
                      "doc/")
   ), 
   
-  # Check for Google Drive folder for harmonized file output
+  # Check for Google Drive folder for harmonized file output, create it if it
+  # doesn't exist
   tar_target(
-    name = p0_check_drive_folder,
+    name = p0_check_drive_parent_folder,
     command = tryCatch({
       drive_auth(p0_harmonization_config$google_email)
       drive_ls(p0_harmonization_config$drive_project_folder)
     }, error = function(e) {
-      stop("The specified drive path provided in the config.yml file does not exist.
-      Navigate to your Google Drive account and create the specified folder.")
+      drive_mkdir(str_sub(p0_harmonization_config$drive_project_folder, 1, -2))  
     }),
-    packages = c("googledrive"),
-    cue = tar_cue("always")
+    packages = "googledrive",
+    cue = tar_cue("always"),
+    error = "stop"
+  ),
+  
+  # Check for chlorophyll subfolder, create if not present
+  tar_target(
+    name = p0_check_chl_drive,
+    command = {
+      p0_check_drive_parent_folder
+      tryCatch({
+        drive_auth(p0_harmonization_config$google_email)
+        drive_ls(p0_chl_output_path)
+      }, error = function(e) {
+        # if the outpath doesn't exist, create it along with a "stable" subfolder
+        drive_mkdir(name = "chlorophyll",
+                    path = p0_harmonization_config$drive_project_folder)
+        drive_mkdir(name = "stable",
+                    path = paste0(p0_harmonization_config$drive_project_folder,
+                              "chlorophyll"))
+      })
+    },
+    packages = "googledrive",
+    cue = tar_cue("always"),
+    error = "stop"
+  ),
+  
+  # Check for doc subfolder, create if not present
+  tar_target(
+    name = p0_check_doc_drive,
+    command = {
+      p0_check_drive_parent_folder
+      tryCatch({
+        drive_auth(p0_harmonization_config$google_email)
+        drive_ls(p0_doc_output_path)
+      }, error = function(e) {
+        # if the outpath doesn't exist, create it along with a "stable" subfolder
+        drive_mkdir(name = "doc",
+                    path = p0_harmonization_config$drive_project_folder)
+        drive_mkdir(name = "stable",
+                    path = paste0(p0_harmonization_config$drive_project_folder,
+                                  "doc"))
+      })
+    },
+    packages = "googledrive",
+    cue = tar_cue("always"),
+    error = "stop"
   ),
   
   # Import targets from the previous pipeline -------------------------------
@@ -69,7 +114,9 @@ config_targets <- list(
       p0_harmonization_config$download_repo_directory
     } else if(!dir.exists(p0_AquaMatch_download_WQP_directory)) {
       # Throw an error if the pipeline does not exist
-      stop("The WQP download pipeline is not at the specified location.")
+      stop("The WQP download pipeline is not at the location specified in the 
+           config.yml file. Check the location specified as `download_repo_directory`
+           in the config.yml file and rerun the pipeline.")
     },
     cue = tar_cue("always")
   ),

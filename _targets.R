@@ -45,6 +45,20 @@ config_targets <- list(
                      "doc/")
   ), 
   
+  # Check for Google Drive folder for harmonized file output
+  tar_target(
+    name = p0_check_drive_folder,
+    command = tryCatch({
+      drive_auth(p0_harmonization_config$google_email)
+      drive_ls(p0_harmonization_config$drive_project_folder)
+    }, error = function(e) {
+      stop("The specified drive path provided in the config.yml file does not exist.
+      Navigate to your Google Drive account and create the specified folder.")
+    }),
+    packages = c("googledrive"),
+    cue = tar_cue("always")
+  ),
+  
   # Import targets from the previous pipeline -------------------------------
   
   # Grab location of the local {targets} WQP download pipeline OR error if

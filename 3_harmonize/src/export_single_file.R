@@ -47,6 +47,13 @@ export_single_file <- function(target, drive_path, stable, google_email,
               file = file_local_path)
   }
   
+  # Check if the folder path exists in Drive, make it if it doesn't
+  tryCatch({
+    drive_ls(drive_path)
+  }, error = function(e) {
+    drive_mkdir(name = basename(drive_path), path = dirname(drive_path))
+  })  
+  
   # Once locally exported, send to Google Drive
   out_file <- drive_put(media = file_local_path,
                         # The folder on Google Drive

@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-05-08" />
+<meta name="date" content="2024-05-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -389,7 +389,11 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 </ol>
 <p>We then use the approximate value as the record’s value moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
-1 in the <code>approx_flag</code> column.</p>
+1 in the <code>approx_flag</code> column. Note, however, that occasionally
+approximate language will be used in a record but not changed or
+flagged. This occurs when the language is used in a comment-related
+column and <strong>not</strong> the result column itself, meaning that there is a
+usable numeric value provided (and thus doesn’t need correction).</p>
 <p>This should not result in a change in rows but we still check: 0 rows
 are removed. The final row count after this is 4.39 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>

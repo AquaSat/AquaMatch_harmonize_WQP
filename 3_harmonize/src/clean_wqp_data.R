@@ -37,7 +37,6 @@
 clean_wqp_data <- function(wqp_data,
                            char_names_crosswalk,
                            site_data,
-                           # match_table,
                            wqp_metadata,
                            commenttext_missing = c("analysis lost", "not analyzed",
                                                    "not recorded", "not collected",
@@ -188,8 +187,8 @@ flag_missing_results <- function(wqp_data, commenttext_missing){
   
   wqp_data_out <- wqp_data %>%
     mutate(flag_missing_result = 
-             ( is.na(ResultMeasureValue) & is.na(DetectionQuantitationLimitMeasure.MeasureValue) ) |
-             ( is.na(ResultMeasureValue) & is.na(ResultMeasure.MeasureUnitCode) &
+             ( is.na(ResultMeasureValue_original) & is.na(DetectionQuantitationLimitMeasure.MeasureValue) ) |
+             ( is.na(ResultMeasureValue_original) & is.na(ResultMeasure.MeasureUnitCode) &
                  is.na(ActivityCommentText) & is.na(ResultLaboratoryCommentText) &
                  is.na(ResultCommentText) ) |
              grepl(paste(commenttext_missing, collapse = "|"), ResultCommentText, ignore.case = TRUE)

@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-05-01" />
+<meta name="date" content="2024-05-08" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -444,10 +444,10 @@ codebase.</p></li>
 <p>The WQP contains records that can be considered true duplicates and
 others where multiple non-identical measurements are recorded at the
 same time, place, and depth by the same organization. We deal with these
-within each parameter’s harmonization step by taking the median value
-from simultaneous observations. We also report the standard deviation
-and the total number of entries contributing to the median in the
-<code>harmonized_value_sd</code> and <code>harmonized_row_count</code> columns of the final
+within each parameter’s harmonization step by taking the mean value from
+simultaneous observations. We also report the coefficient of variation
+and the total number of entries contributing to the mean in the
+<code>harmonized_value_cv</code> and <code>harmonized_row_count</code> columns of the final
 dataset.</p>
 <p>This record aggregation is dealt with separately for each parameter so
 that specific accommodations can be made based on their tiering and
@@ -456,8 +456,8 @@ group the dataset by a subset of its original columns, necessarily
 resulting in a reduced subset of columns in the final data product. To
 aid in back-joining for advanced AquaSat users, we provide a
 <code>subgroup_id</code> column identifying the grouping used to create the
-aggregated median and standard deviation values. The <code>subgroup_id</code> is
-also present in an upstream, pre-aggregated dataset version that
+aggregated mean and coefficient of variation values. The <code>subgroup_id</code>
+is also present in an upstream, pre-aggregated dataset version that
 contains all records prior to aggregation and the original WQP columns
 along with the columns created in the harmonization steps. The upstream,
 pre-aggregated dadtaset is the <code>p3_chla_preagg_grouped</code> pipeline target.</p>

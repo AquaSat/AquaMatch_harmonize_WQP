@@ -226,9 +226,7 @@ harmonize_doc <- function(raw_doc, p_codes){
                (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
              DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
              .default = NA_integer_
-           )) %>%
-    # Remove negative measurement values
-    filter(harmonized_value >= 0)
+           ))
   
   dropped_mdls <- tibble(
     step = "doc harmonization",
@@ -352,7 +350,11 @@ harmonize_doc <- function(raw_doc, p_codes){
   # column then it's time to drop them.
   
   doc_no_na <- doc_harmonized_values %>%
-    filter(!is.na(harmonized_value))
+    filter(
+      !is.na(harmonized_value),
+      # Some negative values can be introduced by the previous NA parsing steps:
+      harmonized_value >= 0
+    )
   
   dropped_na <- tibble(
     step = "doc harmonization",

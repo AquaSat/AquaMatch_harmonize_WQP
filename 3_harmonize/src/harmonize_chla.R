@@ -157,7 +157,6 @@ harmonize_chla <- function(raw_chla, p_codes){
       mdl_units = ifelse(!is.na(mdl_vals), 
                          DetectionQuantitationLimitMeasure.MeasureUnitCode, 
                          ResultMeasure.MeasureUnitCode),
-      # zero = 0,
       half = as.numeric(mdl_vals) / 2)
   
   # Using the EPA standard for non-detects, select a random number between zero and HALF the MDL:
@@ -191,9 +190,7 @@ harmonize_chla <- function(raw_chla, p_codes){
                (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
              DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
              .default = NA_integer_
-           )) %>%
-    # Remove negative measurement values
-    filter(harmonized_value >= 0)
+           ))
   
   dropped_mdls <- tibble(
     step = "chla harmonization",
@@ -260,7 +257,12 @@ harmonize_chla <- function(raw_chla, p_codes){
   
   # Clean up "greater than" values ------------------------------------------
   
+  # Next step, incorporating and flagging "greater than" values. Using a similar
+  # approach to the previous two flags, we can identify results that 
+  # contain values greater than some amount
+  
   greater_vals <- chla_approx_added %>%
+    # First, remove the samples that we've already approximated:
     filter((!index %in% mdl_updates$index) & (!index %in% chla_approx$index)) %>%
     # Then select fields where the NUMERIC value column is NA....
     filter(is.na(ResultMeasureValue) & 
@@ -303,7 +305,6 @@ harmonize_chla <- function(raw_chla, p_codes){
     order = 5
   )
   
-  
   # Free up memory
   rm(chla)
   gc()
@@ -316,7 +317,11 @@ harmonize_chla <- function(raw_chla, p_codes){
   # column then it's time to drop them.
   
   chla_no_na <- chla_harmonized_values %>%
-    filter(!is.na(harmonized_value))
+    filter(
+      !is.na(harmonized_value),
+      # Some negative values can be introduced by the previous NA parsing steps:
+      harmonized_value >= 0
+    )
   
   dropped_na <- tibble(
     step = "chla harmonization",
@@ -919,10 +924,10 @@ harmonize_chla <- function(raw_chla, p_codes){
     select(
       # No longer needed
       -harmonized_value_sd) %>%
-      relocate(
+    relocate(
       c(subgroup_id, harmonized_row_count, harmonized_units,
         harmonized_value, harmonized_value_cv, lat, lon, datum),
-        .after = misc_flag
+      .after = misc_flag
     )
   
   rm(grouped_chla)

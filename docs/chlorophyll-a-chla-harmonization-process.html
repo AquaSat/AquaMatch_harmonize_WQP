@@ -368,9 +368,8 @@ the MDL are assigned a 0. Records with corrected values based on the MDL
 method are assigned a 1. Finally, records where no MDL-based adjustment
 was made and which contain a numeric value below the provided MDL are
 assigned a 2.</p>
-<p>Most of this step should not result in a change in rows, but we do drop
-records with negative measurement values. This results in 0 rows being
-removed. The final row count after this is 4.39 million.</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 4.39 million.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -561,7 +560,9 @@ mg/mL
 <p><br></p>
 <p>Below is a pie chart that breaks down the different unit codes that were
 dropped in the unit harmonization process, and how many records were
-lost with each code.</p>
+lost with each code. Note that while RFU is a valid unit for
+chlorophyll-a from an <em>in situ</em> probe, we have no way to convert those
+data to ug/L, and therefore dismiss those measurements from the dataset.</p>
 <p><br></p>
 <p><img src="3_harmonize/out/chla_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/></p>
 <p><br></p>

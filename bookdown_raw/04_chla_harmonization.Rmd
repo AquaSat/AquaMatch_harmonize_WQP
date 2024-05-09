@@ -416,7 +416,7 @@ Cleaning approximate values involves a similar process as for MDL cleaning. We f
 
 We then use the approximate value as the record's value moving forward.
 
-Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
+Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column. Note, however, that occasionally approximate language will be used in a record but not changed or flagged. This occurs when the language is used in a comment-related column and **not** the result column itself, meaning that there is a usable numeric value provided (and thus doesn't need correction).
 
 This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 

@@ -1,14 +1,14 @@
 step,reason,short_reason,number_dropped,n_rows,order
-doc harmonization,Starting dataset,Start,0,2615599,0
-doc harmonization,Filtered for only water media & doc fraction,Target water media & doc,300213,2315386,1
-doc harmonization,Dropped rows containing fail-related language,"Fails, etc.",25035,2290351,2
-doc harmonization,Dropped rows while cleaning MDLs,Clean MDLs,3211,2287140,3
-doc harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2287140,4
-doc harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,2287140,5
-doc harmonization,Dropped unresolved NAs,Unresolved NAs,0,2287140,6
-doc harmonization,Dropped rows while harmonizing units,Harmonize units,7720,2279420,7
-doc harmonization,Dropped rows while cleaning depths,Clean depths,0,2279420,8
-doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,84995,2194425,9
-doc harmonization,Dropped rows while assigning field flags,Field flagging,0,2194425,10
-doc harmonization,Dropped rows while assigning misc flags,Misc flagging,0,2194425,11
-doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,343013,1851412,12
+doc harmonization,Starting dataset,Start,0,2621551,0
+doc harmonization,Filtered for only water media & doc fraction,Target water media & doc,300353,2321198,1
+doc harmonization,Dropped rows containing fail-related language,"Fails, etc.",25040,2296158,2
+doc harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,2296158,3
+doc harmonization,Dropped rows while cleaning approximate values,Clean approximates,0,2296158,4
+doc harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,2296158,5
+doc harmonization,Dropped unresolved NAs,Unresolved NAs,4301,2291857,6
+doc harmonization,Dropped rows while harmonizing units,Harmonize units,8115,2283742,7
+doc harmonization,Dropped rows while cleaning depths,Clean depths,0,2283742,8
+doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,84995,2198747,9
+doc harmonization,Dropped rows while assigning field flags,Field flagging,0,2198747,10
+doc harmonization,Dropped rows while assigning misc flags,Misc flagging,0,2198747,11
+doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,343198,1855549,12

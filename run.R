@@ -69,24 +69,15 @@ if ( !("ggrepel" %in% installed.packages() ) ){
                             repos = "http://cran.us.r-project.org")
 }
 
-# Load packages for use below
-library(tidyverse)
-library(googledrive)
+
 library(targets)
-
-
-# Google Drive auth -------------------------------------------------------
-
-# Confirm Google Drive is authorized locally
-drive_auth()
-# Select existing account (change if starting from scratch)
 
 
 # Run pipeline ------------------------------------------------------------
 
 # This is a helper script to run the pipeline.
 {
-  tar_make(p3_chla_agg_harmonized_feather_drive_file)
+  tar_make()
   
   # Create a network diagram of the workflow, with a completion timestamp
   temp_vis <- tar_visnetwork()

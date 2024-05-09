@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-05-01" />
+<meta name="date" content="2024-05-09" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -239,7 +239,7 @@ a direct field measurement, a direct field observation, or by laboratory
 analysis of material collected in the field.</em></p>
 </blockquote>
 <p>Parameter groups are comprised of data from multiple <code>characteristicNames</code> in the WQP. For example, chlorophyll-related <code>characteristicNames</code>include “Chlorophyll a”, “Chlorophyll a, corrected for pheophytin”, “Chlorophyll b”, and “Chlorophyll c” among several others. Only a subset of these <code>characteristicNames</code> are included in our “chlorophyll <em>a</em>” parameter group. As mentioned previously, measurements and observations within the WQP for a given parameter group are often sampled and analyzed using a variety of methods. Some of these methods for sampling and analysis are directly interoperable and others are not. The processing steps described within this bookdown walk through how we harmonize the data for each parameter group while flagging or removing data that may not have enough information associated with it. The product of this is a database of WQP entries with interoperability and reliability in mind.</p>
-<p>The result of this harmonization procedure is two datasets per parameter group. The first is a harmonized dataset that includes all of the original WQP columns in addition to those introduced in this workflow. The second is the output of all harmonization steps, including aggregation to the median value where simultaneous records occur. We define simultaneous records as those measured on the same day by the same <code>organizationIndentifier</code> at the same location with the same harmonized depth criteria. We believe that most users will only use this aggregated dataset, but we provide the unaggregated version for those who would like to make different decisions at any point in the tiering, flagging, or aggregation steps.</p>
+<p>The result of this harmonization procedure is two datasets per parameter group. The first is a harmonized dataset that includes all of the original WQP columns in addition to those introduced in this workflow. The second is the output of all harmonization steps, including aggregation to the mean value where simultaneous records occur. We define simultaneous records as those measured on the same day by the same <code>organizationIndentifier</code> at the same location with the same harmonized depth criteria. We believe that most users will only use this aggregated dataset, but we provide the unaggregated version for those who would like to make different decisions at any point in the tiering, flagging, or aggregation steps.</p>
 
 </div>
             </section>

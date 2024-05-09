@@ -1,11 +1,11 @@
 CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,hplc_tag,spec_fluor_tag,pheo_corr_tag,tier,n
-Chlorophyll a,NA,NA,FALSE,FALSE,FALSE,2,632790
+Chlorophyll a,NA,NA,FALSE,FALSE,FALSE,2,632794
 Chlorophyll a (probe relative fluorescence),NA,NA,FALSE,FALSE,FALSE,2,526517
 "Chlorophyll a, corrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,TRUE,1,473465
 Chlorophyll a (probe relative fluorescence),Operating the Seabird CTD,NA,FALSE,FALSE,FALSE,2,432002
-"Chlorophyll a, uncorrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,210303
+"Chlorophyll a, uncorrected for pheophytin",10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,211116
 Chlorophyll a,MONOCHROMATIC; SPECTROPHOTOMETRIC,NA,FALSE,TRUE,FALSE,2,201353
-Chlorophyll a,10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,161300
+Chlorophyll a,10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,161445
 Chlorophyll a (probe),NA,NA,FALSE,FALSE,FALSE,2,141857
 Chlorophyll a (probe relative fluorescence),Wet Labs WETStar Fluorometer,NA,FALSE,TRUE,FALSE,2,127672
 Chlorophyll a,445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,FALSE,2,125814
@@ -15,7 +15,7 @@ Chlorophyll a,analyticTRICHROMATIC CHLOROPHYLL A,NA,FALSE,TRUE,FALSE,2,78109
 Chlorophyll a,analyticCHLA_103,NA,FALSE,FALSE,FALSE,2,61026
 "Chlorophyll a, uncorrected for pheophytin",LAKEWATCH-CHL,NA,FALSE,FALSE,FALSE,2,57646
 "Chlorophyll a, free of pheophytin",445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,TRUE,1,56893
-Chlorophyll a (probe relative fluorescence),445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,FALSE,2,53088
+Chlorophyll a (probe relative fluorescence),445.0 ~ EPA; Chlorophyll and Pheophytin in Algae by Fluorescence,NA,FALSE,TRUE,FALSE,2,53176
 "Chlorophyll a, corrected for pheophytin",LAKEWATCH-CHL,NA,FALSE,FALSE,TRUE,1,47588
 "Chlorophyll a, corrected for pheophytin",10200 H 2  ~ Chlorophyll a-b-c Determination by spectrophotometer,NA,FALSE,TRUE,TRUE,1,28796
 "Chlorophyll a, uncorrected for pheophytin",10200 H 2  ~ Chlorophyll a-b-c Determination by spectrophotometer,NA,FALSE,TRUE,FALSE,2,25696
@@ -30,7 +30,7 @@ Chlorophyll a,"Chlorophyll, phytoplankton, HPLC",70953,TRUE,FALSE,FALSE,0,15181
 Chlorophyll a,NA,70953,TRUE,FALSE,FALSE,0,13924
 "Chlorophyll a, corrected for pheophytin",10200 H 3  ~ Chlorophyll a-b-c Determination by fluorometer,NA,FALSE,TRUE,TRUE,1,13367
 Chlorophyll a,In Vitro Determination of Chlorophyll a,NA,FALSE,FALSE,FALSE,2,13115
-Chlorophyll a,Not Available,NA,FALSE,FALSE,FALSE,2,12241
+Chlorophyll a,Not Available,NA,FALSE,FALSE,FALSE,2,12290
 "Chlorophyll a, uncorrected for pheophytin",NA,32230,FALSE,TRUE,FALSE,2,12211
 "Chlorophyll a, corrected for pheophytin",Standard Methods for the Examination of Water and Wastewater,NA,FALSE,FALSE,TRUE,1,11517
 "Chlorophyll a, free of pheophytin",447.0 ~ EPA; Chlorophyll a and b in phytoplankton by HPLC/UV,NA,TRUE,FALSE,TRUE,0,11489
@@ -53,10 +53,10 @@ Chlorophyll a,NA,32211,FALSE,TRUE,FALSE,2,5097
 Chlorophyll a,446.0 ~ EPA; Chlorophylls and Pheopigments in Phytoplankton by Spectrophotometry,NA,FALSE,TRUE,FALSE,2,4569
 "Chlorophyll a, uncorrected for pheophytin",Unspecified Standard Grab Sample Procedure,NA,FALSE,FALSE,FALSE,2,4232
 Chlorophyll a,"Chlorophyll a,phyto,fluorometric",70953,TRUE,TRUE,FALSE,0,4127
+Chlorophyll a (probe relative fluorescence),10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,3941
 "Chlorophyll a, uncorrected for pheophytin",Chlorophyll a,NA,FALSE,FALSE,FALSE,2,3919
 "Chlorophyll a, corrected for pheophytin",Chlorophyll a,NA,FALSE,FALSE,TRUE,1,3821
 Chlorophyll a,"YSI EXO, 470/685/40,S bacillaris",32316,FALSE,FALSE,FALSE,2,3699
-Chlorophyll a (probe relative fluorescence),10200 H ~ Chlorophyll a-b-c Determination,NA,FALSE,TRUE,FALSE,2,3626
 "Chlorophyll a, corrected for pheophytin",USEPA 445,NA,FALSE,TRUE,TRUE,1,3532
 Chlorophyll a,447.0 ~ EPA; Chlorophyll a and b in phytoplankton by HPLC/UV,NA,TRUE,FALSE,FALSE,0,3522
 Chlorophyll a,SM 10200 H-2b,NA,FALSE,TRUE,FALSE,2,3506
@@ -143,9 +143,9 @@ Chlorophyll a,Unknown,NA,FALSE,FALSE,FALSE,2,274
 Chlorophyll a (probe relative fluorescence),Spectrophotometric Determination of Chlorophyll,NA,FALSE,TRUE,FALSE,2,274
 Chlorophyll a,EPA Method 445.0 modified version,NA,FALSE,TRUE,FALSE,2,256
 "Chlorophyll a, corrected for pheophytin",Chlorophyll-a and Pheophytin in Water by Spectrophotometric Measurement of Ethanolic Extract from Filter Residue,NA,FALSE,TRUE,TRUE,1,253
+Chlorophyll a,Chlorophyll a-b-c Determination,NA,FALSE,FALSE,FALSE,2,246
 "Chlorophyll a, corrected for pheophytin","SM 10150 B ~ APHA, Spectrophotometric Determination of Chlorophyll A",NA,FALSE,TRUE,TRUE,1,243
 "Chlorophyll a, uncorrected for pheophytin","SM 10150 B ~ APHA, Spectrophotometric Determination of Chlorophyll A",NA,FALSE,TRUE,FALSE,2,243
-Chlorophyll a,Chlorophyll a-b-c Determination,NA,FALSE,FALSE,FALSE,2,238
 "Chlorophyll a, corrected for pheophytin",To be updated,NA,FALSE,FALSE,TRUE,1,232
 Chlorophyll a,GS_UNKNOWN,NA,FALSE,FALSE,FALSE,2,228
 Chlorophyll a,analyticCHLA_104,NA,FALSE,FALSE,FALSE,2,218

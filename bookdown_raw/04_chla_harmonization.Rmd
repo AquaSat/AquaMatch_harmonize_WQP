@@ -358,7 +358,7 @@ In this step method detection limits (MDLs) are used to clean up the reported va
 
 If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
 
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward. Once the process is complete we filter out any negative values in the dataset. 
+We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
 
 We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
@@ -416,7 +416,7 @@ Cleaning approximate values involves a similar process as for MDL cleaning. We f
 
 We then use the approximate value as the record's value moving forward.
 
-Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
+Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column. Note, however, that occasionally approximate language will be used in a record but not changed or flagged. This occurs when the language is used in a comment-related column and **not** the result column itself, meaning that there is a usable numeric value provided (and thus doesn't need correction).
 
 This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
@@ -520,7 +520,7 @@ step_9_dropped <- filter(step_data,
 # paste0(., " thousand")
 ```
 
-The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point.
 
 `r step_9_dropped` rows are removed. The final row count after this is `r step_9_rows`.
 
@@ -929,7 +929,7 @@ step_16_dropped <- filter(step_data,
 
 The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units.` This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the non-aggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 

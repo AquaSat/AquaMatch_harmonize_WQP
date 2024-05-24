@@ -1,0 +1,1084 @@
+# Harmonize SDD
+
+# Pre-processing step
+
+This file is used to draft the code for the harmonize_sdd.R function that 
+will get incorporated into the aquasat targets pipeline. 
+
+These are all the steps that were taken to get the data to a place where I can 
+harmonize it.
+
+```{r packages and sourced files}
+# list of packages required for this pipeline
+required_pkgs <- c(
+  "dataRetrieval", 
+  "feather",
+  "janitor",
+  "lubridate",
+  "ggrepel",
+  "googledrive",
+  "MASS",
+  "pander",
+  "retry",
+  "rvest",
+  "scales",
+  "sf",
+  "targets", 
+  "tarchetypes",
+  "tidyverse",
+  "tigris",
+  "tictoc",
+  "yaml")
+
+# helper function to install all necessary pacakges
+package_installer <- function(x) {
+  if (x %in% installed.packages()) {
+    print(paste0("{", x ,"} package is already installed."))
+  } else {
+    install.packages(x)
+    print(paste0("{", x ,"} package has been installed."))
+  }
+}
+
+# map function using base lapply
+lapply(required_pkgs, package_installer)
+
+library(dataRetrieval)
+library(feather)
+library(janitor)
+library(lubridate)
+library(ggrepel)
+library(googledrive)
+library(MASS)
+library(pander)
+library(retry)
+library(rvest)
+library(scales)
+library(sf)
+library(tidyverse)
+library(tigris)
+library(tictoc)
+library(yaml)
+
+# Sourced files
+walk(list.files("3_harmonize/src/", full.names = T), source)
+```
+
+```{r tar_target(p2_wqp_data_aoi_sdd)}
+# tar_target(p2_wqp_data_aoi_sdd,
+#            retrieve_param_data(link_table = p2_wqp_data_aoi_out_links,
+#                                parameter_string = "sdd"),
+#            format = "feather",
+#            packages = c("tidyverse", "googledrive", "feather"))
+
+# read in the data if it does not exist (this is for this exploration process only!)
+# drive_download(file = "https://drive.google.com/file/d/1ZXRv84Q6RSrVazzCqUAP_v_YbINKY9Ph/view?usp=drivesdk",
+#                path = "scratch/data/sdd_data.feather",
+#                overwrite = TRUE)
+
+p2_wqp_data_aoi_sdd <- read_feather("scratch/data/sdd_data.feather")
+```
+
+```{r format step/tar_target(p3_wqp_data_aoi_formatted_sdd)}
+# format step
+# tar_target(
+#     p3_wqp_data_aoi_formatted_sdd,
+#     format_columns(p2_wqp_data_aoi_sdd),
+#     format = "feather"
+#   )
+
+p3_wqp_data_aoi_formatted_sdd <- format_columns(p2_wqp_data_aoi_sdd)
+```
+
+```{r cleaning step/tar_target(p3_wqp_data_aoi_ready_sdd)}
+# tar_target(
+#     p3_wqp_data_aoi_ready_sdd,
+#     clean_wqp_data(wqp_data = p3_wqp_data_aoi_formatted_sdd,
+#                    char_names_crosswalk = p1_char_names_crosswalk,
+#                    # Convert list of sites by param to single df
+#                    site_data = bind_rows(p2_site_counts),
+#                    wqp_metadata = p1_wqp_inventory_aoi),
+#     packages = c("tidyverse", "feather"))
+
+# reading in the data for the clean_wqp_data() function
+
+# read in the p1_char_names_crosswalk data if it does not exist (this is for this exploration process only!)
+# drive_download(file = "https://drive.google.com/file/d/1OQh_bE8xZFD0ZYDWcBZ2lgn4C3X5Teav/view?usp=drivesdk", # nolint
+#                path = "scratch/data/p1_char_names_crosswalk_data.rds",
+#                overwrite = TRUE)
+p1_char_names_crosswalk <- readRDS("scratch/data/p1_char_names_crosswalk_data.rds")
+
+# read in the p2_site_counts data if it does not exist (this is for this exploration process only!)
+# drive_download(file = "https://drive.google.com/file/d/1xCmCd-AuvlWO-o8M3Csh1pN48Q3GB3rV/view?usp=drivesdk",
+#                path = "scratch/data/p2_site_counts_data.rds",
+#                overwrite = TRUE)
+p2_site_counts <- readRDS("scratch/data/p2_site_counts_data.rds")
+
+# read in the p1_wqp_inventory_aoi data if it does not exist (this is for this exploration process only!)
+# drive_download(file = "https://drive.google.com/file/d/1UBBrO5NUBhP_Sc-X0xjcwi0g_vmY_lFq/view?usp=drivesdk",
+#                path = "scratch/data/p1_wqp_inventory_aoi_data.rds",
+#                overwrite = TRUE)
+p1_wqp_inventory_aoi <- readRDS("scratch/data/p1_wqp_inventory_aoi_data.rds")
+
+p3_wqp_data_aoi_ready_sdd <- clean_wqp_data(
+  wqp_data = p3_wqp_data_aoi_formatted_sdd, # This is from the previous chunk
+  char_names_crosswalk = p1_char_names_crosswalk, 
+  # Convert list of sites by param to single df
+  site_data = bind_rows(p2_site_counts), 
+  wqp_metadata = p1_wqp_inventory_aoi)
+```
+
+```{r connecting data/tar_target(p3_cleaned_wqp_data_sdd)}
+# tar_target(p3_cleaned_wqp_data_sdd,
+#              read_feather(p3_wqp_data_aoi_ready_sdd$wqp_data_clean_path),
+#              packages = "feather",
+#              format = "feather",
+#              cue = tar_cue("always"))
+
+p3_cleaned_wqp_data_sdd <- read_feather(p3_wqp_data_aoi_ready_sdd$wqp_data_clean_path)
+```
+
+```{r p_codes/tar_target(p3_p_codes)}
+# tar_target(
+#     name = p3_p_codes,
+#     command = get_p_codes(),
+#     packages = c("tidyverse", "rvest", "janitor")
+#   )
+
+p3_p_codes <- get_p_codes()
+```
+
+# Harmonization step
+
+Up to this point all of the processes that are done up until 3_harmonize.R are
+completed. 
+
+```{r setting the args that are in the harmonize_sdd function}
+# tar_target(p3_sdd_harmonized,
+#              harmonize_sdd(raw_sdd = p3_cleaned_wqp_data_sdd,
+#                            p_codes = p3_p_codes),
+#              packages = c("tidyverse", "feather", "scales"))
+
+raw_sdd <- p3_cleaned_wqp_data_sdd
+
+p_codes <- p3_p_codes
+
+# remove everything else
+rm(p1_char_names_crosswalk, p1_wqp_inventory_aoi, p2_site_counts, p2_wqp_data_aoi_sdd, p3_cleaned_wqp_data_sdd, p3_p_codes, p3_wqp_data_aoi_formatted_sdd, p3_wqp_data_aoi_ready_sdd)
+```
+
+
+```{r starting values for dataset}
+starting_data <- tibble(
+  step = "sdd harmonization",
+  reason = "Starting dataset",
+  short_reason = "Start",
+  number_dropped = 0,
+  n_rows = nrow(raw_sdd),
+  order = 0
+)
+```
+
+```{r Minor data prep}
+# Grab the column names of the dataset coming in
+raw_names <- names(raw_sdd)
+
+# First step is to read in the data and do basic formatting and filtering
+sdd <- raw_sdd %>% 
+  # Link up USGS p-codes. and their common names can be useful for method lumping:
+  left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>% 
+  # Filter out non-target media types
+  filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+           is.na(ActivityMediaSubdivisionName)) %>% 
+  # Turn every value into an absolute value (use the unoriginal one) -jd
+  mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% 
+  # Add an index to control for cases where there's not enough identifying info
+  # to track a unique record
+  rowid_to_column(., "index")
+
+# record info on any dropped rows
+dropped_media <- tibble(
+  step = "sdd harmonization",
+  reason = "Filtered for only specific water media",
+  short_reason = "Target water media",
+  number_dropped = nrow(raw_sdd) - nrow(sdd),
+  n_rows = nrow(sdd),
+  order = 1
+  )
+  
+rm(raw_sdd)
+gc()
+```
+
+```{r Document and remove fail language}
+# fail language from chl-a, and is not super applicable to secchi, but will be
+# used for now to move on to the next issue
+
+fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "reject", "no data", "Not Reported"
+  )
+
+# Now get counts of fail-related string detections for each column: 
+fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                    "ResultCommentText", "ResultMeasureValue_original") %>%
+  # Set list item names equal to each item in the list so that map will return
+  # a named list
+  set_names() %>%
+  map(
+    .x = .,
+    .f = ~ {
+      # Pass column name into the next map()
+      col_name <- .x
+      
+      # Check each string pattern separately and count instances
+      map_df(.x = fail_text,
+             .f = ~{
+               hit_count <- sdd %>%
+                 filter(grepl(pattern = .x,
+                              x = !!sym(col_name),
+                              ignore.case = TRUE)) %>%
+                 nrow()
+               
+               # Return two-col df
+               tibble(
+                 word = .x,
+                 record_count = hit_count
+               )
+             }) %>%
+        # Ignore patterns that weren't detected
+        filter(record_count > 0)
+    }) %>%
+  # If there's any data frames with 0 rows (i.e., no fails detected) then
+  # drop them to avoid errors in the next step. This has happened with
+  # ResultMeasureValue in the past
+  keep(~nrow(.) > 0)
+
+# Plot and export the plots as png files
+walk2(.x = fail_counts,
+      .y = names(fail_counts),
+      .f = ~ ggsave(filename = paste0("scratch/figures/sdd_",
+                                      .y,
+                                      "_fail_pie.png"),
+                    plot = plot_fail_pie(dataset = .x, col_name = .y),
+                    width = 6, height = 6, units = "in", device = "png"))
+
+# Now that the fails have been documents, remove them:
+sdd_fails_removed <- sdd %>% 
+  filter(
+    if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
+
+# How many records removed due to fails language?
+print(
+    paste0(
+      "Rows removed due to fail-related language: ",
+      nrow(sdd) - nrow(sdd_fails_removed)
+    )
+  )
+  
+dropped_fails <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows containing fail-related language",
+  short_reason = "Fails, etc.",
+  number_dropped = nrow(sdd) - nrow(sdd_fails_removed),
+  n_rows = nrow(sdd_fails_removed),
+  order = 2)
+
+rm(sdd)
+gc()
+```
+
+```{r Harmonize value units}
+# Matchup table for expected sdd units in the dataset
+unit_conversion_table <- tibble(
+  ResultMeasure.MeasureUnitCode = c("mm", "cm", "in", "ft", "m"),
+  conversion = c(.001, .01, .0254, .3048, 1))
+
+unit_table_out_path <- "scratch/data/sdd_unit_table.csv"
+
+write_csv(x = unit_conversion_table,
+          file = unit_table_out_path)
+
+converted_units_sdd <- sdd_fails_removed %>%
+  inner_join(x = .,
+             y = unit_conversion_table,
+             by = "ResultMeasure.MeasureUnitCode") %>% # might have to drop the columns that this added in the future
+  mutate(harmonized_value = ResultMeasureValue * conversion, 
+         harmonized_units = "m")
+
+# Plot and export unit codes that didn't make through joining
+sdd_fails_removed %>%
+  anti_join(x = .,
+            y = unit_conversion_table,
+            by = "ResultMeasure.MeasureUnitCode")  %>%
+  count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
+  plot_unit_pie() %>%
+  ggsave(filename = "scratch/figures/sdd_unit_drop_pie.png",
+         plot = .,
+         width = 6, height = 6, units = "in", device = "png")
+
+# How many records removed due to limits on values?
+print(
+  paste0(
+    "Rows removed while harmonizing units: ",
+    nrow(sdd_fails_removed) - nrow(converted_units_sdd)
+  )
+)
+
+dropped_harmonization <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while harmonizing units",
+  short_reason = "Harmonize units",
+  number_dropped = nrow(sdd_fails_removed) - nrow(converted_units_sdd),
+  n_rows = nrow(converted_units_sdd),
+  order = 3
+)
+
+rm(sdd_fails_removed)
+gc()
+```
+
+```{r Clean up MDLs}
+# convert the values (if they have units) to determine this flag
+
+# Columns that did not have proper units have already been dropped in the harmonize
+# units step.
+
+sdd_mdls_added <- converted_units_sdd %>% 
+  mutate(# Flag: 0 = value not adjusted and MDL not a concern
+         #       1 = original NA value adjusted using MDL method
+         #       2 = provided value below provided MDL; not adjusted
+         mdl_flag = case_when(
+           (harmonized_value > 0.01) & (harmonized_units == "m") ~ 0,
+           (harmonized_value < 0.01) & (harmonized_units == "m") ~ 2,
+           .default = NA_integer_
+         )) 
+
+dropped_mdls <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while cleaning MDLs",
+  short_reason = "Clean MDLs",
+  number_dropped = nrow(converted_units_sdd) - nrow(sdd_mdls_added),
+  n_rows = nrow(sdd_mdls_added),
+  order = 4
+)
+
+rm(converted_units_sdd)
+gc()
+```
+
+```{r Clean up approximated values}
+# Next step, incorporating and flagging "approximated" values. Using a similar
+# approach to our MDL detection, we can identify value fields that are labelled
+# as being approximated.
+
+approx_text <- "result approx|RESULT IS APPROX|value approx|approximate|approx"
+
+sdd_approx <- sdd_mdls_added %>%
+  # First, select fields where the numeric value column is NA....
+  filter(is.na(ResultMeasureValue) & 
+           # ... AND the original value column has numeric characters...
+           grepl("[0-9]", ResultMeasureValue_original) & 
+           # ... AND any of the comment fields have approximation language...
+           (grepl(approx_text, ResultLaboratoryCommentText, ignore.case = T)|
+              grepl(approx_text, ResultCommentText, ignore.case = T )|
+              grepl(approx_text, ResultDetectionConditionText, ignore.case = T)))
+
+sdd_approx$approx_value <- as.numeric(str_replace_all(sdd_approx$ResultMeasureValue_original, c("\\*" = "")))
+sdd_approx$approx_value[is.nan(sdd_approx$approx_value)] <- NA
+
+# Keep important data
+sdd_approx <- sdd_approx %>%
+  select(approx_value, index)
+
+print(
+  paste(
+    round((nrow(sdd_approx)) / nrow(sdd_mdls_added) * 100, 3),
+    '% of samples had values listed as approximated'
+  )
+)
+
+# Replace harmonized_value field with these new values
+sdd_approx_added <- sdd_mdls_added %>%
+  left_join(x = ., y = sdd_approx, by = "index") %>%
+  mutate(harmonized_value = ifelse(index %in% sdd_approx$index,
+                                   approx_value,
+                                   harmonized_value),
+         # Flag: 1 = used approximate adjustment, 0 = value not adjusted
+         approx_flag = ifelse(index %in% sdd_approx$index, 1, 0))
+  
+
+dropped_approximates <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while cleaning approximate values",
+  short_reason = "Clean approximates",
+  number_dropped = nrow(sdd_mdls_added) - nrow(sdd_approx_added),
+  n_rows = nrow(sdd_approx_added),
+  order = 5
+)
+
+rm(sdd_mdls_add)
+gc()
+```
+
+I included "less than" values in here too since there were a couple (~10) here too.
+I thought that those could be incorporated into MDL somehow, but for now I kept
+them here.
+```{r Clean up "greater than" values}
+greater_vals <- sdd_approx_added %>% 
+  filter(!index %in% sdd_approx$index) %>% 
+  # Then select fields where the NUMERIC value column is NA....
+  filter(is.na(ResultMeasureValue) & 
+           # ... AND the original value column has numeric characters...
+           (grepl("[0-9]", ResultMeasureValue_original) &
+           #... AND a `>` symbol or a '<' symbol
+           grepl(">|<", ResultMeasureValue_original)) # this can/should be incorporated into MDL step instead
+         )
+
+greater_vals$greater_value <- as.numeric(
+  str_replace_all(
+    greater_vals$ResultMeasureValue_original,
+    c("\\>" = "", "\\<" = "", "\\*" = "", "\\=" = "" ))
+  )
+greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
+
+# Keep important data
+greater_vals <- greater_vals %>%
+  select(greater_value, index)
+
+print(
+  paste(
+    round((nrow(greater_vals)) / nrow(sdd_mdls_added) * 100, 9),
+    '% of samples had values listed as being above a detection limit//greater than'
+  )
+)
+
+# Replace harmonized_value field with these new values
+sdd_harmonized_values <- sdd_approx_added %>% 
+  left_join(x = ., y = greater_vals, by = "index") %>%
+  mutate(harmonized_value = ifelse(index %in% greater_vals$index, greater_value, harmonized_value),
+         # Flag: 0 = value less than 31m and has no ">" or "<" symbol
+         #       1 = value contains ">" or "<" symbol
+         #       2 = value greater than 31m
+         greater_flag = case_when(
+           harmonized_value < 31 & (!index %in% greater_vals$index) ~ 0,
+           index %in% greater_vals$index ~ 1, 
+           harmonized_value > 31 ~ 2,
+           .default = NA_integer_
+         ))
+
+dropped_greater_than <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while cleaning 'greater than' values",
+  short_reason = "Greater thans",
+  number_dropped = nrow(sdd_approx_added) - nrow(sdd_harmonized_values),
+  n_rows = nrow(sdd_harmonized_values),
+  order = 6
+)
+
+rm(sdd_approx_added)
+gc()
+```
+
+```{r Remove remaining NAs}
+# At this point we've processed MDLs, approximate values, and values containing
+# symbols like ">". If there are still remaining NAs in the numeric measurement
+# column then it's time to drop them.
+
+sdd_no_na <- sdd_harmonized_values %>%
+  filter(!is.na(harmonized_value))
+
+dropped_na <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped unresolved NAs",
+  short_reason = "Unresolved NAs",
+  number_dropped = nrow(sdd_harmonized_values) - nrow(sdd_no_na),
+  n_rows = nrow(sdd_no_na),
+  order = 7
+)
+
+rm(sdd_harmonized_values)
+gc()
+```
+
+```{r Clean and flag depth data}
+# Recode any error-related character values to NAs
+recode_depth_na_sdd <- sdd_no_na %>%
+  mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                          ResultDepthHeightMeasure.MeasureValue,
+                          ActivityTopDepthHeightMeasure.MeasureValue,
+                          ActivityBottomDepthHeightMeasure.MeasureValue),
+                .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                      "9999", "-9999", "-99",
+                                                      "99", "NaN"),
+                                true = NA_character_,
+                                false = .x)))
+
+# Reference table for unit conversion
+depth_unit_conversion_table <- tibble(
+  depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
+  depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
+)
+
+# There are four columns with potential depth data that we need to convert
+# into meters:
+converted_depth_units_sdd <- recode_depth_na_sdd %>%
+  # 1. Activity depth col
+  left_join(x = .,
+            y = depth_unit_conversion_table,
+            by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+  mutate(
+    harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+  ) %>%
+  # Drop conversion col to avoid interfering with next join
+  select(-depth_conversion) %>%
+  # 2. Result depth col
+  left_join(x = .,
+            y = depth_unit_conversion_table,
+            by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+  mutate(
+    harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+  ) %>%
+  select(-depth_conversion) %>%
+  # 3. Activity top depth col
+  left_join(x = .,
+            y = depth_unit_conversion_table,
+            by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+  mutate(
+    harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+    harmonized_top_depth_unit = "m"
+  ) %>%
+  select(-depth_conversion) %>%
+  # 4. Activity bottom depth col
+  left_join(x = .,
+            y = depth_unit_conversion_table,
+            by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+  mutate(
+    harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+    harmonized_bottom_depth_unit = "m"
+  )
+
+# Now combine the two columns with single point depth data into one and clean
+# up values generally:
+harmonized_depth_sdd <- converted_depth_units_sdd %>%
+  rowwise() %>%
+  mutate(
+    # New harmonized discrete column:
+    harmonized_discrete_depth_value = case_when(
+      # Use activity depth mainly
+      !is.na(harmonized_activity_depth_value) &
+        is.na(harmonized_result_depth_value) ~ harmonized_activity_depth_value,
+      # Missing activity depth but not result depth
+      is.na(harmonized_activity_depth_value) &
+        !is.na(harmonized_result_depth_value) ~ harmonized_result_depth_value,
+      # Disagreeing activity and result depths
+      (!is.na(harmonized_activity_depth_value) &
+         !is.na(harmonized_result_depth_value)) &
+        harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+          c(harmonized_activity_depth_value, harmonized_result_depth_value)),
+      # Both agree
+      harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
+      # Defaults to NA otherwise
+      .default = NA_real_
+    ),
+    # Indicate depth unit going along with this column
+    harmonized_discrete_depth_unit = "m"
+  ) %>%
+  ungroup()
+
+# Create a flag system based on depth data presence/completion
+flagged_depth_sdd <- harmonized_depth_sdd %>%
+  mutate(
+    depth_flag = case_when(
+      # No depths (including because of recoding above)
+      is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value) ~ 0,
+      # All columns present
+      !is.na(harmonized_discrete_depth_value) &
+        !is.na(harmonized_top_depth_value) &
+        !is.na(harmonized_bottom_depth_value) ~ 3,
+      # Integrated depths
+      (!is.na(harmonized_top_depth_value) |
+         !is.na(harmonized_bottom_depth_value)) &
+        is.na(harmonized_discrete_depth_value) ~ 2,
+      # Discrete depths
+      !is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value) ~ 1,
+      # Discrete and integrated present
+      # Note that here using the non-combined discrete col since part of
+      # the combination process above was to create NAs when the discrete
+      # values disagree
+      ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+         !is.na(harmonized_top_depth_value)) |
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_bottom_depth_value)) ~ 3,
+      .default = NA_real_
+    )) %>%
+  # These columns are no longer necessary since the harmonization is done
+  select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+            depth_conversion))
+
+# Sanity check that flags are matching up with their intended qualities:
+depth_check_table <- flagged_depth_sdd %>%
+  mutate(
+    # Everything present
+    three_cols_present = if_else(
+      !is.na(harmonized_discrete_depth_value) &
+        !is.na(harmonized_top_depth_value) &
+        !is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # Only discrete present
+    only_discrete = if_else(
+      !is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # Only top present
+    only_top = if_else(
+      is.na(harmonized_discrete_depth_value) &
+        !is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # Only bottom present
+    only_bottom = if_else(
+      is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        !is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # Full integrated present
+    fully_integrated = if_else(
+      is.na(harmonized_discrete_depth_value) &
+        !is.na(harmonized_top_depth_value) &
+        !is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # No depths present
+    no_depths = if_else(
+      is.na(harmonized_discrete_depth_value) &
+        is.na(harmonized_top_depth_value) &
+        is.na(harmonized_bottom_depth_value),
+      true = 1, false = 0),
+    # Discrete and one of the integrated
+    discrete_partial_integ = if_else(
+      (!is.na(harmonized_discrete_depth_value) &
+         !is.na(harmonized_top_depth_value) &
+         is.na(harmonized_bottom_depth_value)) |
+        (!is.na(harmonized_discrete_depth_value) &
+           is.na(harmonized_top_depth_value) &
+           !is.na(harmonized_bottom_depth_value)),
+      true = 1, false = 0)
+  ) %>%
+  count(three_cols_present, only_discrete, discrete_partial_integ,
+        only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+  arrange(depth_flag)
+
+depth_check_out_path <- "scratch/data/sdd_depth_check_table.csv"
+
+write_csv(x = depth_check_table,
+          file = depth_check_out_path)
+
+# Depth category counts:
+depth_counts <- flagged_depth_sdd %>%
+  # Using a temporary flag to aggregate depth values for count output
+  mutate(depth_agg_flag = case_when(
+    depth_flag == 1 &
+      harmonized_discrete_depth_value <= 1 ~ "<=1m",
+    depth_flag == 1 &
+      harmonized_discrete_depth_value <= 5 ~ "<=5m",
+    depth_flag == 1 &
+      harmonized_discrete_depth_value > 5 ~ ">5m",
+    depth_flag == 2 &
+      harmonized_bottom_depth_value <= 1 ~ "<=1m",
+    depth_flag == 2 &
+      harmonized_bottom_depth_value <= 5 ~ "<=5m",
+    depth_flag == 2 &
+      harmonized_bottom_depth_value > 5 ~ ">5m",
+    .default = "No or inconsistent depth"
+  )) %>%
+  count(depth_agg_flag)
+
+depth_counts_out_path <- "scratch/data/sdd_depth_counts.csv"
+
+write_csv(x = depth_counts, file = depth_counts_out_path)
+
+# Have any records been removed while processing depths?
+print(
+  paste0(
+    "Rows removed due to non-target depths: ",
+    nrow(sdd_no_na) - nrow(flagged_depth_sdd)
+  )
+)
+
+dropped_depths <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while cleaning depths",
+  short_reason = "Clean depths",
+  number_dropped = nrow(sdd_no_na) - nrow(flagged_depth_sdd),
+  n_rows = nrow(flagged_depth_sdd),
+  order = 8
+)
+
+rm(sdd_no_na)
+gc()
+```
+
+Here I think the start and dates for the time tag may be wrong because I did them in UTC.
+
+```{r Aggregate and tier analytical methods}
+# Before creating analytical tiers remove any records that have unrelated
+# data based on their method:
+unrelated_text <- paste0(c("chlorophyll", "sulfate", "sediment", "5310", "counting",
+                           "plasma", "NTU", "nephelometry", "coliform", "carbon",
+                           "2540", "conductance", "nitrate", "nitrite", "nitrogen", 
+                           "alkalin", "phosphorus", "periphyton", "peri", "biomass", 
+                           "temperature", "elemental analyzer", "2320", "chemical", 
+                           "unknown", "unspecified", "no information exists for method", 
+                           "other or unknown procedure", "laboratory calculation", 
+                           "2550","total suspended solids", "not available"), 
+                         collapse = "|") 
+
+sdd_relevant <- flagged_depth_sdd %>%
+  filter(!grepl(pattern = unrelated_text,
+                x = ResultAnalyticalMethod.MethodName,
+                ignore.case = TRUE))
+
+# time_tag
+sdd_time_tag <- sdd_relevant %>%
+  mutate(time_tag = case_when(
+    # tag 0: time within 10a-2p and is not 11:59:59
+    (parse_date_time(ActivityStartTime.Time, orders = "HMS") != as.POSIXct("0000-01-01 11:59:59", tz = "UTC") &
+     parse_date_time(ActivityStartTime.Time, orders = "HMS") > as.POSIXct("0000-01-01 10:00:00", tz = "UTC") &
+     parse_date_time(ActivityStartTime.Time, orders = "HMS") < as.POSIXct("0000-01-01 14:00:00", tz = "UTC")) ~ 0,
+    
+    # tag 1: time is 11:59:59 or NA
+    (parse_date_time(ActivityStartTime.Time, orders = "HMS") == as.POSIXct("0000-01-01 11:59:59", tz = "UTC")) |
+     is.na(ActivityStartTime.Time) ~ 1,
+  
+    # tag 2: time not within 10a-2p and is not 11:59:59
+    (parse_date_time(ActivityStartTime.Time, orders = "HMS") != as.POSIXct("0000-01-01 11:59:59", tz = "UTC") &
+     parse_date_time(ActivityStartTime.Time, orders = "HMS") < as.POSIXct("0000-01-01 10:00:00", tz = "UTC") &
+     parse_date_time(ActivityStartTime.Time, orders = "HMS") > as.POSIXct("0000-01-01 14:00:00", tz = "UTC")) ~ 2,
+    
+    .default = NA_integer_
+  ))
+
+# scope_tag
+scope_text <- paste0(c("scope", "viewscope"),
+                    collapse = "|") 
+
+sdd_scope_tag <- sdd_time_tag %>% 
+  # tag: 0 = Either the method/comments/p-code indicate that a viewscope was used
+  #      1 = No indication that a viewscope was used
+  mutate(scope_tag = case_when(
+    (grepl(pattern = scope_text, x = ResultAnalyticalMethod.MethodName, ignore.case = TRUE)) | 
+      (grepl(pattern = scope_text, x = ActivityCommentText, ignore.case = TRUE)) | 
+      (grepl(pattern = scope_text, x = ResultLaboratoryCommentText, ignore.case = TRUE)) |
+      (grepl(pattern = scope_text, x = ResultCommentText, ignore.case = TRUE)) |
+      (grepl(pattern = scope_text, x = ResultMeasureValue_original, ignore.case = TRUE)) |
+      (USGSPCode == 72187) ~ 0,
+    (!grepl(pattern = scope_text, x = ResultAnalyticalMethod.MethodName, ignore.case = TRUE)) & 
+      (!grepl(pattern = scope_text, x = ActivityCommentText, ignore.case = TRUE)) & 
+      (!grepl(pattern = scope_text, x = ResultLaboratoryCommentText, ignore.case = TRUE)) &
+      (!grepl(pattern = scope_text, x = ResultCommentText, ignore.case = TRUE)) &
+      (!grepl(pattern = scope_text, x = ResultMeasureValue_original, ignore.case = TRUE)) &
+      (USGSPCode != 72187) ~ 1, 
+    .default = NA_integer_
+  ))
+  
+
+# tier for SDD
+tiered_methods_sdd <- sdd_scope_tag %>% 
+  mutate(analytical_tier = case_when(
+    # flag: 0 = Restrictive. Time reported within the allotted window and method indicates use of viewscope.
+    #       1 = Narrowed. Either time reported within the allotted window or method indicates use of viewscope, but not both.
+    #       2 = Inclusive. Time not reported/time reported outside of window, and no indication of viewscope used.
+    (time_tag == 0) & (scope_tag == 0) ~ 0,
+    xor((time_tag == 0), (scope_tag == 0)) ~ 1,
+    (time_tag != 0) & (scope_tag == 1) ~ 2,
+    .default = 2
+  ))
+
+# Export a record of how methods were tiered and their respective row counts
+tiering_record <- tiered_methods_sdd %>%
+  count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
+        scope_tag, time_tag, analytical_tier) %>%
+  arrange(desc(n)) 
+
+tiering_record_out_path <- "scratch/data/sdd_analytical_tiering_record.csv"
+
+write_csv(x = tiering_record, file = tiering_record_out_path)
+
+# Slim the tiered product
+cleaned_tiered_methods_sdd <- tiered_methods_sdd %>%
+  # Drop tag columns - these are recorded and exported in tiering_record. We
+  # keep only the final tier
+  select(-contains("_tag"))
+
+# Confirm that no rows were lost during tiering
+if(nrow(sdd_relevant) != nrow(cleaned_tiered_methods_sdd)){
+  stop("Rows were lost during analytical method tiering. This is not expected.")
+}  
+
+dropped_methods <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while tiering analytical methods",
+  short_reason = "Analytical methods",
+  number_dropped = nrow(flagged_depth_sdd) - nrow(cleaned_tiered_methods_sdd),
+  n_rows = nrow(sdd_relevant),
+  order = 9
+)
+
+rm(list = c("sdd_relevant", "flagged_depth_sdd", "sdd_time_tag", "sdd_scope_tag", "tiered_methods_sdd"))
+gc()
+```
+
+```{r Flag field methods}
+key_words <- paste0(c("wind", "chop", "choppy", "precipitation", "rain", "ice"),
+                    collapes = "|")
+
+not_words <- paste0(c("calm", "clear"), 
+                    collapse = "|")
+
+bottom_words <- paste0(c("bottom", "hit bottom", "bottomed out"),
+                       collapse = "|")
+
+field_flagged_sdd <- cleaned_tiered_methods_sdd %>%
+  # flag: 0 = no key words related to adverse weather conditions or indication that SDD hit bottom
+  #       1 = SDD indicated to have hit bottom, but no key words related to adverse weather conditions
+  #       2 = key words related to adverse weather conditions listed in comments, but no indication of SDD hitting bottom
+  #       3 = both key words related to adverse weather conditions and indication of SDD hitting bottom are present in comments
+  mutate(field_flag = case_when(
+    
+    # Flag 0: No key words related to adverse weather conditions and no indication that SDD hit bottom
+    !grepl(key_words, ActivityCommentText, ignore.case = TRUE) &
+    !grepl(key_words, ResultLaboratoryCommentText, ignore.case = TRUE) &
+    !grepl(key_words, ResultCommentText, ignore.case = TRUE) &
+    !grepl(key_words, ResultMeasureValue_original, ignore.case = TRUE) &
+    !grepl(bottom_words, ActivityCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultLaboratoryCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultMeasureValue_original, ignore.case = TRUE) ~ 0,
+    
+    # Flag 1: SDD indicated to have hit bottom, but no key words related to adverse weather conditions
+    (grepl(bottom_words, ActivityCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+    !(grepl(key_words, ActivityCommentText, ignore.case = TRUE) &
+        grepl(key_words, ResultLaboratoryCommentText, ignore.case = TRUE) &
+        grepl(key_words, ResultCommentText, ignore.case = TRUE) &
+        grepl(key_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+      (grepl(not_words, ActivityCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultMeasureValue_original, ignore.case = TRUE)) ~ 1,
+    
+    # Flag 2: Key words related to adverse weather conditions listed in comments, but no indication of SDD hitting bottom
+    (grepl(key_words, ActivityCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+    !(grepl(not_words, ActivityCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+    !grepl(bottom_words, ActivityCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultLaboratoryCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultCommentText, ignore.case = TRUE) &
+    !grepl(bottom_words, ResultMeasureValue_original, ignore.case = TRUE) ~ 2,
+    
+    # Flag 3: Both key words related to adverse weather conditions and indication of SDD hitting bottom are present in comments
+    (grepl(key_words, ActivityCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultCommentText, ignore.case = TRUE) |
+     grepl(key_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+    !(grepl(not_words, ActivityCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultCommentText, ignore.case = TRUE) |
+      grepl(not_words, ResultMeasureValue_original, ignore.case = TRUE)) &
+    (grepl(bottom_words, ActivityCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultLaboratoryCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultCommentText, ignore.case = TRUE) |
+     grepl(bottom_words, ResultMeasureValue_original, ignore.case = TRUE)) ~ 3,
+    
+    .default = NA_integer_
+  ))
+
+# How many records removed due to unlikely fraction types?
+print(
+  paste0(
+    "Rows removed while assigning field flags: ",
+    nrow(cleaned_tiered_methods_sdd) - nrow(field_flagged_sdd)
+  )
+)
+
+dropped_field <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while assigning field flags",
+  short_reason = "Field flagging",
+  number_dropped = nrow(cleaned_tiered_methods_sdd) - nrow(field_flagged_sdd),
+  n_rows = nrow(field_flagged_sdd),
+  order = 10
+)
+
+rm(cleaned_tiered_methods_sdd)
+gc()
+```
+
+```{r Generate plots with harmonized dataset}
+# We'll generate plots now before aggregating across simultaneous records
+# because it won't be possible to use CharacteristicName after that point.
+
+# Plot harmonized measurements by CharacteristicName
+
+plotting_subset <- field_flagged_sdd %>%
+  select(CharacteristicName, USGSPCode, analytical_tier, harmonized_value) %>%
+  mutate(plot_value = harmonized_value + 0.001)
+
+char_dists <- plotting_subset %>%
+  ggplot() +
+  geom_histogram(aes(plot_value)) +
+  facet_wrap(vars(CharacteristicName), scales = "free_y") +
+  xlab(expression("Harmonized sdd (" ~ log[10] ~ " transformed)")) +
+  ylab("Count") +
+  ggtitle(label = "Distribution of harmonized sdd values by CharacteristicName",
+          subtitle = "0.001 added to each value for the purposes of visualization only") +
+  scale_x_log10(label = label_scientific()) +
+  scale_y_continuous(label = label_scientific()) +
+  theme_bw() +
+  theme(strip.text = element_text(size = 7))
+
+ggsave(filename = "scratch/data/sdd_charname_dists.png",
+       plot = char_dists,
+       width = 8, height = 6, units = "in", device = "png")
+```
+
+```{r Aggregate simultaneous records}
+# There are full duplicates and also values occurring at the same time, location,
+# etc. We take medians across them here
+
+# First tag aggregate subgroups with group IDs
+grouped_sdd <- field_flagged_sdd %>%
+  group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
+           ActivityStartDateTime,
+           harmonized_top_depth_value, harmonized_top_depth_unit,
+           harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
+           harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
+           depth_flag, mdl_flag, approx_flag, greater_flag,
+           analytical_tier, field_flag, harmonized_units) %>%
+  mutate(subgroup_id = cur_group_id())
+
+# Export the dataset with subgroup IDs for joining future aggregated product
+# back to original raw data
+grouped_sdd_out_path <- "scratch/data/sdd_harmonized_grouped.feather"
+
+grouped_sdd %>%
+  select(
+    all_of(c(raw_names,
+             "parameter_code", "group_name", "parameter_name_description",
+             "subgroup_id")),
+    group_cols()
+  ) %>%
+  write_feather(path = grouped_sdd_out_path)
+
+# Now aggregate at the subgroup level to take care of simultaneous observations
+no_simul_sdd <- grouped_sdd %>%
+  # Make sure we don't drop subgroup ID
+  group_by(subgroup_id, .add = TRUE) %>%
+  summarize(
+    harmonized_row_count = n(),
+    harmonized_value_sd = sd(harmonized_value),
+    harmonized_value = median(harmonized_value)
+  ) %>%
+  ungroup()
+
+rm(grouped_sdd)
+gc()
+
+# Plot harmonized measurements by Tier
+  
+tier_dists <- no_simul_sdd %>%
+  select(analytical_tier, harmonized_value) %>%
+  mutate(plot_value = harmonized_value + 0.001,
+         tier_label = case_when(
+           analytical_tier == 0 ~ "Restrictive (Tier 0)",
+           analytical_tier == 1 ~ "Narrowed (Tier 1)",
+           analytical_tier == 2 ~ "Inclusive (Tier 2)"
+         )) %>%
+  ggplot() +
+  geom_histogram(aes(plot_value)) +
+  facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+  xlab(expression("Harmonized sdd(" ~ log[10] ~ " transformed)")) +
+  ylab("Count") +
+  ggtitle(label = "Distribution of harmonized sdd values by analytical tier",
+          subtitle = "0.001 added to each value for the purposes of visualization only") +
+  scale_x_log10(label = label_scientific()) +
+  scale_y_continuous(label = label_scientific()) +
+  theme_bw() +
+  theme(strip.text = element_text(size = 7))
+
+ggsave(filename = "scratch/data/sdd_tier_dists_postagg.png",
+       plot = tier_dists,
+       width = 6, height = 4, units = "in", device = "png")
+
+
+# How many records removed in aggregating simultaneous records?
+print(
+  paste0(
+    "Rows removed while aggregating simultaneous records: ",
+    nrow(field_flagged_sdd) - nrow(no_simul_sdd)
+  )
+)
+
+dropped_simul <- tibble(
+  step = "sdd harmonization",
+  reason = "Dropped rows while aggregating simultaneous records",
+  short_reason = "Simultaneous records",
+  number_dropped = nrow(field_flagged_sdd) - nrow(no_simul_sdd),
+  n_rows = nrow(no_simul_sdd),
+  order = 11
+)
+
+rm(field_flagged_sdd)
+gc()
+```
+
+```{r Export}
+# Record of all steps where rows were dropped, why, and how many
+compiled_dropped <- bind_rows(starting_data, dropped_media, 
+                              dropped_fails, dropped_harmonization, 
+                              dropped_mdls, dropped_approximates, 
+                              dropped_greater_than, dropped_na,
+                              dropped_depths, dropped_methods,
+                              dropped_field, dropped_simul)
+
+documented_drops_out_path <- "scratch/data/sdd_harmonize_dropped_metadata.csv"
+
+write_csv(x = compiled_dropped,
+          file = documented_drops_out_path)
+
+
+# Export in memory-friendly way
+data_out_path <- "scratch/data/sdd_harmonized_final.csv"
+
+write_csv(no_simul_sdd,
+          data_out_path)
+
+# Final dataset length:
+print(
+  paste0(
+    "Final number of records: ",
+    nrow(no_simul_sdd)
+  )
+)
+```

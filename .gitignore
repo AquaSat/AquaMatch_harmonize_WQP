@@ -51,7 +51,6 @@ _targets/
 
 # The chapters folders created by the pipeline
 chapters/
-_book/chapters/
 
 # Out files from harmonize steps
 3_harmonize/out/doc_harmonized_final.csv

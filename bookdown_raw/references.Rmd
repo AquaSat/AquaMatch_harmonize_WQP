@@ -13,6 +13,8 @@ Landau, W. M., (2021). The targets R package: a dynamic Make-like function-orien
 
 Ross, M. R. V., Topp, S. N., Appling, A. P., Yang, X., Kuhn, C., Butman, D. et al. (2019). AquaSat: A data set to enable remote sensing of water quality for inland waters. Water Resources Research, 55, 10012–10025. https://doi.org/10.1029/2019WR024883 
 
+Teucher A (2023). _lutz: Look Up Time Zones of Point Coordinates_. R package version 0.3.2, https://CRAN.R-project.org/package=lutz.
+  
 Water Quality Portal. Washington (DC): National Water Quality Monitoring Council, United States Geological Survey (USGS), Environmental Protection Agency (EPA). (2021). https://doi.org/10.5066/P9QRKUVJ.
 
 Wetzel, Robert G. 2001. Limnology: Lake and River Ecosystems. 3rd ed. San Diego: Academic Press.

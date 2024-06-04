@@ -337,9 +337,9 @@ get_site_info <- function(dataset){
 #' 
 #' @description
 #' Function to identify and fill partial date and time data. It reformats time
-#' zones into location-based format and uses lat/lon data for monitoring sites
-#' to fill any missing time zones before reformatting. New columns with harmonized
-#' local and UTC times are created.
+#' zones into location-based format (e.g., "America/New_York") and uses lat/lon
+#' data for monitoring sites to fill any missing time zones before reformatting.
+#' New columns with harmonized local and UTC times are created.
 #' 
 #' @param dataset A data frame containing minimum columns `MonitoringLocationIdentifier`,
 #' `ActivityStartDateTime`, `ActivityStartDate`, `ActivityStartTime.Time`, and

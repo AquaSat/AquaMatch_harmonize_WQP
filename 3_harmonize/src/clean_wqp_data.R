@@ -336,10 +336,12 @@ get_site_info <- function(dataset){
 #' UTC.
 #' 
 #' @description
-#' Function to identify and fill partial date and time data. It reformats time
-#' zones into location-based format (e.g., "America/New_York") and uses lat/lon
-#' data for monitoring sites to fill any missing time zones before reformatting.
-#' New columns with harmonized local and UTC times are created.
+#' Function to identify and fill partial date and time data. It uses lat/lon data
+#' for monitoring sites to fill any missing time zones, replaces times that are
+#' NA or 00:00:00 with 11:59:59 (local time), produces harmonized versions of UTC
+#' and local date-time records, and reformats time zones into GMT offset format
+#' (e.g., "Etc/GMT+7"). New columns with harmonized local times, harmonized UTC
+#' times, and harmonized time zones are created.
 #' 
 #' @param dataset A data frame containing minimum columns `MonitoringLocationIdentifier`,
 #' `ActivityStartDateTime`, `ActivityStartDate`, `ActivityStartTime.Time`, and
@@ -400,12 +402,11 @@ fill_date_time <- function(dataset, site_data){
     as_tibble() %>%
     distinct(MonitoringLocationIdentifier, fetched_tz)
   
-  # Big
+  # Remove big object
   rm(site_sf_unified)
-  gc()
+  invisible(gc())
   
-  # Add tz data to main dataset and create col using old where possible
-  # but filling in the fetched tz where needed
+  # Join fetched time zones to existing dataset as new column
   dataset_tz <- dataset %>%
     left_join(x = ., y = site_tz) %>%
     mutate(
@@ -413,111 +414,183 @@ fill_date_time <- function(dataset, site_data){
         condition = is.na(ActivityStartTime.TimeZoneCode),
         true = fetched_tz,
         false = ActivityStartTime.TimeZoneCode
-      ),
-      # We'll want to convert the abbreviations into location-based tz:
-      harmonized_tz = case_when(
-        harmonized_tz %in% c("EDT", "EST") ~ "America/New_York",
-        harmonized_tz %in% c("CDT", "CST") ~ "America/Chicago",
-        harmonized_tz %in% c("MDT", "MST") ~ "America/Denver",
-        harmonized_tz %in% c("ADT", "AST") ~ "America/Halifax",
-        harmonized_tz %in% c("AKDT", "AKST") ~ "America/Anchorage",
-        harmonized_tz %in% c("PDT", "PST") ~ "America/Los_Angeles",
-        # Not all locations in HST observe DST. All in current dataset are
-        # HI based, so using Pacific here
-        harmonized_tz %in% c("HST", "HAST") ~ "Pacific/Honolulu",
-        # If HDT shows up it's likely AK
-        harmonized_tz == "HDT" ~ "America/Adak",
-        # Suspect this is Guam Standard Time bc data is prior to tz change in 2000
-        harmonized_tz == "GST" ~ "Pacific/Guam",
-        # For now we keep as UTC; changed later
-        harmonized_tz %in% c("UTC", "GMT") ~ "UTC",
-        # Others use the tz from joining
-        .default = fetched_tz
       )
-    ) 
-  
-  # Note: In some instances the time zones we assign here will not exactly match
-  # those provided in the WQP records because of daylight saving time (DST). This
-  # is, in part, because some data are intentionally recorded in the WQP without
-  # accounting for DST. For example, "2023-09-20" would fall during DST (i.e.,
-  # "CDT") in the "America/Chicago" time zone, but a record with an
-  # ActivityStartTime.TimeZoneCode value of "CST" on that date will have an 
-  # ActivityStartDateTime that is one hour behind our harmonized_utc and
-  # harmonized_local_time columns. If you would rather use a timestamp that
-  # uses the time offset of the original ActivityStartTime.TimeZoneCode column
-  # (i.e., ignoring DST in some cases), then we suggest using the
-  # ActivityStartDateTime column, though this will result in having fewer
-  # overall rows with complete time data.
+    )
   
   rm(dataset)
   gc()
   
-  # 2. Create harmonized local and UTC time columns. Also want to fill in blank
-  # times with 11:59:59 AM (local), which we've found is used rarely or not at
-  # all in WQP data.
-  dataset_w_times <- dataset_tz %>%
+  # 2. Draft the local time column. Note that we also fill in blank
+  # times or those with 00:00:00 with 11:59:59 AM (local), which we've found
+  # is used rarely or not at all in WQP data.
+  dataset_keep_tz <- dataset_tz %>%
     mutate(
+      # A column indicating local time (output class will be char)
       harmonized_local_time = case_when(
-        # If has StartTime and StartDate then good: paste them together
+        # If has StartTime and StartDate then good unless 00:00:00. Paste them
+        # together
         !is.na(ActivityStartDate) &
-          !is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate,
-                                                  " ",
-                                                  ActivityStartTime.Time),
+          !is.na(ActivityStartTime.Time) &
+          (ActivityStartTime.Time != "00:00:00") ~ paste0(ActivityStartDate,
+                                                          " ",
+                                                          ActivityStartTime.Time),
+        # If has StartDate and StartTime of 00:00:00 then reassign 11:59:59
+        !is.na(ActivityStartDate) &
+          !is.na(ActivityStartTime.Time) &
+          (ActivityStartTime.Time == "00:00:00") ~ paste0(ActivityStartDate,
+                                                          " 11:59:59"),
         # If StartDate only with no StartTime: assign ~noon
         !is.na(ActivityStartDate) &
           is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate, " 11:59:59"),
         # If nothing to go on, then NA record
         is.na(ActivityStartDate) & is.na(ActivityStartTime.Time) ~ NA_character_
-      ))  %>%
-    # Split-apply-combine over tz to allow temporary work with local times in
-    # datetime format. Then create a local time column as a *character string*
-    # for each separate tz so that the local times are retained somehow but can
-    # also be stacked in the same data frame. This wouldn't work if they were in
-    # a datetime format.
-    split(.$harmonized_tz) %>%
-    # For each tz:
+      )
+    )
+  
+  # df of time zones formatted as GMT offset
+  gmt_offsets <- tribble(
+    ~tz, ~gmt,
+    # America/New_York
+    "EDT",      "Etc/GMT+4",
+    "EST",      "Etc/GMT+5",
+    # America/Chicago
+    "CDT",      "Etc/GMT+5", 
+    "CST",      "Etc/GMT+6",
+    # America/Denver
+    "MDT",      "Etc/GMT+6",
+    "MST",      "Etc/GMT+7",
+    # America/Halifax
+    "ADT",      "Etc/GMT+3",
+    "AST",      "Etc/GMT+4",
+    # America/Anchorage
+    "AKDT",     "Etc/GMT+8",
+    "AKST",     "Etc/GMT+9",
+    # America/Los_Angeles
+    "PDT",      "Etc/GMT+7",
+    "PST",      "Etc/GMT+8",
+    # Pacific/Honolulu
+    "HST",      "Etc/GMT+10",
+    "HAST",     "Etc/GMT+10",
+    # America/Adak
+    "HDT",      "Etc/GMT+9",
+    # Suspect this is Guam Standard Time bc
+    # data is prior to tz change in 2000
+    "GST",      "Etc/GMT+10",
+    # Chamorro Standard Time
+    "ChST",     "Etc/GMT+10"
+  )
+  
+  # Split-apply-combine over tz to allow temporary work with local times in
+  # datetime format. Then create a local time column as a *character string*
+  # for each separate tz so that the local times are retained somehow but can
+  # also be stacked in the same data frame. This wouldn't work if they were in
+  # a datetime format.
+  dataset_local_list <- split(dataset_keep_tz, dataset_keep_tz$harmonized_tz)
+  
+  dataset_w_times <- dataset_local_list %>%
     map_df(
       .x = .,
       .f = ~{
         # Save the tz string for this group
         unique_tz <- unique(.x$harmonized_tz)
         
-        # Check if ActivityStartTime.TimeZoneCode entries are UTC. Some are, and
-        # we're working with local times here, so these will need to be handled
+        # Check if ActivityStartTime.TimeZoneCode entries are UTC/GMT. Some are,
+        # and we want true local times here, so these will need to be handled
         # differently.
-        if(unique_tz == "UTC") {
-          new_df <- .x %>%
-            mutate(harmonized_local_time = ymd_hms(harmonized_local_time,
-                                                   tz = unique_tz),
-                   # Save this UTC version for our UTC column
-                   harmonized_utc = harmonized_local_time,
-                   # Now convert to *fetched* local time (bc it was entered as
-                   # UTC) and then to character so that it can be stacked with
-                   # the other local date time strings. Recall that fetched_tz
-                   # is assigned based on lat/lon
-                   harmonized_local_time = with_tz(harmonized_local_time,
-                                                   tz = fetched_tz),
-                   harmonized_local_time = strftime(harmonized_local_time,
-                                                    tz = unique_tz,
-                                                    usetz = TRUE))
-        } else {
-          # Now for the tz groups that aren't UTC:
-          new_df <- .x %>%
-            mutate(harmonized_local_time = ymd_hms(harmonized_local_time,
-                                                   tz = unique_tz),
-                   # Save this UTC version for our UTC column
-                   harmonized_utc = with_tz(harmonized_local_time, tzone = "UTC"),
-                   # Now convert local time to character so that it can be stacked
-                   # with other time zones
-                   harmonized_local_time = strftime(harmonized_local_time,
-                                                    tz = unique_tz,
-                                                    usetz = TRUE))
-        }
-      })
+        if(unique_tz %in% c("UTC", "GMT")) {
+          .x %>%
+            split(.$fetched_tz) %>%
+            # For each different fetched_tz we assign a new harmonized_tz. This
+            # takes us to the level of, e.g., "America/Chicago"
+            map_df(
+              .x = .,
+              .f = ~ .x %>%
+                mutate(
+                  # If there's an 11:59:59 time stamp then we want to consider
+                  # this local time using fetched_tz. If a 'synthetic' time then
+                  # we want to start in UTC/GMT and then convert to local time.
+                  harmonized_local_time = if_else(
+                    condition = grepl(pattern = "11:59:59",
+                                      x = harmonized_local_time),
+                    true = ymd_hms(harmonized_local_time,
+                                   tz = unique(fetched_tz)),
+                    false = ymd_hms(harmonized_local_time,
+                                    tz = unique_tz) %>%
+                      with_tz(tzone = unique(fetched_tz))
+                  ),
+                  # Grab the short time zone code, which includes DST info
+                  new_tz = format(harmonized_local_time, "%Z"),
+                  # Save this UTC version for our UTC column
+                  harmonized_utc = with_tz(harmonized_local_time, tzone = "UTC")
+                ) %>%
+                split(.$new_tz) %>%
+                # And we go one map level deeper because of multiple time zones
+                # in the new_tz col. This takes us to the level of, e.g., "CDT"
+                map_df(.x = .,
+                       .f = ~ .x %>%
+                         mutate(
+                           # Match up the DST sensitive tz to the GMT offset
+                           harmonized_tz = filter(gmt_offsets,
+                                                  tz == unique(new_tz))$gmt,
+                           # Get the character version of this column
+                           harmonized_local_time = as.character(harmonized_local_time)
+                         )
+                )
+            )
+          
+          # Now for the tz groups that aren't UTC/GMT.
+          # First, those in our GMT match up df:
+        } else if(unique_tz %in% gmt_offsets$tz){
+          
+          # We need to convert the time zones when they are (unusable) abbreviations.
+          # We ultimately want to convert the local time zones into a GMT offset,
+          # so we'll use that here:
+          new_tz <- filter(gmt_offsets, tz == unique_tz)$gmt 
+          
+          .x %>%
+            mutate(
+              harmonized_local_time = ymd_hms(harmonized_local_time,
+                                              tz = new_tz),
+              harmonized_tz = new_tz,
+              harmonized_utc = with_tz(harmonized_local_time, tzone = "UTC"),
+              # Now convert local time to character so that it can be stacked
+              # with other time zones
+              harmonized_local_time = as.character(harmonized_local_time)
+            )
+          
+          # Second, those that were filled by fetched_tz, which need to be interpreted
+          # into the GMT offset:
+        } else if(unique_tz %in% OlsonNames())
+          
+          # Time zones in location-based format are great to use, but they don't tell us
+          # the GMT offset without reformatting because of the potential presence of
+          # daylight saving time, so we'll need to add a second step while converting.
+          .x %>%
+          mutate(
+            harmonized_local_time = ymd_hms(harmonized_local_time,
+                                            tz = unique(harmonized_tz)),
+            # Save a UTC version for our UTC column
+            harmonized_utc = with_tz(harmonized_local_time, tzone = "UTC"),
+            # Overwrite the harmonized_tz with the new short code
+            new_tz = format(harmonized_local_time, "%Z")
+          ) %>%
+          split(.$new_tz) %>%
+          map_df(.x = .,
+                 .f = ~ .x %>%
+                   mutate(
+                     # Get the GMT offset code
+                     harmonized_tz = filter(gmt_offsets, tz == unique(new_tz))$gmt,
+                     # Get the character version of this column, with GMT offset
+                     harmonized_local_time = as.character(harmonized_local_time)
+                   )
+          )
+      }
+    )
   
   # Return the final product without temporary cols
-  dataset_w_times %>%
-    select(-fetched_tz)
+  output_dataset <- dataset_w_times %>%
+    select(-c(fetched_tz, new_tz))
   
+  output_dataset
 }
 

@@ -357,6 +357,42 @@ get_site_info <- function(dataset){
 #' 
 fill_date_time <- function(dataset, site_data){
   
+  # Prep: Define a table of time zones formatted as GMT offset for later. Will
+  # be referenced shortly for tz filters though
+  gmt_offsets <- tribble(
+    ~tz, ~gmt,
+    # America/New_York
+    "EDT",      "Etc/GMT+4",
+    "EST",      "Etc/GMT+5",
+    # America/Chicago
+    "CDT",      "Etc/GMT+5", 
+    "CST",      "Etc/GMT+6",
+    # America/Denver
+    "MDT",      "Etc/GMT+6",
+    "MST",      "Etc/GMT+7",
+    # America/Halifax
+    "ADT",      "Etc/GMT+3",
+    "AST",      "Etc/GMT+4",
+    # America/Anchorage
+    "AKDT",     "Etc/GMT+8",
+    "AKST",     "Etc/GMT+9",
+    # America/Los_Angeles
+    "PDT",      "Etc/GMT+7",
+    "PST",      "Etc/GMT+8",
+    # Pacific/Honolulu
+    "HST",      "Etc/GMT+10",
+    "HAST",     "Etc/GMT+10",
+    # Alaska-Hawaii Daylight Time
+    "AHDT",     "Etc/GMT+9",
+    # America/Adak
+    "HDT",      "Etc/GMT+9",
+    # Suspect this is Guam Standard Time bc
+    # data is prior to tz change in 2000
+    "GST",      "Etc/GMT+10",
+    # Chamorro Standard Time
+    "ChST",     "Etc/GMT+10"
+  )
+  
   # 1. Complete the time zone records using lat/lon
   
   # Datum varies throughout the dataset; build a conversion table.
@@ -404,14 +440,16 @@ fill_date_time <- function(dataset, site_data){
   
   # Remove big object
   rm(site_sf_unified)
-  invisible(gc())
+  gc()
   
   # Join fetched time zones to existing dataset as new column
   dataset_tz <- dataset %>%
     left_join(x = ., y = site_tz) %>%
     mutate(
       harmonized_tz = if_else(
-        condition = is.na(ActivityStartTime.TimeZoneCode),
+        # Use fetched_tz if NA or not a recognizable tz. This is most often NA
+        condition = is.na(ActivityStartTime.TimeZoneCode) |
+          !(ActivityStartTime.TimeZoneCode %in% c(gmt_offsets$tz, OlsonNames())),
         true = fetched_tz,
         false = ActivityStartTime.TimeZoneCode
       )
@@ -446,39 +484,7 @@ fill_date_time <- function(dataset, site_data){
         is.na(ActivityStartDate) & is.na(ActivityStartTime.Time) ~ NA_character_
       )
     )
-  
-  # df of time zones formatted as GMT offset
-  gmt_offsets <- tribble(
-    ~tz, ~gmt,
-    # America/New_York
-    "EDT",      "Etc/GMT+4",
-    "EST",      "Etc/GMT+5",
-    # America/Chicago
-    "CDT",      "Etc/GMT+5", 
-    "CST",      "Etc/GMT+6",
-    # America/Denver
-    "MDT",      "Etc/GMT+6",
-    "MST",      "Etc/GMT+7",
-    # America/Halifax
-    "ADT",      "Etc/GMT+3",
-    "AST",      "Etc/GMT+4",
-    # America/Anchorage
-    "AKDT",     "Etc/GMT+8",
-    "AKST",     "Etc/GMT+9",
-    # America/Los_Angeles
-    "PDT",      "Etc/GMT+7",
-    "PST",      "Etc/GMT+8",
-    # Pacific/Honolulu
-    "HST",      "Etc/GMT+10",
-    "HAST",     "Etc/GMT+10",
-    # America/Adak
-    "HDT",      "Etc/GMT+9",
-    # Suspect this is Guam Standard Time bc
-    # data is prior to tz change in 2000
-    "GST",      "Etc/GMT+10",
-    # Chamorro Standard Time
-    "ChST",     "Etc/GMT+10"
-  )
+
   
   # Split-apply-combine over tz to allow temporary work with local times in
   # datetime format. Then create a local time column as a *character string*

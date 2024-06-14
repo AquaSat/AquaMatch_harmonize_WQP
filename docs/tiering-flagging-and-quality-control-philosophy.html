@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-05-15" />
+<meta name="date" content="2024-05-30" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -402,27 +402,57 @@ parameter.</p>
 </div>
 <div id="time-and-date-handling" class="section level3 hasAnchor" number="4.2.5">
 <h3><span class="header-section-number">4.2.5</span> Time and date handling<a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>We primarily rely on the <code>ActivityStartDateTime</code> column to determine the
-time and date that samples were collected. However, this column is not
-100% complete for any parameter and other columns related to time and
-date in the WQP are also incomplete and recorded inconsistently. We have
-designed a function, <code>fill_date_time()</code>, to handle these inconsistencies
-before the broader data harmonization process. It adds the columns
-<code>harmonized_tz</code> and <code>harmonized_utc</code> to the dataset. The function first
-transforms the provided data into a unified coordinate reference system
-and then looks up the local time zone for each monitoring site in the
-dataset. The <code>harmonized_tz</code> column is then generated using any
-timezones provided by the WQP, while filling in gaps in timezone data
-with those identified using the spatial method above. These are also
-harmonized into a single, location-based Olson timezone format with
-values like <code>"America/New_York"</code>. We then create a date-time formatted
-column, which is finally converted to UTC and preserved as
-<code>harmonized_utc</code>. One problem we have to address is that many records
-contain a sampling date but <strong>not</strong> time. In these instances we append
-the timestamp <code>" 11:59:59"</code> to the date (in the local timezone) before
-formatting as date-time. Very few, if any, records contain this exact
-time stamp naturally, so it can be used as a proxy to filter or flag
-“synthetic” sampling times if desired by the end user.</p>
+<p>We primarily rely on the <code>ActivityStartDateTime</code> column (added by
+<a href="https://github.com/DOI-USGS/dataRetrieval/pull/319#issuecomment-280501805">dataRetrieval</a>)
+to determine the time and date that samples were collected in UTC.
+However, there are two caveats to this:</p>
+<ol style="list-style-type: decimal">
+<li>This column is not 100% complete for any parameter. This is, in
+part, because other columns related to time and date in the WQP also
+have incomplete records</li>
+<li>There are cases where the provided date and time zone disagree but
+<code>ActivityStartDateTime</code> uses the provided time zone as-is</li>
+</ol>
+<p>We have designed a function, <code>fill_date_time()</code>, to create further
+harmonized date and time columns before the broader data harmonization
+process. It adds the columns <code>harmonized_tz</code>, <code>harmonized_local_time</code>,
+and <code>harmonized_utc</code> to the dataset. The function first transforms the
+provided data into a unified coordinate reference system and then looks
+up the local time zone for each monitoring site in the dataset using
+latitude and longitude. The <code>harmonized_tz</code> column is then generated
+using any timezones provided in <code>ActivityStartTime.TimeZoneCode</code>, while
+filling in gaps in timezone data with those identified using the spatial
+method above. Note that if <code>ActivityStartTime.TimeZoneCode</code> listed “UTC”
+then we also replace this with the spatially-acquired time zone.
+<code>harmonized_tz</code> values are also formatted into a single, location-based
+Olson timezone format with values like <code>"America/New_York"</code>. We then
+create a text-formatted <code>harmonized_local_time</code> column that preserves
+the local time <strong>and</strong> time zone in a text string (e.g., “2021-09-08
+13:27:00 CDT” ). Finally, the local times are converted to UTC and
+preserved as <code>harmonized_utc</code>.</p>
+<p>There are a couple further challenges we address with the
+<code>fill_date_time()</code> function. One is that many records contain a sampling
+date but <strong>not</strong> time. In these instances we append the timestamp
+<code>" 11:59:59"</code> to the date (in the local timezone) before formatting as
+date-time. Very few, if any, records contain this exact time stamp
+naturally, so it can be used as a proxy to filter or flag “synthetic”
+sampling times if desired by the end user.</p>
+<p>A second challenge is that some <code>ActivityStartTime.TimeZoneCode</code> values
+are not in agreement with their <code>ActivityStartDate</code>. A hypothetical
+example would be an <code>ActivityStartDate</code> entry of “2023-09-20” with an
+<code>ActivityStartTime.TimeZoneCode</code> value of “CST”. This date would fall
+during daylight saving time (“DST”) in the “America/Chicago” time zone
+and thus one would expect it to be in CDT, not CST. We have learned that
+recording times in standard time rather than DST is an intentional
+practice for some field crews and so should not be assumed to be a data
+entry error. For simplicity’s sake, we do not make an attempt to
+preserve “mismatched” time zones in our harmonization process. This
+means that our <code>harmonized_local_time</code> and <code>harmonized_utc</code> values are
+one hour off of <code>ActivityStartDateTime</code> in some instances. If you prefer
+to use a timestamp that uses the time offset of the original
+<code>ActivityStartTime.TimeZoneCode</code> column (i.e., ignoring DST in some
+cases), then we suggest using the <code>ActivityStartDateTime</code> column, though
+this will result in having fewer overall rows with complete time data.</p>
 </div>
 <div id="general-notes" class="section level3 hasAnchor" number="4.2.6">
 <h3><span class="header-section-number">4.2.6</span> General notes<a href="tiering-flagging-and-quality-control-philosophy.html#general-notes" class="anchor-section" aria-label="Anchor link to header"></a></h3>

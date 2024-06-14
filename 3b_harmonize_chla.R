@@ -55,12 +55,12 @@ p3_chla_targets_list <- list(
   ),
   
   # Connect cleaned data output to the pipeline
-  tar_target(
+  tar_file_read(
     name = p3_cleaned_wqp_data_chl,
-    command = read_feather(p3_wqp_data_aoi_ready_chl$wqp_data_clean_path),
-    packages = "feather",
-    format = "feather"
-  ),
+    command = p3_wqp_data_aoi_ready_chl$wqp_data_clean_path,
+    read = read_feather(path = !!.x),
+    cue = tar_cue("always"),
+    packages = "feather"),
   
   
   # Harmonization -----------------------------------------------------------
@@ -121,7 +121,7 @@ p3_chla_targets_list <- list(
                          stable = p0_harmonization_config$chl_use_stable,
                          google_email = p0_harmonization_config$google_email,
                          date_stamp = p0_harmonization_config$chl_stable_date)
-      },
+    },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
   ),
@@ -157,7 +157,7 @@ p3_chla_targets_list <- list(
                          stable = p0_harmonization_config$chl_use_stable,
                          google_email = p0_harmonization_config$google_email,
                          date_stamp = p0_harmonization_config$chl_stable_date)
-      },
+    },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
   )

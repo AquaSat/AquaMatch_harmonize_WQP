@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-05-15" />
+<meta name="date" content="2024-05-30" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -229,7 +229,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <!--bookdown:title:start-->
 <div id="aquamatch-data-harmonization-process" class="section level1 hasAnchor" number="1">
 <h1><span class="header-section-number">1</span> AquaMatch data harmonization process<a href="index.html#aquamatch-data-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This bookdown documents the harmonization process for data downloaded from the <a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP) used to build the AquaMatch dataset, a data product of AquaSat v2. The WQP is a data warehouse for water-related data measured or observed within the United States and US Territories managed by the Environmental Protection Agency (EPA), United States Geological Survey (USGS), and the National Water Quality Monitoring Council (NWQMC). AquaMatch collates water quality measurements and observations with optical and thermal satellite data from lakeSR and riverSR.</p>
+<p>This bookdown documents the harmonization process for data downloaded from the <a href="https://www.waterqualitydata.us/wqp_description/">Water Quality Portal</a> (WQP) used to build the AquaMatch dataset, a data product of AquaSat v2. AquaSat v2 is a forthcoming update to <a href="https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019WR024883">AquaSat</a> (Ross et al., 2019). The overarching purpose of AquaSat V2 is to emphasize the individual parts of the AquaSat pipeline that make-up the matchups between satellite and in-situ measurements. The WQP is a data warehouse for water-related data measured or observed within the United States and US Territories managed by the Environmental Protection Agency (EPA), United States Geological Survey (USGS), and the National Water Quality Monitoring Council (NWQMC). AquaMatch collates water quality measurements and observations with optical and thermal satellite data from lakeSR and riverSR.</p>
 <p>All data in this workflow are processed as parameter groups, a high-level grouping used in AquaMatch for specific water quality measures found in the WQP. This document first describes selections made while downloading WQP data using the {dataRetrieval} package (De Cicco et al., 2023). It then walks through how the chlorophyll <em>a</em>, dissolved organic carbon (DOC), Secchi disc depth, and total suspended solids (TSS) parameter groups are each prepared (“pre-harmonization”), and then filtered and harmonized.</p>
 <p><em>Note: for the purposes of this bookdown, many terms surrounded by <code>backticks</code> are column names from the dataset being referenced. Others are code snippets or data values. For those that are column names, a full list of definitions for columns present in the original WQP dataset can be found in Table 7 <a href="https://www.waterqualitydata.us/portal_userguide/">here</a>.</em></p>
 <p>Data are contributed to the WQP by a wide range of data providers (<code>organizationIdentifier</code> and <code>organizationFormalName</code>) with varying sampling and analysis methods and multiple <code>characteristicNames</code>. <code>characteristicNames</code> are defined by the WQP as:</p>

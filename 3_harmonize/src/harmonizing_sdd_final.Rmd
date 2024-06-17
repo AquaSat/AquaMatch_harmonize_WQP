@@ -844,7 +844,7 @@ gc()
 
 ```{r Flag field methods}
 key_words <- paste0(c("wind", "chop", "choppy", "precipitation", "rain", "ice"),
-                    collapes = "|")
+                    collapse = "|")
 
 not_words <- paste0(c("calm", "clear"), 
                     collapse = "|")

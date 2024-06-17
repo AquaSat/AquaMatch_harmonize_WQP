@@ -457,7 +457,7 @@ greater_vals <- greater_vals %>%
 
 print(
   paste(
-    round((nrow(greater_vals)) / nrow(sdd_mdls_added) * 100, 9),
+    round((nrow(greater_vals)) / nrow(sdd_approx_added) * 100, 1),
     '% of samples had values listed as being above a detection limit//greater than'
   )
 )

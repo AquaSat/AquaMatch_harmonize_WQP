@@ -268,7 +268,7 @@ walk2(.x = fail_counts,
 # Now that the fails have been documents, remove them:
 sdd_fails_removed <- sdd %>% 
   filter(
-    if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+    if_all(.cols = c(#ActivityCommentText, ResultLaboratoryCommentText,
                        ResultCommentText, ResultMeasureValue_original),
              .fns = ~
                !grepl(

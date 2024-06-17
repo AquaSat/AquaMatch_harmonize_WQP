@@ -426,7 +426,7 @@ dropped_approximates <- tibble(
   order = 5
 )
 
-rm(sdd_mdls_add)
+rm(sdd_mdls_added)
 gc()
 ```
 

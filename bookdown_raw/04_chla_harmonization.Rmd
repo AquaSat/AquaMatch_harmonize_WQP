@@ -514,10 +514,10 @@ step_9_rows <- filter(step_data,
 
 step_9_dropped <- filter(step_data,
                          reorder == step_counter) %>%
-  # mutate(thou_dropped = number_dropped / 1000) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
   pull(number_dropped) %>%
-  round(digits = 2) #%>%
-# paste0(., " thousand")
+  round(digits = 2) %>%
+  paste0(., " thousand")
 ```
 
 The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point.

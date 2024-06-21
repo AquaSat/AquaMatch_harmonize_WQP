@@ -354,13 +354,13 @@ get_site_info <- function(dataset){
 #' `harmonized_local_time`, `harmonized_tz`, and `harmonized_utc` are created.
 #'  
 #' `harmonized_local_time` is the local time of the sampling event determined by
-#' the function and `harmonized_tz` contains the GMT offset timezone corresponding
+#' this function and `harmonized_tz` contains the GMT offset timezone corresponding
 #' to that local time point. `harmonized_utc` is the equivalent time in UTC
 #' and will agree with `ActivityStartDateTime` in most, but not all cases. These
 #' occur because 1) `ActivityStartDateTime` is NA for
 #' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", GST", "IDLE"; 
-#' or 2) we treat "00:00:00" values of `ActivityStartTime.Time` whereas
-#' `ActivityStartDateTime` does not.
+#' or 2) we handle "00:00:00" values of `ActivityStartTime.Time` the same as NAs
+#' whereas `ActivityStartDateTime` does not.
 #' 
 #' @returns 
 #' Returns a modified version of `dataset` with the additional columns,
@@ -471,7 +471,7 @@ fill_date_time <- function(dataset, site_data){
   
   # 2. Draft the local time column. Note that we also fill in blank
   # times or those with 00:00:00 with 11:59:59 AM (local), which we've found
-  # is used rarely or not at all in WQP data.
+  # is rarely reported in WQP data.
   dataset_keep_tz <- dataset_tz %>%
     mutate(
       # A column indicating local time (output class will be char)
@@ -488,7 +488,7 @@ fill_date_time <- function(dataset, site_data){
           !is.na(ActivityStartTime.Time) &
           (ActivityStartTime.Time == "00:00:00") ~ paste0(ActivityStartDate,
                                                           " 11:59:59"),
-        # If StartDate only with no StartTime: assign ~noon
+        # If StartDate only with no StartTime: assign 11:59:59
         !is.na(ActivityStartDate) &
           is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate, " 11:59:59"),
         # If nothing to go on, then NA record
@@ -584,7 +584,7 @@ fill_date_time <- function(dataset, site_data){
           
           # Second, those that were filled by fetched_tz are in the longer
           # location-based format, which R understands but which isn't readily
-          # converted to GMT offset. It need to be converted to short codes
+          # converted to GMT offset to complete harmonization of the `harmonized_tz` column. It needs to be converted to short codes (e.g. "EST" or "EDT")
           # to reflect DST and THEN into the GMT offset. This is similar to
           # how we handled UTC/GMT above
         } else if(unique_tz %in% OlsonNames())

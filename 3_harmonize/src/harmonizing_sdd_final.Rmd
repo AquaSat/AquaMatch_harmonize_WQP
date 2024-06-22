@@ -61,7 +61,8 @@ library(tictoc)
 library(yaml)
 
 # Sourced files
-walk(list.files("3_harmonize/src/", full.names = T), source)
+# walk(list.files("3_harmonize/src/", full.names = T), source)
+walk(list.files("3_harmonize/src/", pattern = "\\.R$", full.names = TRUE), source)
 ```
 
 ```{r tar_target(p2_wqp_data_aoi_sdd)}
@@ -73,10 +74,11 @@ walk(list.files("3_harmonize/src/", full.names = T), source)
 
 # read in the data if it does not exist (this is for this exploration process only!)
 # drive_download(file = "https://drive.google.com/file/d/1ZXRv84Q6RSrVazzCqUAP_v_YbINKY9Ph/view?usp=drivesdk",
-#                path = "scratch/data/sdd_data.feather",
+#                path = "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_data.feather",
 #                overwrite = TRUE)
 
-p2_wqp_data_aoi_sdd <- read_feather("scratch/data/sdd_data.feather")
+# update before PR ***
+p2_wqp_data_aoi_sdd <- read_feather("../AquaMatch_harmonize_WQP_old/scratch/data/sdd_data.feather")
 ```
 
 ```{r format step/tar_target(p3_wqp_data_aoi_formatted_sdd)}
@@ -106,19 +108,19 @@ p3_wqp_data_aoi_formatted_sdd <- format_columns(p2_wqp_data_aoi_sdd)
 # drive_download(file = "https://drive.google.com/file/d/1OQh_bE8xZFD0ZYDWcBZ2lgn4C3X5Teav/view?usp=drivesdk", # nolint
 #                path = "scratch/data/p1_char_names_crosswalk_data.rds",
 #                overwrite = TRUE)
-p1_char_names_crosswalk <- readRDS("scratch/data/p1_char_names_crosswalk_data.rds")
+p1_char_names_crosswalk <- readRDS("../AquaMatch_harmonize_WQP_old/scratch/data/p1_char_names_crosswalk_data.rds")
 
 # read in the p2_site_counts data if it does not exist (this is for this exploration process only!)
 # drive_download(file = "https://drive.google.com/file/d/1xCmCd-AuvlWO-o8M3Csh1pN48Q3GB3rV/view?usp=drivesdk",
-#                path = "scratch/data/p2_site_counts_data.rds",
+#                path = "../AquaMatch_harmonize_WQP_old/scratch/data/p2_site_counts_data.rds",
 #                overwrite = TRUE)
-p2_site_counts <- readRDS("scratch/data/p2_site_counts_data.rds")
+p2_site_counts <- readRDS("../AquaMatch_harmonize_WQP_old/scratch/data/p2_site_counts_data.rds")
 
 # read in the p1_wqp_inventory_aoi data if it does not exist (this is for this exploration process only!)
 # drive_download(file = "https://drive.google.com/file/d/1UBBrO5NUBhP_Sc-X0xjcwi0g_vmY_lFq/view?usp=drivesdk",
-#                path = "scratch/data/p1_wqp_inventory_aoi_data.rds",
+#                path = "../AquaMatch_harmonize_WQP_old/scratch/data/p1_wqp_inventory_aoi_data.rds",
 #                overwrite = TRUE)
-p1_wqp_inventory_aoi <- readRDS("scratch/data/p1_wqp_inventory_aoi_data.rds")
+p1_wqp_inventory_aoi <- readRDS("../AquaMatch_harmonize_WQP_old/scratch/data/p1_wqp_inventory_aoi_data.rds")
 
 p3_wqp_data_aoi_ready_sdd <- clean_wqp_data(
   wqp_data = p3_wqp_data_aoi_formatted_sdd, # This is from the previous chunk
@@ -191,7 +193,7 @@ sdd <- raw_sdd %>%
   filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
            is.na(ActivityMediaSubdivisionName)) %>% 
   # Turn every value into an absolute value (use the unoriginal one) -jd
-  mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% 
+  # mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% # this cannot be here
   # Add an index to control for cases where there's not enough identifying info
   # to track a unique record
   rowid_to_column(., "index")
@@ -222,8 +224,7 @@ fail_text <- c(
   )
 
 # Now get counts of fail-related string detections for each column: 
-fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
-                    "ResultCommentText", "ResultMeasureValue_original") %>%
+fail_counts <- list("ResultCommentText", "ResultMeasureValue_original") %>%
   # Set list item names equal to each item in the list so that map will return
   # a named list
   set_names() %>%
@@ -259,7 +260,7 @@ fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
 # Plot and export the plots as png files
 walk2(.x = fail_counts,
       .y = names(fail_counts),
-      .f = ~ ggsave(filename = paste0("scratch/figures/sdd_",
+      .f = ~ ggsave(filename = paste0("../AquaMatch_harmonize_WQP_old/scratch/figures/sdd_",
                                       .y,
                                       "_fail_pie.png"),
                     plot = plot_fail_pie(dataset = .x, col_name = .y),
@@ -295,15 +296,78 @@ dropped_fails <- tibble(
 
 rm(sdd)
 gc()
-```
 
+dropped_rows <- sdd_fails_removed %>% 
+  filter(!grepl("^[0-9.]+$", ResultMeasureValue_original)) %>%
+  mutate(ResultMeasureValue_cleaned = str_replace_all(ResultMeasureValue_original, "[0-9. ]", "")) %>%
+  group_by(ResultMeasureValue_cleaned) %>%
+  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original),
+            ResultMeasureValue = first(ResultMeasureValue),
+            count = n()) %>% 
+  filter(is.na(ResultMeasureValue),
+         !is.na(ResultMeasureValue_cleaned)) %>% 
+  arrange(desc(count))
+
+write_csv(test1, "../AquaMatch_harmonize_WQP_old/scratch/data/dropped_data.csv")
+
+numeric_dropped_rows <- sdd_fails_removed %>% 
+  filter(grepl("[0-9]", ResultMeasureValue_original)) %>% # rows with numeric data
+  mutate(ResultMeasureValue_cleaned = str_replace_all(ResultMeasureValue_original, "[0-9. ]", "")) %>% # remove numeric characters
+  group_by(ResultMeasureValue_cleaned) %>% # group by the kinds of non-numeric characters that are left over
+  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original), # get a count of each group, with example values from original and altered ResulteMeasureValue column
+            ResultMeasureValue = first(ResultMeasureValue),
+            count = n()) %>% 
+  filter(is.na(ResultMeasureValue), # this filters out negative ResultMeasureValue_original values (these are not excluded from the data)
+         !is.na(ResultMeasureValue_cleaned)) %>% # this filters out NAs from ResultMeasureValue_original
+  arrange(desc(count))
+
+write_csv(numeric_dropped_rows, "../AquaMatch_harmonize_WQP_old/scratch/data/numeric_exclusive_data.csv")
+
+character_dropped_rows <- sdd %>% 
+  filter(!grepl("[0-9]", ResultMeasureValue_original)) %>%
+  group_by(ResultMeasureValue_original) %>%
+  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original),
+            ResultMeasureValue = first(ResultMeasureValue),
+            count = n()) %>% 
+  filter(is.na(ResultMeasureValue),
+         !is.na(ResultMeasureValue_original)) %>% 
+  arrange(desc(count))
+
+write_csv(test3, "../AquaMatch_harmonize_WQP_old/scratch/data/character_exclusive_data.csv")
+
+```
+- *numbers to keep*
+  " (need to convert this)
+  ' (need to convert this)
+  - (only if its the first item in the)
+  <
+  >
+  ON BOTTOM
+  M
+  "units in result column match unit column"
+
+- *text to ignore*
+  :
+  #VALUE!
+  *Non-detect
+  *
+  ,
+  +
+  /
+  =
+  No
+  "no numeric"
+  
 ```{r Harmonize value units}
+# ignore result column values that don't have any numeric characters
+
+
 # Matchup table for expected sdd units in the dataset
 unit_conversion_table <- tibble(
-  ResultMeasure.MeasureUnitCode = c("mm", "cm", "in", "ft", "m"),
-  conversion = c(.001, .01, .0254, .3048, 1))
+  ResultMeasure.MeasureUnitCode = c("mm", "cm", "in", "ft", "m", "meter"),
+  conversion = c(.001, .01, .0254, .3048, 1, 1))
 
-unit_table_out_path <- "scratch/data/sdd_unit_table.csv"
+unit_table_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_unit_table.csv"
 
 write_csv(x = unit_conversion_table,
           file = unit_table_out_path)
@@ -322,7 +386,7 @@ sdd_fails_removed %>%
             by = "ResultMeasure.MeasureUnitCode")  %>%
   count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
   plot_unit_pie() %>%
-  ggsave(filename = "scratch/figures/sdd_unit_drop_pie.png",
+  ggsave(filename = "../AquaMatch_harmonize_WQP_old/scratch/figures/sdd_unit_drop_pie.png",
          plot = .,
          width = 6, height = 6, units = "in", device = "png")
 
@@ -345,10 +409,15 @@ dropped_harmonization <- tibble(
 
 rm(sdd_fails_removed)
 gc()
+
+
 ```
 
 ```{r Clean up MDLs}
 # convert the values (if they have units) to determine this flag
+
+# during the unit harmonization step I need to be more careful
+  # do not nuke things with character values in it
 
 # Columns that did not have proper units have already been dropped in the harmonize
 # units step.
@@ -358,8 +427,8 @@ sdd_mdls_added <- converted_units_sdd %>%
          #       1 = original NA value adjusted using MDL method
          #       2 = provided value below provided MDL; not adjusted
          mdl_flag = case_when(
-           (harmonized_value > 0.01) & (harmonized_units == "m") ~ 0,
-           (harmonized_value < 0.01) & (harmonized_units == "m") ~ 2,
+           (harmonized_value > 0.01) ~ 0,
+           (harmonized_value < 0.01) ~ 2,
            .default = NA_integer_
          )) 
 
@@ -682,7 +751,7 @@ depth_check_table <- flagged_depth_sdd %>%
         only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
   arrange(depth_flag)
 
-depth_check_out_path <- "scratch/data/sdd_depth_check_table.csv"
+depth_check_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_depth_check_table.csv"
 
 write_csv(x = depth_check_table,
           file = depth_check_out_path)
@@ -707,7 +776,7 @@ depth_counts <- flagged_depth_sdd %>%
   )) %>%
   count(depth_agg_flag)
 
-depth_counts_out_path <- "scratch/data/sdd_depth_counts.csv"
+depth_counts_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_depth_counts.csv"
 
 write_csv(x = depth_counts, file = depth_counts_out_path)
 
@@ -814,7 +883,7 @@ tiering_record <- tiered_methods_sdd %>%
         scope_tag, time_tag, analytical_tier) %>%
   arrange(desc(n)) 
 
-tiering_record_out_path <- "scratch/data/sdd_analytical_tiering_record.csv"
+tiering_record_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_analytical_tiering_record.csv"
 
 write_csv(x = tiering_record, file = tiering_record_out_path)
 
@@ -958,7 +1027,7 @@ char_dists <- plotting_subset %>%
   theme_bw() +
   theme(strip.text = element_text(size = 7))
 
-ggsave(filename = "scratch/data/sdd_charname_dists.png",
+ggsave(filename = "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_charname_dists.png",
        plot = char_dists,
        width = 8, height = 6, units = "in", device = "png")
 ```
@@ -980,7 +1049,7 @@ grouped_sdd <- field_flagged_sdd %>%
 
 # Export the dataset with subgroup IDs for joining future aggregated product
 # back to original raw data
-grouped_sdd_out_path <- "scratch/data/sdd_harmonized_grouped.feather"
+grouped_sdd_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_harmonized_grouped.feather"
 
 grouped_sdd %>%
   select(
@@ -1027,7 +1096,7 @@ tier_dists <- no_simul_sdd %>%
   theme_bw() +
   theme(strip.text = element_text(size = 7))
 
-ggsave(filename = "scratch/data/sdd_tier_dists_postagg.png",
+ggsave(filename = "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_tier_dists_postagg.png",
        plot = tier_dists,
        width = 6, height = 4, units = "in", device = "png")
 
@@ -1062,14 +1131,14 @@ compiled_dropped <- bind_rows(starting_data, dropped_media,
                               dropped_depths, dropped_methods,
                               dropped_field, dropped_simul)
 
-documented_drops_out_path <- "scratch/data/sdd_harmonize_dropped_metadata.csv"
+documented_drops_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_harmonize_dropped_metadata.csv"
 
 write_csv(x = compiled_dropped,
           file = documented_drops_out_path)
 
 
 # Export in memory-friendly way
-data_out_path <- "scratch/data/sdd_harmonized_final.csv"
+data_out_path <- "../AquaMatch_harmonize_WQP_old/scratch/data/sdd_harmonized_final.csv"
 
 write_csv(no_simul_sdd,
           data_out_path)

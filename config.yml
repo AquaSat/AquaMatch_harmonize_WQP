@@ -8,7 +8,7 @@
 #
 # 2) use_stable: using the most recent 'stable' downloads produced by the ROSS group,
 # harmonize the WQP files using this pipeline. This would be most useful if you 
-# are changing the decisions made within the harmonization pipeline.
+# are customizing the decisions made within the harmonization pipeline.
 #
 # 3) admin_update: for use by the ROSS group to update stable versions of the 
 # harmonization pipeline. This config option requires write access to the ROSS

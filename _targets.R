@@ -28,7 +28,7 @@ config_targets <- list(
   tar_target(
     name = p0_harmonization_config,
     # The config package does not like to be used with library()
-    command = config::get(config = "use_stable"),
+    command = config::get(config = "admin_update"),
     cue = tar_cue("always")
   ),
   

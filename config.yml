@@ -1,7 +1,7 @@
 # This config file allows for three types of pipeline operation:
 #
 # 1) default: create all harmonization files from scratch using the files downloaded 
-# locally using the AquaMatch_download_WQP repository and associated pipeline.
+# locally by the AquaMatch_download_WQP repository and associated pipeline.
 # This is most useful if you have run the AquaMatch_download_WQP pipeline locally.
 # This config option will error if you have not completed the download pipeline
 # locally.

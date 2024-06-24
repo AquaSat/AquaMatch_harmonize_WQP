@@ -17,7 +17,7 @@
 # Default: provide email and drive folder and use dynamic, user-created local versions,
 # but not the stable versions created by the AquaMatch project.
 default:
-  # gmail account to associate with {googledrive}
+  # gmail account to associate with {googledrive} package
   google_email: ""
   # The local directory where the first {targets} pipeline is located (i.e.,
   # the pipeline that runs the download step)

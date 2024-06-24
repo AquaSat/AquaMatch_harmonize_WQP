@@ -72,6 +72,9 @@ if ( !("ggrepel" %in% installed.packages() ) ){
 
 library(targets)
 
+# Prior to running the pipeline, confirm that the config.yml settings are correct
+# and that you have set line 31 in `_targets.R` to the appropriate config setting.
+
 
 # Run pipeline ------------------------------------------------------------
 

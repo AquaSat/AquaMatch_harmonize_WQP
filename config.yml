@@ -16,7 +16,6 @@
 #
 # Default: provide email and drive folder and use dynamic, user-created local versions,
 # but not the stable versions created by the AquaMatch project.
-# not already exist
 default:
   # gmail account to associate with {googledrive}
   google_email: ""

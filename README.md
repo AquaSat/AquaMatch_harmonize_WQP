@@ -8,13 +8,13 @@ This repository is one part of an expansion and update of the original [AquaSat]
 
 ### Technical details
 
-__Workflow__
+#### Workflow
 
 AquaSat v2 uses the {targets} workflow management R package to reimagine the [original AquaSat codebase](https://github.com/GlobalHydrologyLab/AquaSat). The framework for this workflow is based on code adapted from [this USGS pipeline](https://github.com/USGS-R/ds-pipelines-targets-example-wqp) and has been further developed by members of the [ROSSyndicate](https://github.com/rossyndicate).
 
 Technical details on {targets} workflows are available in the [{targets} User Manual](https://books.ropensci.org/targets/). {targets} workflows are built upon lists of "targets", which can be thought of as analytical steps written out in code. This workflow uses a targets list spread across multiple scripts in an effort to facilitate organization of the code. `_targets.R` serves as the main list of targets and references the other lists of targets, which are defined inside `3a_harmonize.R`, `3b_harmonize_chla.R`, `3c_harmonize_doc.R`, and `create_bookdown.R`. Note that the prefix `3_` is in reference to scripts `1_inventory.R` and `2_download.R` from [AquaMatch_download_WQP](https://github.com/AquaSat/AquaMatch_download_WQP). The pipeline should be run using the `run.R` script, which helps ensure that all the necessary packages are installed. To run a single parameter's component of the pipeline (e.g., chlorophyll *a*) you can use `tar_make(*parameter name*_harmonization_report)`. This will knit the bookdown document associated with that parameter and all upstream harmonization steps.
 
-__Setup__
+#### Setup
 
 There are a couple aspects of the workflow that users will need to edit for their use case:
 
@@ -26,7 +26,7 @@ There are a couple aspects of the workflow that users will need to edit for thei
 
 3.  The path, "../AquaMatch_download_WQP/", specified in `download_repo_directory` of `config.yml`. Users will need to have the [AquaMatch_download_WQP](https://github.com/AquaSat/AquaMatch_download_WQP) repository downloaded on their computer when using this workflow, as it references files inside AquaMatch_download_WQP. The `download_repo_directory` should be the path to the "download" repository on your computer. The version stored on the AquaSat GitHub will contain files that link to versions of the data that the AquaSat team has downloaded, but if you are running your own version of the pipeline you will want to run the full AquaMatch_download_WQP pipeline from scratch on your computer before proceeding with the workflow in this repository.
 
-__Organization and documentation__
+#### Organization and documentation
 
 In general, `src/` folders in this repository contain source code for customized functions used by the {targets} pipeline. The numbered R scripts have functions defined in their respective folders (e.g., `3_harmonize/src/`, etc.).
 

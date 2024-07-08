@@ -401,7 +401,9 @@ fill_date_time <- function(dataset, site_data){
     # data is prior to tz change in 2000
     "GST",      "Etc/GMT+10",
     # Chamorro Standard Time
-    "ChST",     "Etc/GMT+10"
+    "ChST",     "Etc/GMT+10",
+    # Samoa Standard Time
+    "SST",     "Etc/GMT+11"
   )
   
   # 1. Complete the time zone records using lat/lon

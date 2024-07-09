@@ -358,7 +358,7 @@ get_site_info <- function(dataset){
 #' to that local time point. `harmonized_utc` is the equivalent time in UTC
 #' and will agree with `ActivityStartDateTime` in most, but not all cases. These
 #' occur because 1) `ActivityStartDateTime` is NA for
-#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", GST", "IDLE"; 
+#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", "GST", "IDLE"; 
 #' or 2) we handle "00:00:00" values of `ActivityStartTime.Time` the same as NAs
 #' whereas `ActivityStartDateTime` does not.
 #' 

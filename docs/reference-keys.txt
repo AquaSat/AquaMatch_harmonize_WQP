@@ -12,6 +12,7 @@ depth-flags
 pre-processing
 miscellaneous-flags
 time-and-date-handling
+anonymization
 general-notes
 simultaneous-records
 chlorophyll-a-chla-harmonization-process

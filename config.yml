@@ -1,8 +1,23 @@
-# Default: Non-ROSS users: provide email and drive folder and use dynamic local versions,
-# but not stable. You will need to create the specified drive folder if it does
-# not already exist
+# This config file allows for three types of pipeline operation:
+#
+# 1) default: create all harmonization files from scratch using the files downloaded 
+# locally by the AquaMatch_download_WQP repository and associated pipeline.
+# This is most useful if you have run the AquaMatch_download_WQP pipeline locally.
+# This config option will error if you have not completed the download pipeline
+# locally.
+#
+# 2) use_stable: using the most recent 'stable' downloads produced by the ROSS group,
+# harmonize the WQP files using this pipeline. This would be most useful if you 
+# are customizing the decisions made within the harmonization pipeline.
+#
+# 3) admin_update: for use by the ROSS group to update stable versions of the 
+# harmonization pipeline. This config option requires write access to the ROSS
+# Google email.
+#
+# Default: provide email and drive folder and use dynamic, user-created local versions,
+# but not the stable versions created by the AquaMatch project.
 default:
-  # gmail account to associate with {googledrive}
+  # gmail account to associate with {googledrive} package
   google_email: ""
   # The local directory where the first {targets} pipeline is located (i.e.,
   # the pipeline that runs the download step)
@@ -13,27 +28,37 @@ default:
   sdd_use_stable: FALSE
   # Use the stable version of other files created in the download step?
   general_use_stable: FALSE
-  drive_project_folder: ""
+  drive_project_folder: "" # folder name must end with "/", if you use a nested
+  # folder location, you will need to create that folder structure before using 
+  # this pipeline
 # External user runs harmonization using stable datasets, creates harmonized 
-# datasets in their own Google Drive
+# datasets in their own Google Drive - you will need to enter your email in
+# `google_email` and the desired path for the files to be stored within your 
+# Google Drive in `drive_project_folder`
 use_stable:
   google_email: ""
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240402"
+  chl_stable_date: "20240402" #YYYYMMDD format
   doc_use_stable: TRUE
-  doc_stable_date: "20240402"
+  doc_stable_date: "20240402" #YYYYMMDD format
   general_use_stable: TRUE
-  general_stable_date: "202404"
-  drive_project_folder: ""
-# Update the stable dataset version for one or more parameters
+  general_stable_date: "20240402" #YYYYMMDD format
+  drive_project_folder: "" # folder name must end with "/", if you use a nested
+  # folder location, you will need to create that folder structure before using 
+  # this pipeline
+# Update the stable dataset version for one or more parameters, requires write
+# access for the ROSS group Google account.
 admin_update:
   google_email: "therossyndicate@gmail.com"
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240402"
+  chl_stable_date: "20240402" #YYYYMMDD format
   doc_use_stable: TRUE
-  doc_stable_date: "20240402"
+  doc_stable_date: "20240402" #YYYYMMDD format
   general_use_stable: TRUE
-  general_stable_date: "20240402"
-  drive_project_folder: "~/aquamatch_download_wqp/"
+  general_stable_date: "20240402" #YYYYMMDD format
+  drive_project_folder: "~/aquamatch_download_wqp/" # folder name must end with "/", 
+  # if you use a nested  folder location, you will need to create that folder 
+  # structure before using this pipeline
+

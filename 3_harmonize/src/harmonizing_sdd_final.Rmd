@@ -169,7 +169,6 @@ p_codes <- p3_p_codes
 rm(p1_char_names_crosswalk, p1_wqp_inventory_aoi, p2_site_counts, p2_wqp_data_aoi_sdd, p3_cleaned_wqp_data_sdd, p3_p_codes, p3_wqp_data_aoi_formatted_sdd, p3_wqp_data_aoi_ready_sdd)
 ```
 
-
 ```{r starting values for dataset}
 starting_data <- tibble(
   step = "sdd harmonization",
@@ -193,7 +192,7 @@ sdd <- raw_sdd %>%
   filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
            is.na(ActivityMediaSubdivisionName)) %>% 
   # Turn every value into an absolute value (use the unoriginal one) -jd
-  # mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% # this cannot be here
+  mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% # this cannot be here
   # Add an index to control for cases where there's not enough identifying info
   # to track a unique record
   rowid_to_column(., "index")
@@ -296,71 +295,14 @@ dropped_fails <- tibble(
 
 rm(sdd)
 gc()
-
-dropped_rows <- sdd_fails_removed %>% 
-  filter(!grepl("^[0-9.]+$", ResultMeasureValue_original)) %>%
-  mutate(ResultMeasureValue_cleaned = str_replace_all(ResultMeasureValue_original, "[0-9. ]", "")) %>%
-  group_by(ResultMeasureValue_cleaned) %>%
-  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original),
-            ResultMeasureValue = first(ResultMeasureValue),
-            count = n()) %>% 
-  filter(is.na(ResultMeasureValue),
-         !is.na(ResultMeasureValue_cleaned)) %>% 
-  arrange(desc(count))
-
-write_csv(test1, "../AquaMatch_harmonize_WQP_old/scratch/data/dropped_data.csv")
-
-numeric_dropped_rows <- sdd_fails_removed %>% 
-  filter(grepl("[0-9]", ResultMeasureValue_original)) %>% # rows with numeric data
-  mutate(ResultMeasureValue_cleaned = str_replace_all(ResultMeasureValue_original, "[0-9. ]", "")) %>% # remove numeric characters
-  group_by(ResultMeasureValue_cleaned) %>% # group by the kinds of non-numeric characters that are left over
-  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original), # get a count of each group, with example values from original and altered ResulteMeasureValue column
-            ResultMeasureValue = first(ResultMeasureValue),
-            count = n()) %>% 
-  filter(is.na(ResultMeasureValue), # this filters out negative ResultMeasureValue_original values (these are not excluded from the data)
-         !is.na(ResultMeasureValue_cleaned)) %>% # this filters out NAs from ResultMeasureValue_original
-  arrange(desc(count))
-
-write_csv(numeric_dropped_rows, "../AquaMatch_harmonize_WQP_old/scratch/data/numeric_exclusive_data.csv")
-
-character_dropped_rows <- sdd %>% 
-  filter(!grepl("[0-9]", ResultMeasureValue_original)) %>%
-  group_by(ResultMeasureValue_original) %>%
-  summarise(ResultMeasureValue_original = first(ResultMeasureValue_original),
-            ResultMeasureValue = first(ResultMeasureValue),
-            count = n()) %>% 
-  filter(is.na(ResultMeasureValue),
-         !is.na(ResultMeasureValue_original)) %>% 
-  arrange(desc(count))
-
-write_csv(test3, "../AquaMatch_harmonize_WQP_old/scratch/data/character_exclusive_data.csv")
-
 ```
-- *numbers to keep*
-  " (need to convert this)
-  ' (need to convert this)
-  - (only if its the first item in the)
-  <
-  >
-  ON BOTTOM
-  M
-  "units in result column match unit column"
-
-- *text to ignore*
-  :
-  #VALUE!
-  *Non-detect
-  *
-  ,
-  +
-  /
-  =
-  No
-  "no numeric"
   
 ```{r Harmonize value units}
-# ignore result column values that don't have any numeric characters
+# have to fill in NAs here, then MDL, approx, and greater than will behave as expected
 
+  # make sure to keep "<" data (MDL greater than step)
+  # make sure to keep ">" data (greater than step)
+  # make sure to keep "=" data
 
 # Matchup table for expected sdd units in the dataset
 unit_conversion_table <- tibble(
@@ -430,7 +372,7 @@ sdd_mdls_added <- converted_units_sdd %>%
            (harmonized_value > 0.01) ~ 0,
            (harmonized_value < 0.01) ~ 2,
            .default = NA_integer_
-         )) 
+         )) # less than symbol here
 
 dropped_mdls <- tibble(
   step = "sdd harmonization",
@@ -443,6 +385,38 @@ dropped_mdls <- tibble(
 
 rm(converted_units_sdd)
 gc()
+```
+
+```{r}
+View(
+  filter(sdd_mdls_added,
+         is.na(harmonized_value),
+         (!is.na(ActivityDepthHeightMeasure.MeasureValue) |
+          !is.na(ActivityTopDepthHeightMeasure.MeasureValue) |
+          !is.na(ActivityBottomDepthHeightMeasure.MeasureValue))) %>%
+  select(ResultMeasureValue_original, ResultMeasure.MeasureUnitCode, ResultMeasureValue,
+         harmonized_value, ResultCommentText,
+         ActivityDepthHeightMeasure.MeasureValue, ActivityDepthHeightMeasure.MeasureUnitCode,
+         ActivityTopDepthHeightMeasure.MeasureValue, ActivityTopDepthHeightMeasure.MeasureUnitCode,
+         ActivityBottomDepthHeightMeasure.MeasureValue, ActivityBottomDepthHeightMeasure.MeasureUnitCode) %>% 
+    group_by(ResultMeasureValue_original) %>% 
+    mutate(count = n())
+)
+
+# filtered_data <- sdd_mdls_added %>%
+#   filter(!index %in% mdl_updates$index,
+#          (is.na(ResultMeasureValue) & 
+#           grepl("[0-9]", ResultMeasureValue_original) &
+#           grepl(approx_text, ResultCommentText, ignore.case = TRUE)))
+
+# filtered_data <- sdd_mdls_added %>%
+#   filter(!index %in% mdl_updates$index,
+#          (is.na(ResultMeasureValue) & 
+#           grepl("\\*", ResultMeasureValue_original) &
+#           grepl(approx_text, ResultCommentText, ignore.case = TRUE))) %>% 
+#   select(ResultMeasureValue_original, ResultMeasureValue, ResultCommentText)
+
+# View(filtered_data)
 ```
 
 ```{r Clean up approximated values}
@@ -458,9 +432,7 @@ sdd_approx <- sdd_mdls_added %>%
            # ... AND the original value column has numeric characters...
            grepl("[0-9]", ResultMeasureValue_original) & 
            # ... AND any of the comment fields have approximation language...
-           (grepl(approx_text, ResultLaboratoryCommentText, ignore.case = T)|
-              grepl(approx_text, ResultCommentText, ignore.case = T )|
-              grepl(approx_text, ResultDetectionConditionText, ignore.case = T)))
+           (grepl(approx_text, ResultCommentText, ignore.case = T ))) 
 
 sdd_approx$approx_value <- as.numeric(str_replace_all(sdd_approx$ResultMeasureValue_original, c("\\*" = "")))
 sdd_approx$approx_value[is.nan(sdd_approx$approx_value)] <- NA
@@ -503,6 +475,14 @@ I included "less than" values in here too since there were a couple (~10) here t
 I thought that those could be incorporated into MDL somehow, but for now I kept
 them here.
 ```{r Clean up "greater than" values}
+test_df <- sdd_mdls_added %>% 
+    select(index, ResultMeasureValue_original, ResultMeasureValue, ResultMeasure.MeasureUnitCode,ResultCommentText)
+  test_word <- "value approx"
+  unique(test_df %>% filter(grepl(test_word, ResultMeasureValue_original, ignore.case = T)) %>% 
+           pull(ResultMeasureValue_original))
+  unique(test_df %>% filter(grepl(test_word, ResultCommentText, ignore.case = T)) %>% 
+           pull(ResultCommentText))
+  
 greater_vals <- sdd_approx_added %>% 
   filter(!index %in% sdd_approx$index) %>% 
   # Then select fields where the NUMERIC value column is NA....
@@ -580,6 +560,29 @@ gc()
 ```
 
 ```{r Clean and flag depth data}
+test_df <- sdd_harmonized_values %>% 
+    select(
+      index, ResultMeasureValue_original, ResultMeasureValue, 
+      ResultMeasure.MeasureUnitCode, ResultCommentText,
+      ActivityCommentText,
+      harmonized_value, harmonized_units,
+      ActivityBottomDepthHeightMeasure.MeasureValue, 
+      ActivityBottomDepthHeightMeasure.MeasureUnitCode,
+      ActivityDepthHeightMeasure.MeasureValue,
+      ActivityDepthHeightMeasure.MeasureUnitCode
+    ) %>%
+    filter(
+      (is.na(harmonized_units)&is.na(harmonized_value)) &
+      (grepl(bottom_text, ResultMeasureValue_original, ignore.case=T)|grepl(bottom_text, ResultCommentText, ignore.case=T)) &
+      (!is.na(ActivityBottomDepthHeightMeasure.MeasureValue)|!is.na(ActivityDepthHeightMeasure.MeasureValue)) 
+    )
+  
+  test_word <- "approx"
+  unique(test_df %>% filter(grepl(test_word, ActivityCommentText, ignore.case = T)) %>% 
+           pull(ActivityCommentText))
+  unique(test_df %>% filter(grepl(test_word, ResultCommentText, ignore.case = T)) %>% 
+           pull(ResultCommentText))
+
 # Recode any error-related character values to NAs
 recode_depth_na_sdd <- sdd_no_na %>%
   mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
@@ -813,7 +816,8 @@ unrelated_text <- paste0(c("chlorophyll", "sulfate", "sediment", "5310", "counti
                            "temperature", "elemental analyzer", "2320", "chemical", 
                            "unknown", "unspecified", "no information exists for method", 
                            "other or unknown procedure", "laboratory calculation", 
-                           "2550","total suspended solids", "not available"), 
+                           "2550","total suspended solids", "not available", "qa", "unkown",
+                           "calculation", "10200G", "meteorological"), 
                          collapse = "|") 
 
 sdd_relevant <- flagged_depth_sdd %>%
@@ -842,8 +846,12 @@ sdd_time_tag <- sdd_relevant %>%
   ))
 
 # scope_tag
-scope_text <- paste0(c("scope", "viewscope"),
-                    collapse = "|") 
+scope_text <- paste0(c("scope", "viewscope", "viewscope: yes", "-Viewscope used? - yes"),
+                    collapse = "|")
+
+negate_scope_text <- paste0(c("viewscope: no", "no viewscope", "-Viewscope used? - no", 
+                              "scope measurements lost", "no scope"), # scope leaks?
+                    collapse = "|")
 
 sdd_scope_tag <- sdd_time_tag %>% 
   # tag: 0 = Either the method/comments/p-code indicate that a viewscope was used
@@ -851,13 +859,11 @@ sdd_scope_tag <- sdd_time_tag %>%
   mutate(scope_tag = case_when(
     (grepl(pattern = scope_text, x = ResultAnalyticalMethod.MethodName, ignore.case = TRUE)) | 
       (grepl(pattern = scope_text, x = ActivityCommentText, ignore.case = TRUE)) | 
-      (grepl(pattern = scope_text, x = ResultLaboratoryCommentText, ignore.case = TRUE)) |
       (grepl(pattern = scope_text, x = ResultCommentText, ignore.case = TRUE)) |
       (grepl(pattern = scope_text, x = ResultMeasureValue_original, ignore.case = TRUE)) |
       (USGSPCode == 72187) ~ 0,
     (!grepl(pattern = scope_text, x = ResultAnalyticalMethod.MethodName, ignore.case = TRUE)) & 
       (!grepl(pattern = scope_text, x = ActivityCommentText, ignore.case = TRUE)) & 
-      (!grepl(pattern = scope_text, x = ResultLaboratoryCommentText, ignore.case = TRUE)) &
       (!grepl(pattern = scope_text, x = ResultCommentText, ignore.case = TRUE)) &
       (!grepl(pattern = scope_text, x = ResultMeasureValue_original, ignore.case = TRUE)) &
       (USGSPCode != 72187) ~ 1, 

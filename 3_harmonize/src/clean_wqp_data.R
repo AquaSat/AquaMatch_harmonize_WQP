@@ -358,7 +358,7 @@ get_site_info <- function(dataset){
 #' to that local time point. `harmonized_utc` is the equivalent time in UTC
 #' and will agree with `ActivityStartDateTime` in most, but not all cases. These
 #' occur because 1) `ActivityStartDateTime` is NA for
-#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", GST", "IDLE"; 
+#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", "GST", "IDLE"; 
 #' or 2) we handle "00:00:00" values of `ActivityStartTime.Time` the same as NAs
 #' whereas `ActivityStartDateTime` does not.
 #' 
@@ -401,7 +401,9 @@ fill_date_time <- function(dataset, site_data){
     # data is prior to tz change in 2000
     "GST",      "Etc/GMT+10",
     # Chamorro Standard Time
-    "ChST",     "Etc/GMT+10"
+    "ChST",     "Etc/GMT+10",
+    # Samoa Standard Time
+    "SST",     "Etc/GMT+11"
   )
   
   # 1. Complete the time zone records using lat/lon

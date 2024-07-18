@@ -67,7 +67,7 @@ step_1_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 ```
 
@@ -108,14 +108,14 @@ step_2_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_2_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_row = number_dropped / 1000) %>%
   pull(thou_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -162,14 +162,14 @@ step_3_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_3_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_row = number_dropped / 1000) %>%
   pull(thou_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -229,13 +229,13 @@ step_4_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_4_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 We next ensure that the media type for all chlorophyll data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
@@ -274,14 +274,14 @@ step_5_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_5_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -345,13 +345,13 @@ step_6_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_6_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or  `"below"`.
@@ -399,13 +399,13 @@ step_7_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_7_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
@@ -454,13 +454,13 @@ step_8_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_8_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
@@ -509,14 +509,14 @@ step_9_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_9_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(number_dropped) %>%
-  round(digits = 2) %>%
+  pull(thou_dropped) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -559,14 +559,14 @@ step_10_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_10_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -635,13 +635,13 @@ step_11_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_11_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
@@ -682,14 +682,14 @@ step_12_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_12_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -762,13 +762,13 @@ step_13_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_13_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 Next we flag field sampling methods based primarily on the `SampleCollectionMethod.MethodName` column. We first classify each record into either *in vitro* or *in situ* methods (i.e., *in vitro* assumes a water sample was collected and taken to a lab for analysis; *in situ* assumes a measurement was obtained in the field). 
@@ -820,13 +820,13 @@ step_14_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_14_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
@@ -869,13 +869,13 @@ step_15_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_15_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 Before finalizing the dataset we remove chlorophyll *a* values that are beyond a realistic threshold. We use 1000 ug/L as our cutoff for removal (Wetzel, 2001, Chapter 15, Figure 19).
@@ -916,14 +916,14 @@ step_16_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_16_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 ```
 

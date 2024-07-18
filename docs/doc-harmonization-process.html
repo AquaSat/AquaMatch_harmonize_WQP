@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-06-12" />
+<meta name="date" content="2024-07-17" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -154,7 +154,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.2.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#depth-flags"><i class="fa fa-check"></i><b>4.2.3</b> Depth flags</a></li>
 <li class="chapter" data-level="4.2.4" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#miscellaneous-flags"><i class="fa fa-check"></i><b>4.2.4</b> Miscellaneous flags</a></li>
 <li class="chapter" data-level="4.2.5" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling"><i class="fa fa-check"></i><b>4.2.5</b> Time and date handling</a></li>
-<li class="chapter" data-level="4.2.6" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-notes"><i class="fa fa-check"></i><b>4.2.6</b> General notes</a></li>
+<li class="chapter" data-level="4.2.6" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#anonymization"><i class="fa fa-check"></i><b>4.2.6</b> Anonymization</a></li>
+<li class="chapter" data-level="4.2.7" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#general-notes"><i class="fa fa-check"></i><b>4.2.7</b> General notes</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="tiering-flagging-and-quality-control-philosophy.html"><a href="tiering-flagging-and-quality-control-philosophy.html#simultaneous-records"><i class="fa fa-check"></i><b>4.3</b> Simultaneous records</a></li>
 </ul></li>
@@ -239,7 +240,7 @@ process.</p>
 <div id="pre-harmonization-of-the-raw-doc-wqp-dataset" class="section level2 hasAnchor" number="6.1">
 <h2><span class="header-section-number">6.1</span> Pre-harmonization of the raw doc WQP dataset<a href="doc-harmonization-process.html#pre-harmonization-of-the-raw-doc-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>At the start of the pre-harmonization process the raw DOC WQP dataset
-contains 2.72 million rows.</p>
+contains 2.73 million rows.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 <div id="missing-results-1" class="section level3 hasAnchor" number="6.1.1">
@@ -256,7 +257,7 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>94.17 thousand rows are dropped, resulting in a final count of 2.62
+<p>94.23 thousand rows are dropped, resulting in a final count of 2.64
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -278,7 +279,7 @@ however we also include <code>NA</code> in an effort to be conservative. More
 specifically, when making decisions for this and other columns we
 occasionally retain <code>NA</code> values if removing the records would otherwise
 drop 10% or more of the available data.</p>
-<p>This step removes 2.08 thousand rows of data, leaving it with 2.62
+<p>This step removes 2.04 thousand rows of data, leaving it with 2.64
 million rows remaining.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
@@ -350,7 +351,7 @@ are:</p>
 <p><br></p>
 <p><img src="3_harmonize/out/doc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="650"/></p>
 <p><br></p>
-<p>300.35 thousand rows are removed. The final row count after this is 2.32
+<p>302.29 thousand rows are removed. The final row count after this is 2.34
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
@@ -394,8 +395,8 @@ failure phrases are not mutually exclusive.</p>
 <p><br></p>
 <!-- <img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
-<p>25.04 thousand rows are removed after detecting failure-related phrases
-and 2.3 million rows remain.</p>
+<p>25.05 thousand rows are removed after detecting failure-related phrases
+and 2.31 million rows remain.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -424,7 +425,7 @@ was made and which contain a numeric value below the provided MDL are
 assigned a 2.</p>
 <p>Most of this step should not result in a change in rows, but we do drop
 records with negative measurement values. This results in 0 rows being
-removed. The final row count after this is 2.3 million.</p>
+removed. The final row count after this is 2.31 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -445,7 +446,7 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>approx_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.3 million.</p>
+are removed. The final row count after this is 2.31 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -467,7 +468,7 @@ moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>greater_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.3 million.</p>
+are removed. The final row count after this is 2.31 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -479,7 +480,7 @@ a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
 dropped.</p>
-<p>4301 rows are removed. The final row count after this is 2.29 million.</p>
+<p>4301 rows are removed. The final row count after this is 2.31 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -610,7 +611,7 @@ by <code>CharacteristicName</code>:</p>
 <p><br></p>
 <p><img src="3_harmonize/out/doc_charname_dists.png" alt="Distribution of DOC values by CharacteristicName" width="650"/></p>
 <p><br></p>
-<p>8.12 thousand rows are removed. The final row count after this is 2.28
+<p>8.23 thousand rows are removed. The final row count after this is 2.3
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
@@ -622,7 +623,7 @@ obtained from the WQP. The details behind this step are covered in the
 <em>Depth flags</em> section of the <em>Tiering, flagging, and quality control
 philosophy</em> chapter.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.28 million.</p>
+are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -643,7 +644,7 @@ from DOC data are: “Oxygen”, “Nitrogen”, “Ammonia”, “Metals”, �
 “Solids”, “Temperature”, “Color in Water”, “Coliform”, “PARTICULATE
 CARBON (inorg+org)”, “5210”, “bed sed”, “bs, calc”, “5220”,
 “Suspended-Sediment in Water”.</p>
-<p>This process drops 85 thousand rows leaving 2.2 million remaining.</p>
+<p>This process drops 85.57 thousand rows leaving 2.21 million remaining.</p>
 <p>The next step towards creating tiers is to then classify the methods in
 <code>ResultAnalyticalMethod.MethodName</code> into either: Combustion + infrared
 methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods,
@@ -731,7 +732,7 @@ comparing with analytical methods and assigning flags, unlike variables
 like chlorophyll <em>a</em>. We fill the <code>field_flag</code> column with “not
 applicable” for DOC.</p>
 <p>No records should be removed by this process and so there are 0 rows
-dropped leaving 2.2 million remaining in the harmonized DOC dataset.</p>
+dropped leaving 2.21 million remaining in the harmonized DOC dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -764,7 +765,7 @@ well and match make joins between dataset versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
 <code>harmonized_value_cv</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
-<p>0 million rows dropped leaving 2.2 million remaining in the final
+<p>0 million rows dropped leaving 2.21 million remaining in the final
 harmonized and aggregated doc dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
 <p><br></p>

@@ -444,17 +444,40 @@ fill_date_time <- function(dataset, site_data){
   # Datum varies throughout the dataset; build a conversion table.
   epsg_codes <- tribble(
     ~datum, ~epsg,
-    "NAD83", 4269,
-    "WGS84", 4326,
-    "NAD27", 4267,
-    "OLDHI", 4135,
-    "WGS72", 4322,
-    # Less certain about these two but they seem to match up
+    # American Samoa Datum
     "AMSMA", 4169,
+    # Midway Astro 1961
+    "ASTRO", 37224,
+    # Guam 1963
+    "GUAM", 4675,
+    # High Accuracy Reference Network for NAD83
+    "HARN", 4957,
+    # Johnston Island 1961 (Spelled Johnson in WQX)
+    "JHNSN", 6725,
+    # North American Datum 1927
+    "NAD27", 4267,
+    # North American Datum 1983
+    "NAD83", 4269,
+    # Old Hawaiian Datum
+    "OLDHI", 4135,
+    # Assume WGS84
+    "OTHER", 4326,
+    # Puerto Rico Datum
     "PR", 4139,
-    # Assume these are WGS84
+    # St. George Island Datum
+    "SGEOR", 4138,
+    # St. Lawrence Island Datum
+    "SLAWR", 4136,
+    # St. Paul Island Datum
+    "SPAUL", 4137,
+    # Assume WGS84
     "UNKWN", 4326,
-    "OTHER", 4326
+    # Wake-Eniwetok 1960
+    "WAKE", 37229,
+    # World Geodetic System 1972
+    "WGS72", 4322,
+    # World Geodetic System 1984
+    "WGS84", 4326
   )
   
   # Add EPSG codes

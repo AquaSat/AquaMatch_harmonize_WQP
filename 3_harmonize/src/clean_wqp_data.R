@@ -372,38 +372,71 @@ fill_date_time <- function(dataset, site_data){
   # be referenced shortly for tz filters and again later in the function
   gmt_offsets <- tribble(
     ~tz, ~gmt,
-    # America/New_York
-    "EDT",      "Etc/GMT+4",
-    "EST",      "Etc/GMT+5",
-    # America/Chicago
-    "CDT",      "Etc/GMT+5", 
-    "CST",      "Etc/GMT+6",
-    # America/Denver
-    "MDT",      "Etc/GMT+6",
-    "MST",      "Etc/GMT+7",
-    # America/Halifax
+    
+    # First cover those present in WQX Domain Values:
+    # https://cdx.epa.gov/wqx/download/DomainValues/TimeZone.csv
+    
+    # Atlantic Daylight Time
     "ADT",      "Etc/GMT+3",
-    "AST",      "Etc/GMT+4",
-    # America/Anchorage
+    # Alaska-Hawaii Standard Time (retired)
+    "AHST",     "Etc/GMT+10",
+    # Alaska Daylight Time
     "AKDT",     "Etc/GMT+8",
+    # Alaska Standard Time
     "AKST",     "Etc/GMT+9",
-    # America/Los_Angeles
-    "PDT",      "Etc/GMT+7",
-    "PST",      "Etc/GMT+8",
-    # Pacific/Honolulu
-    "HST",      "Etc/GMT+10",
+    # Atlantic Standard Time
+    "AST",      "Etc/GMT+4",
+    # Bering Standard Time (retired)
+    "BST",      "Etc/GMT+11",
+    # Central Daylight Time
+    "CDT",      "Etc/GMT+5", 
+    # Sweden Daylight Time or Central European Standard Time
+    "CEST",     "Etc/GMT-2",
+    # Stockholm Sweden Time or Central European Time
+    "CET",      "Etc/GMT-1",
+    # Central Standard Time
+    "CST",      "Etc/GMT+6",
+    # Eastern Daylight Time
+    "EDT",      "Etc/GMT+4",
+    # Eastern Standard Time
+    "EST",      "Etc/GMT+5",
+    # Leave out GMT
+    # Guam Standard Time Zone
+    "GST",      "Etc/GMT-10",
+  	# Hawaii-Aleutian Daylight Time
+    "HADT",     "Etc/GMT+9",
+    # Hawaii-Aleutian Standard Time
     "HAST",     "Etc/GMT+10",
+    # Korea Standard Time
+    "KST",      "Etc/GMT-9",
+    # Mountain Daylight Time
+    "MDT",      "Etc/GMT+6",
+    # Mountain Standard Time
+    "MST",      "Etc/GMT+7",
+    # Newfoundland Daylight Time
+    "NDT",      "Etc/GMT+2.5",
+    # Newfoundland Standard Time
+    "NST",      "Etc/GMT+3.5",
+    # Pacific Daylight Time
+    "PDT",      "Etc/GMT+7",
+    # Pacific Standard Time
+    "PST",      "Etc/GMT+8",
+    # American Samoa Standard Time
+    "SST",     "Etc/GMT+11",
+    # Leave out UTC
+    # Yukon Standard Time (retired)
+    "YST",      "Etc/GMT+9",
+
+    # Other tz codes we've encountered
+    
     # Alaska-Hawaii Daylight Time
     "AHDT",     "Etc/GMT+9",
-    # America/Adak
-    "HDT",      "Etc/GMT+9",
-    # Suspect this is Guam Standard Time bc
-    # data is prior to tz change in 2000
-    "GST",      "Etc/GMT+10",
     # Chamorro Standard Time
     "ChST",     "Etc/GMT+10",
-    # Samoa Standard Time
-    "SST",     "Etc/GMT+11"
+    # Hawaii–Aleutian Daylight Time
+    "HDT",      "Etc/GMT+9",
+    # Hawaii Standard Time
+    "HST",      "Etc/GMT+10"
   )
   
   # 1. Complete the time zone records using lat/lon
@@ -586,9 +619,10 @@ fill_date_time <- function(dataset, site_data){
           
           # Second, those that were filled by fetched_tz are in the longer
           # location-based format, which R understands but which isn't readily
-          # converted to GMT offset to complete harmonization of the `harmonized_tz` column. It needs to be converted to short codes (e.g. "EST" or "EDT")
-          # to reflect DST and THEN into the GMT offset. This is similar to
-          # how we handled UTC/GMT above
+          # converted to GMT offset to complete harmonization of the 
+          # `harmonized_tz` column. It needs to be converted to short codes
+          # (e.g. "EST" or "EDT") to reflect DST and THEN into the GMT offset.
+          # This is similar to how we handled UTC/GMT above
         } else if(unique_tz %in% OlsonNames())
           
           .x %>%

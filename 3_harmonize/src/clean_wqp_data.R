@@ -427,7 +427,7 @@ fill_date_time <- function(dataset, site_data){
     # Yukon Standard Time (retired)
     "YST",      "Etc/GMT+9",
 
-    # Other tz codes we've encountered
+    # Other tz codes we've encountered:
     
     # Alaska-Hawaii Daylight Time
     "AHDT",     "Etc/GMT+9",

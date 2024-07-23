@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-07-17" />
+<meta name="date" content="2024-07-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -403,21 +403,22 @@ parameter.</p>
 </div>
 <div id="time-and-date-handling" class="section level3 hasAnchor" number="4.2.5">
 <h3><span class="header-section-number">4.2.5</span> Time and date handling<a href="tiering-flagging-and-quality-control-philosophy.html#time-and-date-handling" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Time and date data are not 100% complete for any parameter in the WQP,
-so we have a standardized process for gap filling and harmonizing these
-data.</p>
+<p>Time and date data are provided inconsistently in the WQP, so we have a
+standardized process for harmonizing these data to provide AquaSat users
+a consistent date-time column across all parameters.</p>
 <p>We have designed a function, <code>fill_date_time()</code>, to create harmonized
 date and time columns before the broader data harmonization process. It
-adds the columns <code>harmonized_tz</code>, <code>harmonized_local_time</code>, and
-<code>harmonized_utc</code> to the dataset. The function first transforms
-site-specific data into a unified geographic coordinate reference system
-and then looks up the local time zone for each monitoring site in the
-dataset using latitude and longitude with the <code>lutz::tz_lookup()</code>
-function. This spatially-acquired time zone data is temporarily stored
-in the <code>fetched_tz</code> column. The <code>harmonized_tz</code> column is then generated
-using any timezones provided in <code>ActivityStartTime.TimeZoneCode</code>, while
-filling in gaps in timezone data with those identified using
-<code>fetched_tz</code>.</p>
+adds the columns <code>harmonized_tz</code> (time zone as GMT offset),
+<code>harmonized_local_time</code> (local date time relative to GMT offset), and
+<code>harmonized_utc</code> (date time reported as time in UTC) to the dataset. The
+function first transforms site-specific data into a unified geographic
+coordinate reference system and then looks up the local time zone for
+each monitoring site in the dataset using latitude and longitude with
+the <code>lutz::tz_lookup()</code> function. This spatially-acquired time zone data
+is temporarily stored in the <code>fetched_tz</code> column. The <code>harmonized_tz</code>
+column is then generated using any timezones provided in
+<code>ActivityStartTime.TimeZoneCode</code>, while filling in gaps in timezone data
+with those identified using <code>fetched_tz</code>.</p>
 <p>We then create the <code>harmonized_local_time</code> column by combining
 <code>ActivityStartDate</code> and <code>ActivityStartTime.Time</code>. If
 <code>ActivityStartTime.Time</code> is <code>NA</code> or <code>"00:00:00"</code> we instead use

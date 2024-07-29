@@ -1,4 +1,4 @@
-
+# nolint start
 harmonize_sdd <- function(raw_sdd, p_codes){
   
   # Starting values for dataset
@@ -24,7 +24,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
              is.na(ActivityMediaSubdivisionName)) %>% 
     # Turn every value into an absolute value
-    mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% # this cannot be here
+    mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% # this will create NAs in non-numeric instances that we will try to gap fill
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -45,17 +45,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   # Remove fails ------------------------------------------------------------
   
-  # fail language from chl-a, and is not super applicable to secchi, but will be
-  # used for now to move on to the next issue
-  
+  # The values that will be considered fails for each column:
   fail_text <- c(
     "error", "fail", "invalid", "no result",  "questionable", "suspect", 
-    "unable", "reject", "no data", "Not Reported"
+    "unable", "reject", "no data", "Not Reported", "no reading"
   )
-  
-  # update this to make sure that we aren't dropping bottom ***
-  # fail (and check what the bottom text is saying)
-  # activity comment text column ***
   
   # Now get counts of fail-related string detections for each column: 
   fail_counts <- list("ResultCommentText", "ResultMeasureValue_original") %>%
@@ -100,7 +94,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
                       plot = plot_fail_pie(dataset = .x, col_name = .y),
                       width = 6, height = 6, units = "in", device = "png"))
   
-  # Now that the fails have been documents, remove them:
+  # Now that the fails have been documented, remove them:
   sdd_fails_removed <- sdd %>% 
     filter(
       if_all(.cols = c(ResultCommentText, ResultMeasureValue_original),
@@ -138,13 +132,15 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   # Find MDLs and make them usable as numeric data
   mdl_updates <- sdd_fails_removed %>%
-    # only want NAs and where there is a `<` and a number in the values column... 
+    # only want NAs in the altered value column and where there is a `<` and a number in the original values column... 
     filter(is.na(ResultMeasureValue) &
            grepl("<", ResultMeasureValue_original) &
            grepl("[0-9]", ResultMeasureValue_original)) %>%
-    # replace "harmonize_value" field with the values sans '<'
-    mutate(harmonized_value = str_replace_all(string = ResultMeasureValue_original, pattern = c("\\<"="")),
-           # Preserve the units if they are provided 
+    # Extract the first numeric value after '<' from ResultMeasureValue_original,
+    # convert it to a number, and take its absolute value. This captures values 
+    # like "<0.5" or "<-1.0", ignoring any text after the number, and ensures 
+    # the result is positive.
+    mutate(harmonized_value = abs(as.numeric(str_extract(ResultMeasureValue_original, "-?\\d+(\\.\\d+)?"))),           # Preserve the units if they are provided 
            harmonized_units = ResultMeasure.MeasureUnitCode,
            harmonized_comments = "Approximated during MDL step") %>% 
     # keep important data
@@ -153,18 +149,17 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste(
       round(nrow(mdl_updates) / nrow(sdd_fails_removed) * 100, 3),
-      "% of samples had values listed as being below a detection limit"
+      "% of samples had values with '>' special character."
       )
     )
   
-  # Update sdd_mdls added with mdl_updates
-    # Flag after harmonizing units
+  # Replace "harmonized_value" field with these new values
   sdd_mdls_added <- sdd_fails_removed %>% 
-    left_join(x = ., y = mdl_updates, by = "index") %>% # flag by index
-    mutate(harmonized_value = ifelse(!(index %in% mdl_updates$index), ResultMeasureValue, harmonized_value),
-           harmonized_units = ifelse(!(index %in% mdl_updates$index), ResultMeasure.MeasureUnitCode, harmonized_units))
+    left_join(x = ., y = mdl_updates, by = "index") %>%
+    mutate(harmonized_value = ifelse((index %in% mdl_updates$index), harmonized_value, ResultMeasureValue),
+           harmonized_units = ifelse((index %in% mdl_updates$index), harmonized_units, ResultMeasure.MeasureUnitCode))
+    # Flag post unit harmonization
     
-  
   dropped_mdls <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while cleaning MDLs",
@@ -174,141 +169,27 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 3
   )
   
-  
-  # Clean up approximated values --------------------------------------------
-  
-  # Next step, incorporating and flagging "approximated" values. Using a similar
-  # approach to our MDL detection, we can identify value fields that are labelled
-  # as being approximated.
-  
-  # The approximate flag is different here because:
-    # There is no approximated text in the values column and the approx language
-    # in the comments are not related to secchi. There are two instances of approx text
-    # actually being related to secchi.
-    
-    # ignoring "*" because there is 5 counts of it being stored with numeric data
-  
-  # assuming that ResultMeasureValue has the most correct value and that
-  # ResultMeasureValue.UnitCode has the most correct units
-  
-  # if there is no unit or if there is no value it will get dropped during the harmonization and NA removal step
-  
-  # flag 0 = value not adjusted using activity depth measure column
-  # flag 1 = value filled using activity depth measure column 
-  # flag 2 = unit filled using activity depth measure unit column 
-  # flag 3 = value and unit filled using activity depth measure/measure unit column 
-  
-  # ignore this text because it will get resolved in the following steps
-  # flag 4 = bottom depth flag
-  ignore_value_text <- paste(
-    "secchi hit bottom",
-    "secchi hit the bottom",
-    "secchi disk hit bottom",
-    "secchi disc hit bottom",
-    "secchi disk hit the bottom",
-    "secchi disc hit the bottom",
-    "S. disk hit bottom",
-    "S. disc hit bottom",
-    "bottom",
-    "on bottom",
-    "Secchi disc measure clear to bottom depth",
-    "to bottom",
-    ">", "*", "=",
-    sep = "|"
-  )
-  
-  ignore_comment_text <- paste(
-    "secchi hit bottom",
-    "secchi hit the bottom",
-    "secchi disk hit bottom",
-    "secchi disc hit bottom",
-    "secchi disk hit the bottom",
-    "secchi disc hit the bottom",
-    "S. disk hit bottom",
-    "S. disc hit bottom",
-    "bottom",
-    "on bottom",
-    "Secchi disc measure clear to bottom depth",
-    "to bottom",
-    sep = "|"
-  )
-  
-  sdd_approx <- sdd_mdls_added %>%
-    # ignore samples that have indications of ignore text 
-    filter(!grepl(ignore_comment_text, ResultCommentText, ignore.case = T)) %>% 
-    filter(!grepl(ignore_value_text, ResultMeasureValue_original, ignore.case = T)) %>% 
-    # save samples where the NUMERIC value column or UNITS are NA:
-    filter(is.na(ResultMeasureValue)|is.na(ResultMeasure.MeasureUnitCode)) %>% 
-    # save samples that have data in depth height measure value or depth height measure unit column
-    filter(!is.na(ActivityDepthHeightMeasure.MeasureValue)|!is.na(ActivityDepthHeightMeasure.MeasureUnitCode))
-  
-  # Keep important data
-  sdd_approx <- sdd_approx %>%
-    select(index, 
-           ResultMeasureValue_original, ResultMeasureValue, ResultMeasure.MeasureUnitCode, 
-           ResultCommentText, harmonized_value, harmonized_units,
-           ActivityDepthHeightMeasure.MeasureValue, ActivityDepthHeightMeasure.MeasureUnitCode)
-  
-  print(
-    paste(
-      round((nrow(sdd_approx)) / nrow(sdd_mdls_added) * 100, 3),
-      "% of samples have missing numeric values or missing units that can be approximated from depth measure columns."
-    )
-  )
-  
-  # Replace harmonized_value field with these new values
-  sdd_approx_added <- sdd_mdls_added %>%
-    mutate(
-      # flag 0 = value and units not adjusted
-      # flag 1 = value filled using activity depth measure column 
-      # flag 2 = unit filled using activity depth measure unit column 
-      # flag 3 = value and unit filled using activity depth measure/measure unit column 
-      approx_flag = case_when(
-        !index %in% sdd_approx$index ~ 0,
-        index %in% sdd_approx$index & is.na(harmonized_value) & !is.na(ActivityDepthHeightMeasure.MeasureValue) & 
-          is.na(harmonized_units) & !is.na(ActivityDepthHeightMeasure.MeasureUnitCode) ~ 3,
-        index %in% sdd_approx$index & is.na(harmonized_units) & !is.na(ActivityDepthHeightMeasure.MeasureUnitCode) ~ 2,
-        index %in% sdd_approx$index & is.na(harmonized_value) & !is.na(ActivityDepthHeightMeasure.MeasureValue) ~ 1,
-        .default = NA_integer_
-      ),
-      harmonized_value = if_else(
-        index %in% sdd_approx$index & is.na(harmonized_value),
-        ActivityDepthHeightMeasure.MeasureValue,
-        harmonized_value
-      ),
-      harmonized_units = if_else(
-        index %in% sdd_approx$index & is.na(harmonized_units),
-        ActivityDepthHeightMeasure.MeasureUnitCode,
-        harmonized_units
-      ),
-      harmonized_comments = case_when(
-        approx_flag == 3 ~ "Value and units 'approximated' from `ActivityDepthHeightMeasure.MeasureValue` 
-        and `ActivityDepthHeightMeasure.MeasureUnitCode` columns.",
-        approx_flag == 2 ~ "Units 'approximated' from `ActivityDepthHeightMeasure.MeasureUnitCode` column.",
-        approx_flag == 1 ~ "Value 'approximated' from `ActivityDepthHeightMeasure.MeasureValue` column.",
-        .default = NA_character_
-      )
-    )
-  
-  dropped_approximates <- tibble(
-    step = "sdd harmonization",
-    reason = "Dropped rows while cleaning approximate values",
-    short_reason = "Clean approximates",
-    number_dropped = nrow(sdd_mdls_added) - nrow(sdd_approx_added),
-    n_rows = nrow(sdd_approx_added),
-    order = 4
-  )
-  
   # Clean up "greater than" values ------------------------------------------
   
-  greater_vals <- sdd_approx_added %>%
-    filter((!index %in% mdl_updates$index) & (!index %in% sdd_approx$index)) %>%
-    # Then select fields where the NUMERIC value column is NA....
+  # Next step, incorporating "greater than" values. Using a similar approach to 
+  # gap filling the MDL ("less than") values, we can gap fill the results that 
+  # contain values greater than some amount.
+  
+  greater_vals <- sdd_mdls_added %>% 
+    # First, remove the samples that we've already approximated:
+    filter((!index %in% mdl_updates$index)) %>%
+    # only want NAs in the altered value column and where there is a `<` and a number in the original values column... 
     filter(is.na(ResultMeasureValue) & 
-             # ... AND the original value column has numeric characters...
-             grepl("[0-9]", ResultMeasureValue_original) &
-             #... AND a `>`, `*`, or `=` symbol (included this because they are replaced by "" in the next step)
-             grepl(">|\\*|=", ResultMeasureValue_original))
+            grepl(">|\\*|=", ResultMeasureValue_original) &
+             # grepl(">", ResultMeasureValue_original) &
+             grepl("[0-9]", ResultMeasureValue_original)) %>%
+    # Extract the first numeric value after '>' from ResultMeasureValue_original,
+    # convert it to a number, and take its absolute value. This captures values
+    # like ">0.5" or ">-1.0", ignoring any text after the number, and ensures
+    # the result is positive.
+    mutate(harmonized_value = abs(as.numeric(str_extract(ResultMeasureValue_original, "-?\\d+(\\.\\d+)?"))),
+      harmonized_units = ResultMeasure.MeasureUnitCode,
+      harmonized_comments = "Approximated during 'greater than' step")
   
   greater_vals$greater_value <- as.numeric(
     str_replace_all(
@@ -323,17 +204,20 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   print(
     paste(
-      round((nrow(greater_vals)) / nrow(sdd_approx_added) * 100, 3),
-      "% of samples had values listed have symbols `>`,`*`,`=` in the original value column."
+      round((nrow(greater_vals)) / nrow(sdd_mdls_added) * 100, 3),
+      "% of samples had values listed have `>` in the original value column."
     )
   )
   
-  sdd_harmonized_values <- sdd_approx_added %>%
+  # Replace "harmonized_value" field with these new values
+  sdd_harmonized_values <- sdd_mdls_added %>%
     left_join(x = ., y = greater_vals, by = "index") %>%
-    mutate(harmonized_value = ifelse(index %in% greater_vals$index,
+    mutate(harmonized_value = ifelse(index %in% greater_vals$index, 
                                      greater_value, harmonized_value),
+           harmonized_units = ifelse(index %in% greater_vals$index,
+                                     ResultMeasure.MeasureUnitCode, harmonized_units),
            harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        "Special character (greater than) flag.",
+                                        "Approximated during 'greater than' step",
                                         harmonized_comments))
   # Replace harmonized_value field with these new values
   # flag after these values have been harmonized
@@ -346,14 +230,287 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     step = "sdd harmonization",
     reason = "Dropped rows while cleaning 'greater than' values",
     short_reason = "Greater thans",
-    number_dropped = nrow(sdd_approx_added) - nrow(sdd_harmonized_values),
+    number_dropped = nrow(sdd_mdls_added) - nrow(sdd_harmonized_values),
     n_rows = nrow(sdd_harmonized_values),
-    order = 5
+    order = 4
   )
   
   # Free up memory
   rm(sdd)
   gc()
+  
+  # Clean up approximated values --------------------------------------------
+  
+  # Next step, incorporating "approximated" values. There are instances where
+  # data is missing because it was put into one of the depth columns instead of
+  # the result measure value column. We can approximate these values by using
+  # the activity and bottom depth measure columns. 
+  
+  # For this process we are assuming that ResultMeasureValue has the most correct 
+  # value and that ResultMeasureValue.UnitCode has the most correct units for an
+  # observation. We will only attempt to gap fill the harmonized_value column with
+  # information from the depth columns. We will never try to gap fill missing 
+  # units. For the cases where there are missing values but not missing units,
+  # we will fill in the missing values with the depth columns under specific 
+  # conditions***. For the cases where there are missing values and missing units,
+  # we will fill in both the missing values and units with the depth columns under
+  # specific conditions***. We will always remove instances where the units are empty 
+  # and the value is not empty. After this step, if there is no unit or value, the
+  # row will be dropped during the NA removal step.
+  
+  # The approximate flag is different here because:
+  # There is no approximated text in the values column and the approx language
+  # in the comments are not related to secchi. There are two instances of approx text
+  # actually being related to secchi. We are going to drop those instances. ignoring 
+  # "*" because there is 5 counts of it being stored with numeric data
+  
+  # flag 0 = value not adjusted using and depth measure columns
+  # flag 1 = value filled using activity depth measure column 
+  # flag 2 = value filled using bottom depth measure column 
+  
+  comment_cols <- c("ActivityCommentText","ResultCommentText", "ResultMeasureValue_original")
+
+  unit_cols <- c("ResultMeasure.MeasureUnitCode", "harmonized_units",
+  "ActivityDepthHeightMeasure.MeasureUnitCode", "ActivityBottomDepthHeightMeasure.MeasureUnitCode")
+
+  bottom_text <- "bottom"
+
+  negate_bottom_text <- paste(
+    "no bottom", "not.*bottom", "couldn't.*bottom", "could not.*bottom", "unable to.*bottom",
+    "too deep", "too shallow", "doesn't reach", "did not reach", "blocked", "hidden", "disappeared",
+    "hose frozen", "pump frozen", "cable not long enough", "cord not long enough", "won't stay on bottom",
+    "current too strong", "too windy", "fast current", "flooding", "readings not on bottom",
+    "measurements not collected", "sample taken at", "depth too great", "can't get true bottom", "seen on bottom: no",
+    "bottom reading not taken", "afraid to touch bottom", "forgot bottom reading", "didn't hit bottom", "did not hit bottom",
+    "vegetation blocks", "turbid", "probe not on bottom", "sonde.*not.*bottom", "hydrolab not on bottom",
+    "profile not taken to bottom", "unable to collect bottom", "bottom.*not.*collected", "bottom.*not.*recorded",
+    sep = "|")
+  
+  # Now we will find the indexes that will be gap filled with the depth columns
+    # keep columns that have NA values
+    # keep columns that have NA values and NA units
+    # ignore columns that have values but NA units
+  
+    # we will also check the depth columns
+      # keep rows where either both the activity and bottom depth columns have values and units
+  
+  # At this point we have filled in some harmonized values, so we want to check 
+  # for those harmonized values that are still NA
+
+  sdd_approx <- sdd_harmonized_values %>%
+    # subset data for efficiency
+    select(index, ResultMeasureValue_original, ResultMeasureValue, ResultMeasure.MeasureUnitCode, 
+           harmonized_value, harmonized_units, 
+           ActivityDepthHeightMeasure.MeasureValue, ActivityDepthHeightMeasure.MeasureUnitCode,
+           ActivityBottomDepthHeightMeasure.MeasureValue, ActivityBottomDepthHeightMeasure.MeasureUnitCode,
+           ResultCommentText, ActivityCommentText) %>%
+    # clean the unit columns for consistency in comparisons
+    mutate(across(all_of(unit_cols), ~ { # we will have to do this later as well
+        . <- tolower(trimws(.))
+        . <- gsub("feet", "ft", ., ignore.case = TRUE)
+        . <- gsub("meters", "m", ., ignore.case = TRUE)
+      })) %>%
+    # Filter rows to include as many relevant conditions as possible
+    filter(
+      # INCLUDE harmonized_value is NA AND...
+      is.na(harmonized_value) &
+        # either ActivityDepthHeightMeasure or ActivityBottomDepthHeightMeasure (and relevant unit columns) are not NA AND...
+        ((
+          !is.na(ActivityDepthHeightMeasure.MeasureValue) &
+            !is.na(ActivityDepthHeightMeasure.MeasureUnitCode)
+        ) |
+          (
+            !is.na(ActivityBottomDepthHeightMeasure.MeasureValue) &
+              !is.na(ActivityBottomDepthHeightMeasure.MeasureUnitCode)
+          )) &
+        # EXCLUDE instances where both depth columns are present and are equal to each other, since we can't use that information AND...
+        (
+          is.na(ActivityDepthHeightMeasure.MeasureValue) |
+            is.na(ActivityBottomDepthHeightMeasure.MeasureValue) |
+            # handle NA comparisons returning FALSE
+            ActivityDepthHeightMeasure.MeasureValue != ActivityBottomDepthHeightMeasure.MeasureValue
+        ) &
+        # EXCLUDE cases where the depth columns to be used are not in the same units as the harmonized units
+        ((
+          !is.na(ActivityDepthHeightMeasure.MeasureUnitCode) |
+            !is.na(ActivityBottomDepthHeightMeasure.MeasureUnitCode)
+        ) &
+          (
+            is.na(harmonized_units) |
+              (
+                is.na(ActivityDepthHeightMeasure.MeasureUnitCode) &
+                  ActivityBottomDepthHeightMeasure.MeasureUnitCode == harmonized_units
+              ) |
+              (
+                is.na(ActivityBottomDepthHeightMeasure.MeasureUnitCode) &
+                  ActivityDepthHeightMeasure.MeasureUnitCode == harmonized_units
+              ) |
+              ActivityDepthHeightMeasure.MeasureUnitCode == harmonized_units |
+              ActivityBottomDepthHeightMeasure.MeasureUnitCode == harmonized_units
+          )
+        )
+    ) %>% 
+    # Keep important information
+    select(index)
+    # anything not included in sdd_approx will be flagged as 0, and will be removed
+    # during the NA removal step
+    
+  
+  print(
+    paste(
+      round((nrow(sdd_approx)) / nrow(sdd_mdls_added) * 100, 3),
+      "% of samples have missing numeric values or missing units that can be approximated from depth measure columns."
+    )
+  )
+  
+  # Approximate harmonized_value field with values from depth columns
+  sdd_approx_added <- sdd_mdls_added %>%
+    mutate(
+      # create a bottom tag to detect bottom language detected in relevant comment columns to be used for flagging
+      bottom_tag = case_when(
+        rowSums(across(all_of(comment_cols), ~grepl("bottom", .x, ignore.case = TRUE))) > 0 ~ 1,
+        TRUE ~ 0
+      ),
+      # create a negate bottom tag to detect negate language in relevant comment columns
+      negate_bottom_tag = case_when(
+        rowSums(across(all_of(comment_cols), ~grepl(negate_bottom_text, .x, ignore.case = TRUE))) > 0 ~ 1,
+        TRUE ~ 0
+      )) %>%
+    # so now we have indexes and a bottom tag. now we can gap fill with the depth columns
+    # prefer to fill with bottom column if bottom language is indicated with no negate language
+    # if activity and bottom values are equal, fill it in
+    # if activity and bottom values are not equal, do NOT fill it in
+    # if one or the other is present, use the one that is present
+    # prefer to fill with activity column if bottom language is not indicated or there is negate language
+    # can only gap fill when both value and units are present for the depth columns we are going to use
+    mutate(
+      # flag 0 = value and units not adjusted
+      # flag 1 = value filled using activity depth measure column
+      # flag 2 = value filled using activity bottom depth measure column
+      approx_flag = case_when(
+        # If the index is not in the sdd_approx$index, set flag to 0
+        !index %in% sdd_approx$index ~ 0, 
+        # If the index is in sdd_approx$index and there is bottom language and no negate language, and
+        # ActivityBottomDepthHeightMeasure.MeasureValue is not NA set flag to 2
+        index %in% sdd_approx$index &
+          bottom_tag == 1 & 
+          negate_bottom_tag == 0 & 
+          !is.na(ActivityBottomDepthHeightMeasure.MeasureValue) ~ 2, 
+        # If the index is in sdd_approx$index, and either bottom tag is 1 and negate bottom tag is 0 but
+        # ActivityBottomDepthHeightMeasure.MeasureValue is NA, or bottom tag is 0 or negate bottom tag is 1,
+        # and ActivityDepthHeightMeasure.MeasureValue is not NA, and either ResultMeasure.MeasureUnitCode is NA or
+        # ResultMeasure.MeasureUnitCode is equal to ActivityDepthHeightMeasure.MeasureUnitCode, set flag to 1
+        index %in% sdd_approx$index & 
+          ((bottom_tag == 1 & negate_bottom_tag == 0 & is.na(ActivityBottomDepthHeightMeasure.MeasureValue)) | 
+         bottom_tag == 0 | 
+         negate_bottom_tag == 1) & 
+          !is.na(ActivityDepthHeightMeasure.MeasureValue) ~ 1,
+        # For all other cases, set flag to NA
+        .default = NA_integer_ # it is possible to get NA values here, but we will drop them in the next step
+      ),
+      harmonized_value = case_when(
+        index %in% sdd_approx$index & approx_flag == 2 ~ as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue),
+        index %in% sdd_approx$index & approx_flag == 1 ~ as.numeric(ActivityDepthHeightMeasure.MeasureValue),
+        .default = harmonized_value
+      ),
+      harmonized_units = case_when(
+        index %in% sdd_approx$index & approx_flag == 2 ~ ActivityBottomDepthHeightMeasure.MeasureUnitCode,
+        index %in% sdd_approx$index & approx_flag == 1 ~ ActivityDepthHeightMeasure.MeasureUnitCode,
+        .default = harmonized_units
+      ),
+      harmonized_comments = case_when(
+        approx_flag == 2 ~ "Value 'approximated' from `ActivityBottomDepthHeightMeasure.MeasureValue` columns.",
+        approx_flag == 1 ~ "Value 'approximated' from `ActivityDepthHeightMeasure.MeasureValue` columns.",
+        .default = NA_character_
+      )
+    )
+  
+  dropped_approximates <- tibble(
+    step = "sdd harmonization",
+    reason = "Dropped rows while approximating values",
+    short_reason = "Clean approximates",
+    number_dropped = nrow(sdd_approx_added) - nrow(sdd_harmonized_values),
+    n_rows = nrow(sdd_approx_added),
+    order = 5
+  )
+  
+  # Remove remaining NAs ----------------------------------------------------
+  
+  # At this point we've processed MDLs, processed values containing
+  # symbols like ">", and approximated values with the depth columns. 
+  # If there are still remaining NAs in the numeric measurement
+  # column then it's time to drop them.
+  
+  # maintain harmonized values that are not NA 
+  sdd_no_na <- sdd_approx_added %>%
+    # Keep rows if non-NA in harmonized values and units columns
+    filter((!is.na(harmonized_value) & !is.na(harmonized_units)) 
+    )
+
+  print(
+    paste(
+      round((nrow(sdd_no_na)) / nrow(sdd_approx_added) * 100, 2),
+      "% of samples remain after removing NA values."
+    )
+  )
+  
+  dropped_na <- tibble(
+    step = "sdd drop NAs",
+    reason = "Dropped unresolved NAs",
+    short_reason = "Unresolved NAs",
+    number_dropped = nrow(sdd_approx_added) - nrow(sdd_no_na),
+    n_rows = nrow(sdd_no_na),
+    order = 6
+  )
+  
+  # Free up memory
+  rm(sdd_harmonized_values, sdd_approx_added, sdd_mdls_added,
+     sdd_fails_removed)
+  gc()
+  
+  # need to check what kinds of observations were removed ***
+
+  # Harmonize value units ---------------------------------------------------
+  
+  # Now count the units column: 
+  unit_counts <- sdd_no_na %>%
+    count(harmonized_units) %>%
+    arrange(desc(n))
+  
+  unit_conversion_table <- tibble(
+    harmonized_units = c("m", "ft", "cm", "in", "mm", "feet", "meters", "mi"),
+    conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 0.3048, 1, 1609.34)
+  )
+  
+  converted_units_sdd <- sdd_no_na %>%
+    left_join(x = .,
+               y = unit_conversion_table,
+               by = "harmonized_units") %>%
+    mutate(harmonized_value = as.numeric(harmonized_value) * conversion,
+           harmonized_units = "m") %>% 
+    # filter for successful converted units and bottoms
+    filter(!is.na(harmonized_value))
+    # keep rows if there are indications of bottom in the comments
+    # grepl(bottom_text, ResultMeasureValue_original, ignore.case=T) |
+    # grepl(bottom_text, ResultCommentText, ignore.case=T) |
+    # grepl(bottom_text, ActivityCommentText, ignore.case=T
+  
+  # How many records removed due to unit harmonization?
+  print(
+    paste0(
+      "Rows removed while converting units: ",
+      nrow(sdd_no_na) - nrow(converted_units_sdd)
+    )
+  )
+  
+  dropped_harmonization <- tibble(
+    step = "sdd unit conversion",
+    reason = "Dropped rows while harmonizing units",
+    short_reason = "Harmonize units",
+    number_dropped = nrow(sdd_no_na) - nrow(converted_units_sdd),
+    n_rows = nrow(converted_units_sdd),
+    order = 7
+  )
   
   # Clean and flag depth data -----------------------------------------------
   
@@ -376,13 +533,13 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   negate_bottom_text <- paste0(
     "Seen on Bottom: No",
     sep = "|")
- 
+  
   sdd_bottom_depth <- sdd_harmonized_values %>%
     # filter for samples that have bottom text in the comment columns and have information in the relevant depth columns.
     filter(
       grepl(bottom_text, ResultMeasureValue_original, ignore.case=T) |
-      grepl(bottom_text, ResultCommentText, ignore.case=T) |
-      grepl(bottom_text, ActivityCommentText, ignore.case=T)) %>% 
+        grepl(bottom_text, ResultCommentText, ignore.case=T) |
+        grepl(bottom_text, ActivityCommentText, ignore.case=T)) %>% 
     filter(!is.na(ActivityBottomDepthHeightMeasure.MeasureValue)|!is.na(ActivityDepthHeightMeasure.MeasureValue)) 
   
   # Keep important data
@@ -448,87 +605,6 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 4
   )
   
-  # Remove remaining NAs ----------------------------------------------------
-  
-  # At this point we've processed MDLs, approximate values, values containing
-  # symbols like ">", and have updated NA values due to bottom outs. 
-  # If there are still remaining NAs in the numeric measurement
-  # column then it's time to drop them.
-  
-  # maintain harmonized values that are not NA 
-  sdd_no_na <- sdd_bottom_depth_added %>%
-    # Keep rows if non-NA in values and units OR...
-    filter((!is.na(harmonized_value) & !is.na(harmonized_units)) |
-      # keep rows if there are indications of bottom in the comments
-        grepl(bottom_text, ResultMeasureValue_original, ignore.case=T) |
-        grepl(bottom_text, ResultCommentText, ignore.case=T) |
-        grepl(bottom_text, ActivityCommentText, ignore.case=T)
-    )
-
-  print(
-    paste(
-      round((nrow(sdd_no_na)) / nrow(sdd_bottom_depth_added) * 100, 2),
-      "% of samples remain after removing NA values."
-    )
-  )
-  
-  dropped_na <- tibble(
-    step = "sdd drop NAs",
-    reason = "Dropped unresolved NAs",
-    short_reason = "Unresolved NAs",
-    number_dropped = nrow(sdd_bottom_depth_added) - nrow(sdd_no_na),
-    n_rows = nrow(sdd_no_na),
-    order = 6
-  )
-  
-  # Free up memory
-  rm(sdd_harmonized_values, sdd_approx_added, sdd_mdls_added,
-     sdd_fails_removed)
-  gc()
-  
-  # Harmonize value units ---------------------------------------------------
-  
-  # Now count the units column: 
-  unit_counts <- sdd_no_na %>%
-    count(harmonized_units) %>%
-    arrange(desc(n))
-  
-  unit_conversion_table <- tibble(
-    harmonized_units = c("m", "ft", "cm", "in", "mm", "feet", "meters", "mi"),
-    conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 0.3048, 1, 1609.34)
-  )
-  
-  converted_units_sdd <- sdd_no_na %>%
-    left_join(x = .,
-               y = unit_conversion_table,
-               by = "harmonized_units") %>%
-    mutate(harmonized_value = as.numeric(harmonized_value) * conversion,
-           harmonized_units = "m") %>% 
-    # filter for successful converted units and bottoms
-    filter(
-      (!is.na(harmonized_value)) |
-        # keep rows if there are indications of bottom in the comments
-        grepl(bottom_text, ResultMeasureValue_original, ignore.case=T) |
-        grepl(bottom_text, ResultCommentText, ignore.case=T) |
-        grepl(bottom_text, ActivityCommentText, ignore.case=T)
-      )
-  
-  # How many records removed due to unit harmonization?
-  print(
-    paste0(
-      "Rows removed while converting to numeric values: ",
-      nrow(sdd_no_na) - nrow(converted_units_sdd)
-    )
-  )
-  
-  dropped_harmonization <- tibble(
-    step = "sdd unit conversion",
-    reason = "Dropped rows while harmonizing units",
-    short_reason = "Harmonize units",
-    number_dropped = nrow(sdd_no_na) - nrow(converted_units_sdd),
-    n_rows = nrow(converted_units_sdd),
-    order = 6
-  )
   
   # Aggregate and tier analytical methods -----------------------------------
   
@@ -665,4 +741,4 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   # export ------------------------------------------------------------------
 }
-  
+# nolint end

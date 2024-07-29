@@ -78,7 +78,7 @@ walk(list.files("3_harmonize/src/", pattern = "\\.R$", full.names = TRUE), sourc
 #                overwrite = TRUE)
 
 # update before PR ***
-p2_wqp_data_aoi_sdd <- read_feather("../AquaMatch_harmonize_WQP_old/scratch/data/sdd_data.feather")
+p2_wqp_data_aoi_sdd <- read_feather("../AquaMatch_harmonize_WQP_old/scratch/data/sdd_data.feather") # need to update this ***
 ```
 
 ```{r format step/tar_target(p3_wqp_data_aoi_formatted_sdd)}
@@ -417,6 +417,35 @@ View(
 #   select(ResultMeasureValue_original, ResultMeasureValue, ResultCommentText)
 
 # View(filtered_data)
+```
+
+```{r}
+comment_cols <- c("ResultMeasureValue_original","ResultCommentText","ActivityCommentText")
+
+unique_values_list <- map(comment_cols, ~{
+  sdd_harmonized_values %>%
+    # filter(grepl("bottom", !!sym(.x), ignore.case = TRUE)) %>%
+    group_by(!!sym(.x)) %>% 
+    summarise(count = n()) %>% 
+    rename(comment = !!sym(.x))
+}) %>% 
+  bind_rows() %>% 
+  mutate(comment = trimws(tolower(comment))) %>% 
+  group_by(comment) %>%
+  summarise(count = sum(count)) %>%
+  arrange(desc(count)) 
+
+# Create a function to format each row
+format_row <- function(comment, count) {
+  paste0("Comment: ", comment, "\nCount: ", count, "\n", "-", "\n")
+}
+
+# Apply the formatting function to each row and combine into a single string
+formatted_text <- mapply(format_row, unique_values_list$comment, unique_values_list$count) %>%
+  paste(collapse = "\n")
+
+# Write the results to a text file
+writeLines(formatted_text, "../AquaMatch_harmonize_WQP_old/scratch/data/unique_values_results.txt") 
 ```
 
 ```{r Clean up approximated values}

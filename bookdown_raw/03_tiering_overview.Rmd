@@ -69,6 +69,10 @@ Sample depth flags are assigned using the harmonized depth columns that result f
 ### Miscellaneous flags
 The `misc_flag` column is included as a flexible flag column in order to note important information that isn't covered by the tiering and flags defined above. Some parameters, like chlorophyll *a*, will not use this column at all and will therefore just contain `NA` values in places of flags. Values and their meaning will differ by parameter and as a result, flag values will be explained in the documentation for each parameter.
 
+```{r out.width= "45%", out.extra='style="float:right; padding:10px"', echo = FALSE}
+knitr::include_graphics("../fig/date_time_handling.png")
+```
+
 ### Time and date handling
 Time and date data are provided inconsistently in the WQP, so we have a standardized process for harmonizing these data to provide AquaSat users a consistent date-time column across all parameters.
 

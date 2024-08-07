@@ -71,7 +71,7 @@ harmonize_doc <- function(raw_doc, p_codes){
       drop_plot <- .x %>%
         count(ResultSampleFractionText, name = "record_count") %>%
         plot_fraction_pie() +
-        ggtitle(paste0(char_name, ": Fraction types dropped from dataset"))
+        ggtitle(paste0(char_name, ":\nFraction types dropped from dataset"))
       
       ggsave(filename = paste0("3_harmonize/out/doc_",
                                to_snake_case(char_name),

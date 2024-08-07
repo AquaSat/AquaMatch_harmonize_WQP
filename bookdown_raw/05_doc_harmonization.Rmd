@@ -257,15 +257,15 @@ We next ensure that the media type for all DOC data is `"Surface Water"`, `"Wate
 
 <br>
 
-<img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="650"/>
+<img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
 
 <br>
 
-<img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="650"/>
+<img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
 
 <br>
 
-<img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="650"/>
+<img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
 
 <br>
 

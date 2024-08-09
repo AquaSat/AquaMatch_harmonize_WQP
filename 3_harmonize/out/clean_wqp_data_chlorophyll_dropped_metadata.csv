@@ -1,4 +1,4 @@
 reason,short_reason,number_dropped,n_rows,order,step
-Starting dataset,Start,0,4607518,0,chlorophyll pre-harmonization
-Removed missing results,Remove missing,50067,4557451,1,chlorophyll pre-harmonization
-Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,77028,4480423,2,chlorophyll pre-harmonization
+Starting dataset,Start,0,4695786,0,chlorophyll pre-harmonization
+Removed missing results,Remove missing,50704,4645082,1,chlorophyll pre-harmonization
+Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,40220,4604862,2,chlorophyll pre-harmonization

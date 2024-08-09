@@ -39,11 +39,11 @@ use_stable:
   google_email: ""
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240402" #YYYYMMDD format
+  chl_stable_date: "20240701" #YYYYMMDD format
   doc_use_stable: TRUE
-  doc_stable_date: "20240402" #YYYYMMDD format
+  doc_stable_date: "20240701" #YYYYMMDD format
   general_use_stable: TRUE
-  general_stable_date: "20240402" #YYYYMMDD format
+  general_stable_date: "20240701" #YYYYMMDD format
   drive_project_folder: "" # folder name must end with "/", if you use a nested
   # folder location, you will need to create that folder structure before using 
   # this pipeline
@@ -53,11 +53,11 @@ admin_update:
   google_email: "therossyndicate@gmail.com"
   download_repo_directory: "../AquaMatch_download_WQP/"
   chl_use_stable: TRUE
-  chl_stable_date: "20240402" #YYYYMMDD format
+  chl_stable_date: "20240701" #YYYYMMDD format
   doc_use_stable: TRUE
-  doc_stable_date: "20240402" #YYYYMMDD format
+  doc_stable_date: "20240701" #YYYYMMDD format
   general_use_stable: TRUE
-  general_stable_date: "20240402" #YYYYMMDD format
+  general_stable_date: "20240701" #YYYYMMDD format
   drive_project_folder: "~/aquamatch_download_wqp/" # folder name must end with "/", 
   # if you use a nested  folder location, you will need to create that folder 
   # structure before using this pipeline

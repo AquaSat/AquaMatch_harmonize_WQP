@@ -8,7 +8,8 @@ library(tarchetypes)
 tar_option_set(
   packages = c("tidyverse"),
   memory = "transient",
-  garbage_collection = TRUE
+  garbage_collection = TRUE,
+  seed = 1
 )
 
 # Run the R scripts with custom functions:
@@ -270,7 +271,7 @@ config_targets <- list(
   # Chl
   tar_target(
     name = p2_wqp_data_aoi_chl,
-    command = retrieve_data(target = "p2_wqp_data_aoi_chl",
+    command = retrieve_data(target = "p2_wqp_data_aoi_chl_anon",
                             id_df = p2_chl_drive_ids,
                             local_folder = "3_harmonize/in",
                             file_type = ".feather",
@@ -284,7 +285,7 @@ config_targets <- list(
   # DOC
   tar_target(
     name = p2_wqp_data_aoi_doc,
-    command = retrieve_data(target = "p2_wqp_data_aoi_doc",
+    command = retrieve_data(target = "p2_wqp_data_aoi_doc_anon",
                             id_df = p2_doc_drive_ids,
                             local_folder = "3_harmonize/in",
                             file_type = ".feather",

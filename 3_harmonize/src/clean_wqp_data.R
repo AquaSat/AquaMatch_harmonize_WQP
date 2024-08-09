@@ -354,13 +354,13 @@ get_site_info <- function(dataset){
 #' `harmonized_local_time`, `harmonized_tz`, and `harmonized_utc` are created.
 #'  
 #' `harmonized_local_time` is the local time of the sampling event determined by
-#' the function and `harmonized_tz` contains the GMT offset timezone corresponding
+#' this function and `harmonized_tz` contains the GMT offset timezone corresponding
 #' to that local time point. `harmonized_utc` is the equivalent time in UTC
 #' and will agree with `ActivityStartDateTime` in most, but not all cases. These
 #' occur because 1) `ActivityStartDateTime` is NA for
-#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", GST", "IDLE"; 
-#' or 2) we treat "00:00:00" values of `ActivityStartTime.Time` whereas
-#' `ActivityStartDateTime` does not.
+#' `ActivityStartTime.TimeZoneCode` values of NA, "AST", "ADT", "GST", "IDLE"; 
+#' or 2) we handle "00:00:00" values of `ActivityStartTime.Time` the same as NAs
+#' whereas `ActivityStartDateTime` does not.
 #' 
 #' @returns 
 #' Returns a modified version of `dataset` with the additional columns,
@@ -372,36 +372,71 @@ fill_date_time <- function(dataset, site_data){
   # be referenced shortly for tz filters and again later in the function
   gmt_offsets <- tribble(
     ~tz, ~gmt,
-    # America/New_York
-    "EDT",      "Etc/GMT+4",
-    "EST",      "Etc/GMT+5",
-    # America/Chicago
-    "CDT",      "Etc/GMT+5", 
-    "CST",      "Etc/GMT+6",
-    # America/Denver
-    "MDT",      "Etc/GMT+6",
-    "MST",      "Etc/GMT+7",
-    # America/Halifax
+    
+    # First cover those present in WQX Domain Values:
+    # https://cdx.epa.gov/wqx/download/DomainValues/TimeZone.csv
+    
+    # Atlantic Daylight Time
     "ADT",      "Etc/GMT+3",
-    "AST",      "Etc/GMT+4",
-    # America/Anchorage
+    # Alaska-Hawaii Standard Time (retired)
+    "AHST",     "Etc/GMT+10",
+    # Alaska Daylight Time
     "AKDT",     "Etc/GMT+8",
+    # Alaska Standard Time
     "AKST",     "Etc/GMT+9",
-    # America/Los_Angeles
-    "PDT",      "Etc/GMT+7",
-    "PST",      "Etc/GMT+8",
-    # Pacific/Honolulu
-    "HST",      "Etc/GMT+10",
+    # Atlantic Standard Time
+    "AST",      "Etc/GMT+4",
+    # Bering Standard Time (retired)
+    "BST",      "Etc/GMT+11",
+    # Central Daylight Time
+    "CDT",      "Etc/GMT+5", 
+    # Sweden Daylight Time or Central European Standard Time
+    "CEST",     "Etc/GMT-2",
+    # Stockholm Sweden Time or Central European Time
+    "CET",      "Etc/GMT-1",
+    # Central Standard Time
+    "CST",      "Etc/GMT+6",
+    # Eastern Daylight Time
+    "EDT",      "Etc/GMT+4",
+    # Eastern Standard Time
+    "EST",      "Etc/GMT+5",
+    # Leave out GMT
+    # Guam Standard Time Zone
+    "GST",      "Etc/GMT-10",
+  	# Hawaii-Aleutian Daylight Time
+    "HADT",     "Etc/GMT+9",
+    # Hawaii-Aleutian Standard Time
     "HAST",     "Etc/GMT+10",
+    # Korea Standard Time
+    "KST",      "Etc/GMT-9",
+    # Mountain Daylight Time
+    "MDT",      "Etc/GMT+6",
+    # Mountain Standard Time
+    "MST",      "Etc/GMT+7",
+    # Newfoundland Daylight Time
+    "NDT",      "Etc/GMT+2.5",
+    # Newfoundland Standard Time
+    "NST",      "Etc/GMT+3.5",
+    # Pacific Daylight Time
+    "PDT",      "Etc/GMT+7",
+    # Pacific Standard Time
+    "PST",      "Etc/GMT+8",
+    # American Samoa Standard Time
+    "SST",     "Etc/GMT+11",
+    # Leave out UTC
+    # Yukon Standard Time (retired)
+    "YST",      "Etc/GMT+9",
+
+    # Other tz codes we've encountered:
+    
     # Alaska-Hawaii Daylight Time
     "AHDT",     "Etc/GMT+9",
-    # America/Adak
-    "HDT",      "Etc/GMT+9",
-    # Suspect this is Guam Standard Time bc
-    # data is prior to tz change in 2000
-    "GST",      "Etc/GMT+10",
     # Chamorro Standard Time
-    "ChST",     "Etc/GMT+10"
+    "ChST",     "Etc/GMT+10",
+    # Hawaii–Aleutian Daylight Time
+    "HDT",      "Etc/GMT+9",
+    # Hawaii Standard Time
+    "HST",      "Etc/GMT+10"
   )
   
   # 1. Complete the time zone records using lat/lon
@@ -409,17 +444,40 @@ fill_date_time <- function(dataset, site_data){
   # Datum varies throughout the dataset; build a conversion table.
   epsg_codes <- tribble(
     ~datum, ~epsg,
-    "NAD83", 4269,
-    "WGS84", 4326,
-    "NAD27", 4267,
-    "OLDHI", 4135,
-    "WGS72", 4322,
-    # Less certain about these two but they seem to match up
+    # American Samoa Datum
     "AMSMA", 4169,
+    # Midway Astro 1961
+    "ASTRO", 37224,
+    # Guam 1963
+    "GUAM", 4675,
+    # High Accuracy Reference Network for NAD83
+    "HARN", 4957,
+    # Johnston Island 1961 (Spelled Johnson in WQX)
+    "JHNSN", 6725,
+    # North American Datum 1927
+    "NAD27", 4267,
+    # North American Datum 1983
+    "NAD83", 4269,
+    # Old Hawaiian Datum
+    "OLDHI", 4135,
+    # Assume WGS84
+    "OTHER", 4326,
+    # Puerto Rico Datum
     "PR", 4139,
-    # Assume these are WGS84
+    # St. George Island Datum
+    "SGEOR", 4138,
+    # St. Lawrence Island Datum
+    "SLAWR", 4136,
+    # St. Paul Island Datum
+    "SPAUL", 4137,
+    # Assume WGS84
     "UNKWN", 4326,
-    "OTHER", 4326
+    # Wake-Eniwetok 1960
+    "WAKE", 37229,
+    # World Geodetic System 1972
+    "WGS72", 4322,
+    # World Geodetic System 1984
+    "WGS84", 4326
   )
   
   # Add EPSG codes
@@ -471,7 +529,7 @@ fill_date_time <- function(dataset, site_data){
   
   # 2. Draft the local time column. Note that we also fill in blank
   # times or those with 00:00:00 with 11:59:59 AM (local), which we've found
-  # is used rarely or not at all in WQP data.
+  # is rarely reported in WQP data.
   dataset_keep_tz <- dataset_tz %>%
     mutate(
       # A column indicating local time (output class will be char)
@@ -488,7 +546,7 @@ fill_date_time <- function(dataset, site_data){
           !is.na(ActivityStartTime.Time) &
           (ActivityStartTime.Time == "00:00:00") ~ paste0(ActivityStartDate,
                                                           " 11:59:59"),
-        # If StartDate only with no StartTime: assign ~noon
+        # If StartDate only with no StartTime: assign 11:59:59
         !is.na(ActivityStartDate) &
           is.na(ActivityStartTime.Time) ~ paste0(ActivityStartDate, " 11:59:59"),
         # If nothing to go on, then NA record
@@ -584,9 +642,10 @@ fill_date_time <- function(dataset, site_data){
           
           # Second, those that were filled by fetched_tz are in the longer
           # location-based format, which R understands but which isn't readily
-          # converted to GMT offset. It need to be converted to short codes
-          # to reflect DST and THEN into the GMT offset. This is similar to
-          # how we handled UTC/GMT above
+          # converted to GMT offset to complete harmonization of the 
+          # `harmonized_tz` column. It needs to be converted to short codes
+          # (e.g. "EST" or "EDT") to reflect DST and THEN into the GMT offset.
+          # This is similar to how we handled UTC/GMT above
         } else if(unique_tz %in% OlsonNames())
           
           .x %>%

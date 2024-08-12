@@ -500,7 +500,7 @@ gc()
     # Plot and unit codes that didn't make through joining
     sdd_no_na %>%
       anti_join(x = .,
-                y = unit_conversion_table,
+                y = converted_units_sdd,
                 by = "ResultMeasure.MeasureUnitCode") %>%
       count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
       plot_unit_pie() %>%

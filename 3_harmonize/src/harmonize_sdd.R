@@ -1045,7 +1045,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste0(
       "Final number of records: ",
-      nrow(no_simul_chla)
+      nrow(no_simul_sdd)
     )
   )
   

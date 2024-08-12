@@ -338,7 +338,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   print(
     paste(
-      round((nrow(sdd_approx)) / nrow(sdd_mdls_added) * 100, 3),
+      round((nrow(sdd_approx)) / nrow(sdd_harmonized_values) * 100, 3),
       "% of samples have missing numeric values or missing units that can be approximated from depth measure columns."
     )
   )

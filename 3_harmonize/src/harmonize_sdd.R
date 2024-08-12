@@ -170,6 +170,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 3
   )
   
+    # Free up memory
+  rm(sdd_fails_removed)
+  gc()
   # Clean up "greater than" values ------------------------------------------
   
   # Next step, incorporating "greater than" values. Using a similar approach to 

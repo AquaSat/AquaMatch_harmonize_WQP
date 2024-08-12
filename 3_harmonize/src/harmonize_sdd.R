@@ -552,7 +552,7 @@ gc()
   sdd_bottom_depth_added <- converted_units_sdd %>%
     mutate(
       # flag 0 = bottom depth value not adjusted and no indication that SD hit bottom
-      # flag 1 = bottom depth value adjusted due to indication that SD hit bottom
+      # flag 1 = bottom depth value filled in with harmonized_value due to indication that SD hit bottom
       depth_flag = case_when(
         !index %in% sdd_bottom_depth$index ~ 0,
         index %in% sdd_bottom_depth$index ~ 1,

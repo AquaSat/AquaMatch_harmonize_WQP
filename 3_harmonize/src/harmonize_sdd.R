@@ -566,7 +566,7 @@ gc()
       ),
       harmonized_comments = case_when(
         depth_flag == 0 ~ "bottom depth value not adjusted and no indication that SD hit bottom.", # need to make sure that comments are consistent
-        depth_flag == 1 ~ "bottom depth value adjusted due to indication that SD hit bottom.",
+        depth_flag == 1 ~ "bottom depth value filled in with harmonized_value due to indication that SD hit bottom.",
         .default = NA_character_
       ),
       harmonized_bottom_depth_value = as.numeric(harmonized_bottom_depth_value) * conversion,

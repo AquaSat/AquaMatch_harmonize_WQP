@@ -436,7 +436,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     n_rows = nrow(sdd_approx_added),
     order = 5
   )
-  
+rm(sdd_harmonized_values)
+gc()  
   # Remove remaining NAs ----------------------------------------------------
   
   # At this point we've processed MDLs, processed values containing

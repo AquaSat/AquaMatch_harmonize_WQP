@@ -230,7 +230,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
   
   # Free up memory
-  rm(sdd)
+  rm(sdd_mdls_added)
   gc()
   
   # Clean up approximated values/Gap fill harmonized values --------------------

@@ -1051,7 +1051,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   return(list(
     sdd_tiering_record_path = tiering_record_out_path,
-    sdd_grouped_preagg_path = grouped_chla_out_path,
+    sdd_grouped_preagg_path = grouped_sdd_out_path,
     sdd_harmonized_path = data_out_path,
     compiled_drops_path = documented_drops_out_path
   ))

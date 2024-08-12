@@ -634,8 +634,8 @@ gc()
   # Percentage of records removed due method harmonization?
   print(
     paste0(
-      "Rows unaltered due to unlikely analytical methods: ",
-      round(nrow(sdd_relevant)/nrow(sdd_bottom_depth_added)*100,3)
+      "Percent of rows removed due to unlikely analytical methods: ",
+      round((nrow(sdd_bottom_depth_added)-nrow(sdd_relevant))/nrow(sdd_bottom_depth_added)*100,3)
     )
   )
   

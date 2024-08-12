@@ -1,4 +1,4 @@
-# sddorophyll-a specific targets list for the harmonization step
+# SDD specific targets list for the harmonization step
 
 p3_sdd_targets_list <- list(
   

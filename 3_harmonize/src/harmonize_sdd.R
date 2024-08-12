@@ -47,7 +47,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # The values that will be considered fails for each column:
   fail_text <- c(
     "error", "fail", "invalid", "no result",  "questionable", "suspect", 
-    "unable", "reject", "no data", "Not Reported", "no reading"
+    "unable", "reject", "no data", "Not Reported", "no reading", "-99",
+    "The listed result is greater than the upper quantitation limit. Equivalent to the Legacy STORET Remark Code of L"
   )
   
   # Now get counts of fail-related string detections for each column: 
@@ -170,9 +171,10 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 3
   )
   
-    # Free up memory
+  # Free up memory
   rm(sdd_fails_removed)
   gc()
+  
   # Clean up "greater than" values ------------------------------------------
   
   # Next step, incorporating "greater than" values. Using a similar approach to 
@@ -213,7 +215,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
   
   # Replace "harmonized_value" field with these new values
-  sdd_harmonized_values <- sdd_mdls_added %>%
+  sdd_greaterthan_added <- sdd_mdls_added %>% # renaming sdd_harmonized_values to sdd_greaterthan_added here
     left_join(x = ., y = greater_vals, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% greater_vals$index, 
                                      greater_value, harmonized_value),
@@ -227,8 +229,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     step = "sdd harmonization",
     reason = "Dropped rows while cleaning 'greater than' values",
     short_reason = "Greater thans",
-    number_dropped = nrow(sdd_mdls_added) - nrow(sdd_harmonized_values),
-    n_rows = nrow(sdd_harmonized_values),
+    number_dropped = nrow(sdd_mdls_added) - nrow(sdd_greaterthan_added),
+    n_rows = nrow(sdd_greaterthan_added),
     order = 4
   )
   
@@ -283,7 +285,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # where Secchi Disk Depth (SDD) can be approximated using available depth measurements.
   #
   # The process involves:
-  # 1. Selecting relevant columns from the 'sdd_harmonized_values' dataframe
+  # 1. Selecting relevant columns from the 'sdd_greaterthan_added' dataframe
   # 2. Cleaning and standardizing unit columns for consistency
   # 3. Filtering rows based on specific criteria:
   #    - Rows where harmonized_value is NA
@@ -296,7 +298,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # can be approximated, while non-included will be removed in subsequent steps
   # if they have missing values or units.
 
-  sdd_approx <- sdd_harmonized_values %>%
+  sdd_approx <- sdd_greaterthan_added %>%
     # subset data for efficiency
     select(index, ResultMeasureValue_original, ResultMeasureValue, ResultMeasure.MeasureUnitCode, 
            harmonized_value, harmonized_units, 
@@ -338,7 +340,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   print(
     paste(
-      round((nrow(sdd_approx)) / nrow(sdd_harmonized_values) * 100, 3),
+      round((nrow(sdd_approx)) / nrow(sdd_greaterthan_added) * 100, 3),
       "% of samples have missing numeric values or missing units that can be approximated from depth measure columns."
     )
   )
@@ -365,7 +367,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # - Updated 'harmonized_comments' explaining the approximation process
   
   # Approximate harmonized_value field with values from depth columns
-  sdd_approx_added <- sdd_harmonized_values %>%
+  sdd_approx_added <- sdd_greaterthan_added %>%
     mutate(
       # create a bottom tag to detect bottom language detected in relevant comment columns to be used for flagging
       bottom_tag = case_when(
@@ -432,11 +434,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     step = "sdd harmonization",
     reason = "Dropped rows while approximating values",
     short_reason = "Clean approximates",
-    number_dropped = nrow(sdd_approx_added) - nrow(sdd_harmonized_values),
+    number_dropped = nrow(sdd_approx_added) - nrow(sdd_greaterthan_added),
     n_rows = nrow(sdd_approx_added),
     order = 5
   )
-rm(sdd_harmonized_values)
+rm(sdd_greaterthan_added)
 gc()  
   # Remove remaining NAs ----------------------------------------------------
   
@@ -468,7 +470,7 @@ gc()
   )
   
   # Free up memory
-  rm(sdd_harmonized_values, sdd_approx_added, sdd_mdls_added,
+  rm(sdd_greaterthan_added, sdd_approx_added, sdd_mdls_added,
      sdd_fails_removed)
   gc()
 

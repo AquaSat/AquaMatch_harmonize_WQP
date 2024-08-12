@@ -20,7 +20,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>% 
     # Filter out non-target media types
-    filter(ActivityMediaSubdivisionName %in% c('Surface Water', 'Water', 'Estuary') |
+    filter(ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
              is.na(ActivityMediaSubdivisionName)) %>% 
     # Turn every value into an absolute value
     mutate(ResultMeasureValue = abs(ResultMeasureValue)) %>% 

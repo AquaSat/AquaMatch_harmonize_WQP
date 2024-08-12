@@ -995,8 +995,6 @@ gc()
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized SDD CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
-    scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

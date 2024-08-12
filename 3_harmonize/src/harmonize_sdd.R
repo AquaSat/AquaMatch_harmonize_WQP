@@ -985,7 +985,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
              tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
              tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
              tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2),
-             tier == 3 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_3)
+             tier == 3 ~ paste0("Inclusive (Tier 3) NAs removed: ", tier_3)
            )) %>% 
     ggplot() +
     geom_histogram(aes(plot_value)) +

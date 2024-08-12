@@ -18,6 +18,7 @@ tar_source(files = c(
   "3a_harmonize.R",
   "3b_harmonize_chla.R",
   "3c_harmonize_doc.R",
+  "3d_harmonize_sdd.R",
   "create_bookdown.R"))
 
 # The list of targets/steps
@@ -44,6 +45,12 @@ config_targets <- list(
     name = p0_doc_output_path,
     command = paste0(p0_harmonization_config$drive_project_folder,
                      "doc/")
+  ), 
+  
+  tar_target(
+    name = p0_sdd_output_path,
+    command = paste0(p0_harmonization_config$drive_project_folder,
+                     "sdd/")
   ), 
   
   # Check for Google Drive folder for harmonized file output, create it if it
@@ -105,6 +112,28 @@ config_targets <- list(
     error = "stop"
   ),
   
+  # Check for doc subfolder, create if not present
+  tar_target(
+    name = p0_check_sdd_drive,
+    command = {
+      p0_check_drive_parent_folder
+      tryCatch({
+        drive_auth(p0_harmonization_config$google_email)
+        drive_ls(p0_sdd_output_path)
+      }, error = function(e) {
+        # if the outpath doesn't exist, create it along with a "stable" subfolder
+        drive_mkdir(name = "sdd",
+                    path = p0_harmonization_config$drive_project_folder)
+        drive_mkdir(name = "stable",
+                    path = paste0(p0_harmonization_config$drive_project_folder,
+                                  "sdd"))
+      })
+    },
+    packages = "googledrive",
+    cue = tar_cue("always"),
+    error = "stop"
+  ),
+  
   # Import targets from the previous pipeline -------------------------------
   
   # Grab location of the local {targets} WQP download pipeline OR error if
@@ -151,6 +180,14 @@ config_targets <- list(
     read = read_csv(file = !!.x)
   ),
   
+  tar_file_read(
+    name = p2_sdd_drive_ids,
+    command = paste0(p0_AquaMatch_download_WQP_directory,
+                     "2_download/out/sdd_drive_ids.csv"),
+    cue = tar_cue("always"),
+    read = read_csv(file = !!.x)
+  ),
+  
   
   # Download files from Google Drive ----------------------------------------
   
@@ -191,6 +228,18 @@ config_targets <- list(
     packages = c("tidyverse", "googledrive")
   ),  
   
+  # SDD
+  tar_target(
+    name = p1_wqp_params_sdd,
+    command = retrieve_data(target = "p1_wqp_params_sdd",
+                            id_df = p2_sdd_drive_ids,
+                            local_folder = "3_harmonize/in",
+                            stable = p0_harmonization_config$sdd_use_stable, 
+                            google_email = p0_harmonization_config$google_email,
+                            stable_date = p0_harmonization_config$sdd_stable_date),
+    packages = c("tidyverse", "googledrive")
+  ),  
+  
   # CharacteristicName x Parameter name crosswalk tables
   # Chl
   tar_target(
@@ -216,7 +265,19 @@ config_targets <- list(
     packages = c("tidyverse", "googledrive")
   ),
   
-  
+  # SDD
+  tar_target(
+    name = p1_char_names_crosswalk_sdd,
+    command = retrieve_data(target = "p1_char_names_crosswalk_sdd",
+                            id_df = p2_sdd_drive_ids,
+                            local_folder = "3_harmonize/in",
+                            stable = p0_harmonization_config$sdd_use_stable, 
+                            google_email = p0_harmonization_config$google_email,
+                            stable_date = p0_harmonization_config$sdd_stable_date),
+    packages = c("tidyverse", "googledrive")
+  ),
+
+    
   # Inventory info from WQP
   # Chl
   tar_target(
@@ -242,6 +303,18 @@ config_targets <- list(
     packages = c("tidyverse", "googledrive")
   ),
   
+  # SDD
+  tar_target(
+    name = p1_wqp_inventory_aoi_sdd,
+    command = retrieve_data(target = "p1_wqp_inventory_aoi_sdd",
+                            id_df = p2_sdd_drive_ids,
+                            local_folder = "3_harmonize/in",
+                            stable = p0_harmonization_config$sdd_use_stable, 
+                            google_email = p0_harmonization_config$google_email,
+                            stable_date = p0_harmonization_config$sdd_stable_date),
+    packages = c("tidyverse", "googledrive")
+  ),
+  
   # Site counts
   # Chl
   tar_target(
@@ -264,6 +337,18 @@ config_targets <- list(
                             stable = p0_harmonization_config$doc_use_stable, 
                             google_email = p0_harmonization_config$google_email,
                             stable_date = p0_harmonization_config$doc_stable_date),
+    packages = c("tidyverse", "googledrive")
+  ),
+  
+  # DOC
+  tar_target(
+    name = p2_site_counts_sdd,
+    command = retrieve_data(target = "p2_site_counts_sdd",
+                            id_df = p2_sdd_drive_ids,
+                            local_folder = "3_harmonize/in",
+                            stable = p0_harmonization_config$sdd_use_stable, 
+                            google_email = p0_harmonization_config$google_email,
+                            stable_date = p0_harmonization_config$sdd_stable_date),
     packages = c("tidyverse", "googledrive")
   ),
   
@@ -294,7 +379,22 @@ config_targets <- list(
                             stable_date = p0_harmonization_config$doc_stable_date),
     packages = c("tidyverse", "googledrive", "feather"),
     format = "feather"
+  ),
+  
+  # SDD
+  tar_target(
+    name = p2_wqp_data_aoi_sdd,
+    command = retrieve_data(target = "p2_wqp_data_aoi_sdd_anon",
+                            id_df = p2_sdd_drive_ids,
+                            local_folder = "3_harmonize/in",
+                            file_type = ".feather",
+                            stable = p0_harmonization_config$sdd_use_stable, 
+                            google_email = p0_harmonization_config$google_email,
+                            stable_date = p0_harmonization_config$sdd_stable_date),
+    packages = c("tidyverse", "googledrive", "feather"),
+    format = "feather"
   )
+  
 )
 
 
@@ -303,4 +403,5 @@ c(config_targets,
   p3_targets_list,
   p3_chla_targets_list,
   p3_doc_targets_list,
+  p3_sdd_targets_list,
   bookdown_targets_list)

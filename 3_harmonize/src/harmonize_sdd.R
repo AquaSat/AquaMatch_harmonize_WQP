@@ -1038,7 +1038,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Export in memory-friendly way
   data_out_path <- "3_harmonize/out/sdd_harmonized_final.csv"
   
-  write_csv(no_simul_chla,
+  write_csv(no_simul_sdd,
             data_out_path)
   
   # Final dataset length:

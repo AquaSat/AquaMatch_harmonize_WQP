@@ -89,7 +89,6 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   walk2(.x = fail_counts,
         .y = names(fail_counts),
         .f = ~ ggsave(filename = paste0("3_harmonize/out/sdd_",
-        # .f = ~ ggsave(filename = paste0("../AquaMatch_harmonize_WQP_old/scratch/figures/sdd_", # update path
                                         .y,
                                         "_fail_pie.png"),
                       plot = plot_fail_pie(dataset = .x, col_name = .y),

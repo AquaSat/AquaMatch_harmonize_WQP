@@ -755,7 +755,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       # MDL
       # Flag: 0 = value not adjusted and value is greater than 0.01
       #       1 = original NA value adjusted using MDL method
-      #       2 = provided value below 0.01; not adjusted
+      #       2 = harmonized value below 0.01; not adjusted
       mdl_flag = case_when(
         (harmonized_value > 0.01) ~ 0,
         (harmonized_value <= 0.01) ~ 2,

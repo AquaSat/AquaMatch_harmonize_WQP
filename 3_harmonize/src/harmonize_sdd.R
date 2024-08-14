@@ -373,6 +373,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   rm(sdd_greaterthan_added)
   gc()
+
   # Remove remaining NAs ----------------------------------------------------
 
   # At this point we've processed MDLs, processed values containing

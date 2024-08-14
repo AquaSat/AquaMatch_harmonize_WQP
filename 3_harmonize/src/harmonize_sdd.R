@@ -108,8 +108,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fail-related language: ",
-      nrow(sdd) - nrow(sdd_fails_removed)
+      "Percentage of rows removed due to fail-related language: ",
+      round((nrow(sdd) - nrow(sdd_fails_removed)) / nrow(sdd) * 100, 3)
     )
   )
 
@@ -263,7 +263,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
                                         "Approximated during 'greater than' step",
                                         harmonized_comments))
 
-  dropped_greater_than <- tibble(
+  dropped_greaterthan <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while cleaning 'greater than' values",
     short_reason = "Greater thans",
@@ -328,12 +328,14 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         is.na(harmonized_value) &
           bottom_tag == 1 &
           negate_bottom_tag == 0 &
-          !is.na(ActivityBottomDepthHeightMeasure.MeasureValue) ~ 2,
+          !is.na(ActivityBottomDepthHeightMeasure.MeasureValue) &
+          ActivityBottomDepthHeightMeasure.MeasureValue != 0 ~ 2,
         # If the harmonized value is NA and there is no bottom language or there is negate language, and
         # ActivityDepthHeightMeasure.MeasureValue is not NA set flag to 1
         is.na(harmonized_value) &
           (bottom_tag == 0 | negate_bottom_tag == 1) &
-          !is.na(ActivityDepthHeightMeasure.MeasureValue) ~ 1,
+          !is.na(ActivityDepthHeightMeasure.MeasureValue) &
+          ActivityDepthHeightMeasure.MeasureValue != 0~ 1,
         # For all other cases, set flag to NA
         .default = NA_integer_ # it is possible to get NA values here, but we will drop them in the next step
       ),
@@ -457,7 +459,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     short_reason = "Harmonize units",
     number_dropped = nrow(sdd_no_na) - nrow(converted_units_sdd),
     n_rows = nrow(converted_units_sdd),
-    order = 9
+    order = 8
   )
 
   # Clean and flag bottom depth data -------------------------------------------
@@ -668,7 +670,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     stop("Rows were lost during analytical method tiering. This is not expected.")
   }
 
-  dropped_field <- tibble(
+  dropped_tiers <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
@@ -748,13 +750,13 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Print how many records removed due to assigning flags
   print(
     paste0(
-      "Rows removed while assigning flags: ",
-      nrow(cleaned_flagged_sdd) - nrow(tiered_methods_sdd)
+      "Percentage of rows removed while assigning flags: ",
+      round((nrow(tiered_methods_sdd) - nrow(cleaned_flagged_sdd)) / nrow(tiered_methods_sdd) * 100, 3)
     )
   )
 
   # Export a record of how records were flagged and their respective row counts
-  flagging_record <- flagged_sdd %>%
+  flagging_record <- cleaned_flagged_sdd %>%
     count(mdl_flag, greater_flag, field_flag, misc_flag) %>%
     arrange(desc(n))
 
@@ -762,7 +764,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   write_csv(flagging_record, flagged_record_out_path)
 
-  dropped_field <- tibble(
+  dropped_flags <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while assigning flags",
     short_reason = "Field flagging",
@@ -771,21 +773,28 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 12
   )
 
-  rm(tiered_methods_sdd)
+  rm(tiered_methods_sdd, flagged_sdd)
   gc()
 
   # Unrealistic values ------------------------------------------------------
 
-  realistic_sdd <- flagged_sdd %>%
+  realistic_sdd <- cleaned_flagged_sdd %>%
     filter(harmonized_value <= 62)
 
   dropped_unreal <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows with unrealistic values",
     short_reason = "Unrealistic values",
-    number_dropped = nrow(flagged_sdd) - nrow(realistic_sdd),
+    number_dropped = nrow(cleaned_flagged_sdd) - nrow(realistic_sdd),
     n_rows = nrow(realistic_sdd),
     order = 13
+  )
+  
+  print(
+    paste0(
+      "Percentage of rows removed while removing unrealistic values: ",
+      round((nrow(cleaned_flagged_sdd) - nrow(realistic_sdd)) / nrow(cleaned_flagged_sdd) * 100, 3)
+    )
   )
 
   # generate plots with harmonized dataset -------------------------------------
@@ -795,7 +804,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Plot harmonized measurements by CharacteristicName
 
-  plotting_subset <- cleaned_flagged_sdd %>%
+  plotting_subset <- realistic_sdd %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
 
@@ -811,7 +820,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
-
+  
   ggsave(filename = "3_harmonize/out/sdd_charname_dists.png",
          plot = char_dists,
          width = 8, height = 6, units = "in", device = "png")
@@ -823,7 +832,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # First tag aggregate subgroups with group IDs
 
-  grouped_sdd <- cleaned_flagged_sdd %>%
+  grouped_sdd <- realistic_sdd %>%
     group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
              MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
              ActivityStartDate, ActivityStartTime.Time,
@@ -946,8 +955,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed in aggregating simultaneous records?
   print(
     paste0(
-      "Rows removed while aggregating simultaneous records: ",
-      nrow(cleaned_flagged_sdd) - nrow(no_simul_sdd)
+      "Percentage of rows removed while aggregating simultaneous records: ",
+      round((nrow(realistic_sdd) - nrow(no_simul_sdd)) / nrow(realistic_sdd) * 100, 3)
     )
   )
 
@@ -955,7 +964,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     step = "sdd harmonization",
     reason = "Dropped rows while aggregating simultaneous records",
     short_reason = "Simultaneous records",
-    number_dropped = nrow(cleaned_flagged_sdd) - nrow(no_simul_sdd),
+    number_dropped = nrow(realistic_sdd) - nrow(no_simul_sdd),
     n_rows = nrow(no_simul_sdd),
     order = 14
   )
@@ -964,11 +973,13 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Record of all steps where rows were dropped, why, and how many
   compiled_dropped <- bind_rows(starting_data, dropped_media,
-                                dropped_fails, dropped_specialcharacters, dropped_mdls,
-                                dropped_greater_than, dropped_approximates,
-                                dropped_na, dropped_harmonization,
-                                dropped_depths, dropped_methods,
-                                dropped_field, dropped_simul)
+                                dropped_fails, dropped_specialcharacters, 
+                                dropped_mdls, dropped_greaterthan, 
+                                dropped_approximates, dropped_na, 
+                                dropped_harmonization, dropped_depths, 
+                                dropped_methods, dropped_tiers,
+                                dropped_flags, dropped_unreal, 
+                                dropped_simul)
 
   documented_drops_out_path <- "3_harmonize/out/sdd_harmonize_dropped_metadata.csv"
 

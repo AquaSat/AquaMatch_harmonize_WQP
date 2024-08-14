@@ -479,7 +479,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste(
       round((nrow(sdd_bottom_depth)) / nrow(converted_units_sdd) * 100, 3),
-      "% of samples have bottom depths that can be back filled with harmonized values."
+      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValue that can be 
+      back filled with harmonized values where Secchi on bottom was indicated."
     )
   )
 

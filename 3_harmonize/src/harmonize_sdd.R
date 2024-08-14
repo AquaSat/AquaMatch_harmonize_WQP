@@ -232,6 +232,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       harmonized_units = ResultMeasure.MeasureUnitCode,
       harmonized_comments = "Approximated during 'greater than' step")
 
+  # this will cause coercion errors, which is expected, as some values have additional characters in
+  # them that cause this step to have errors.
   greater_vals$greater_value <- as.numeric(
     str_replace_all(
       greater_vals$ResultMeasureValue_original,

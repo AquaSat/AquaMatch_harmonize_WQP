@@ -812,7 +812,6 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     theme_bw() +
     theme(strip.text = element_text(size = 7))
 
-  # ggsave(filename = "../AquaMatch_harmonize_WQP_old/scratch/figures/sdd_charname_dists.png",
   ggsave(filename = "3_harmonize/out/sdd_charname_dists.png",
          plot = char_dists,
          width = 8, height = 6, units = "in", device = "png")

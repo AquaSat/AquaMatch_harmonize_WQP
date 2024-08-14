@@ -370,6 +370,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 6
   )
   
+  
   rm(sdd_greaterthan_added)
   gc()
   # Remove remaining NAs ----------------------------------------------------

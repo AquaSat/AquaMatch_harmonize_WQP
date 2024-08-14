@@ -404,8 +404,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
 
   # Free up memory
-  rm(sdd_greaterthan_added, sdd_approx_added, sdd_mdls_added,
-     sdd_fails_removed)
+  rm(sdd_approx_added)
   gc()
 
   # Harmonize value units ------------------------------------------------------

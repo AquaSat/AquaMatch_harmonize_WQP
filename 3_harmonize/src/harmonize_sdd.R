@@ -207,7 +207,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
 
   # Free up memory
-  rm(sdd_fails_removed, sdd_specialcharacters_added)
+  rm(sdd_fails_removed, sdd_specialcharacters_removed)
   gc()
 
   # Clean up "greater than" values ------------------------------------------

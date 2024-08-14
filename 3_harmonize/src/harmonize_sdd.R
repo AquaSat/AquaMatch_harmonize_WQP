@@ -219,7 +219,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   greater_vals <- sdd_mdls_added %>%
     # First, remove the samples that we've already approximated:
     filter((!index %in% mdl_updates$index)) %>%
-    # only want NAs in the altered value column and where there is a `<` or `=` and a number in the original values column...
+    # only want NAs in the altered value column and where there is a `<` and a number in the original values column...
     filter(is.na(ResultMeasureValue) &
             grepl(">", ResultMeasureValue_original) &
              grepl("[0-9]", ResultMeasureValue_original)) %>%

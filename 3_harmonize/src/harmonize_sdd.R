@@ -729,7 +729,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       #       1 = bottom indicated
       #       2 = Harmonized value > bottom value
       misc_flag = case_when(
-        bottom_tag == 1 ~ 1,
+        bottom_tag == 1 & negate_bottom_tag == 0 ~ 1,
         harmonized_value > ActivityBottomDepthHeightMeasure.MeasureValue ~ 2,
         .default = 0
       )

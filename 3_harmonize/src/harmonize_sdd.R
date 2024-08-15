@@ -135,14 +135,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     # Remove special characters from those rows that start with them
     mutate(ResultMeasureValue = if_else(index %in% sdd_specialcharacters$index,
                                         abs(as.numeric(str_extract(ResultMeasureValue_original, "-?\\d+(\\.\\d+)?"))),
-                                        ResultMeasureValue),
-           # miscellaneous flag
-           # Flag: 0 = no misc flag
-           #       1 = bottom indicated
-           #       2 = Harmonized value > bottom value
-           #       3 = Approximated from special characters (-,=,*)
-           misc_flag = case_when(index %in% sdd_specialcharacters$index ~ 3,
-                                 .default = 0)
+                                        ResultMeasureValue)
            )
   
   print(
@@ -324,14 +317,14 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         # If the harmonized value is not NA, set flag to 0
         !is.na(harmonized_value) ~ 0,
         # If the harmonized value is NA and there is bottom language and no negate language, and
-        # ActivityBottomDepthHeightMeasure.MeasureValue is not NA set flag to 2
+        # ActivityBottomDepthHeightMeasure.MeasureValue is not NA or 0 set flag to 2
         is.na(harmonized_value) &
           bottom_tag == 1 &
           negate_bottom_tag == 0 &
           !is.na(ActivityBottomDepthHeightMeasure.MeasureValue) &
           ActivityBottomDepthHeightMeasure.MeasureValue != 0 ~ 2,
         # If the harmonized value is NA and there is no bottom language or there is negate language, and
-        # ActivityDepthHeightMeasure.MeasureValue is not NA set flag to 1
+        # ActivityDepthHeightMeasure.MeasureValue is not NA or 0 set flag to 1
         is.na(harmonized_value) &
           (bottom_tag == 0 | negate_bottom_tag == 1) &
           !is.na(ActivityDepthHeightMeasure.MeasureValue) &
@@ -345,7 +338,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         .default = harmonized_value
       ),
       harmonized_units = case_when(
-        approx_flag == 2 ~ ActivityBottomDepthHeightMeasure.MeasureUnitCode,
+        approx_flag == 2 ~ c,
         approx_flag == 1 ~ ActivityDepthHeightMeasure.MeasureUnitCode,
         .default = harmonized_units
       ),
@@ -503,7 +496,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         depth_flag == 1, harmonized_units, as.character(ActivityBottomDepthHeightMeasure.MeasureUnitCode)
       ),
       harmonized_comments = case_when(
-        depth_flag == 0 ~ "bottom depth value not adjusted and no indication that SD hit bottom.", # need to make sure that comments are consistent
+        # depth_flag == 0 ~ "bottom depth value not adjusted and no indication that SD hit bottom.", # need to make sure that comments are consistent
         depth_flag == 1 ~ "bottom depth value filled in with harmonized_value due to indication that SD hit bottom.",
         .default = NA_character_
       ),
@@ -734,9 +727,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       # Flag: 0 = no misc flag
       #       1 = bottom indicated
       #       2 = Harmonized value > bottom value
+      #       3 = Special character removed (-,=,*)
       misc_flag = case_when(
         bottom_tag == 1 & negate_bottom_tag == 0 ~ 1,
         harmonized_value > ActivityBottomDepthHeightMeasure.MeasureValue ~ 2,
+        index %in% sdd_specialcharacters$index ~ 3,
         .default = 0
       )
       )
@@ -882,7 +877,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       c(subgroup_id, harmonized_row_count, harmonized_units,
         harmonized_value, harmonized_value_cv, lat, lon, datum),
       .after = misc_flag
-    )
+    ) %>% 
+    # round the final harmonized_value so we don't give false estimates of precision
+    mutate(harmonized_value = round(harmonized_value, 2))
 
   rm(grouped_sdd)
   gc()

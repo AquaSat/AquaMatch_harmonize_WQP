@@ -337,7 +337,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         .default = harmonized_value
       ),
       harmonized_units = case_when(
-        approx_flag == 2 ~ c,
+        approx_flag == 2 ~ ActivityBottomDepthHeightMeasure.MeasureValue,
         approx_flag == 1 ~ ActivityDepthHeightMeasure.MeasureUnitCode,
         .default = harmonized_units
       ),
@@ -440,7 +440,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed due to unit harmonization?
   print(
     paste0(
-      "Rows removed while converting units: ",
+      "Percentage of rows removed while converting units: ", #***
       nrow(sdd_no_na) - nrow(converted_units_sdd)
     )
   )
@@ -495,7 +495,6 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         depth_flag == 1, harmonized_units, as.character(ActivityBottomDepthHeightMeasure.MeasureUnitCode)
       ),
       harmonized_comments = case_when(
-        # depth_flag == 0 ~ "bottom depth value not adjusted and no indication that SD hit bottom.", # need to make sure that comments are consistent
         depth_flag == 1 ~ "bottom depth value filled in with harmonized_value due to indication that SD hit bottom.",
         .default = NA_character_
       ),

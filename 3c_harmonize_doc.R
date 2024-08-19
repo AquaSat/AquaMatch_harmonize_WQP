@@ -156,7 +156,27 @@ p3_doc_targets_list <- list(
       },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
+  ),
+  
+  # Get file IDs ------------------------------------------------------------
+  
+  # In order to access "stable" versions of the dataset created by the pipeline,
+  # we get their Google Drive file IDs and store those in the repo so that
+  # the harmonization pipeline can retrieve them more easily. The targets below
+  # will include all file IDs in the Drive location, not just stable ones
+  
+  # DOC
+  tar_file_read(
+    name = p3_doc_drive_ids,
+    command = get_file_ids(google_email = p0_harmonization_config$google_email,
+                           drive_folder = p0_doc_output_path,
+                           file_path = "3_harmonize/out/doc_drive_ids.csv",
+                           depend = p3_doc_site_info_drive_file
+    ),
+    read = read_csv(file = !!.x),
+    packages = c("tidyverse", "googledrive")
   )
+  
   
 )
 

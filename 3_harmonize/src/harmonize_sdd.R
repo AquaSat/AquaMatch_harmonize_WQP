@@ -96,7 +96,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Now that the fails have been documented, remove them:
   sdd_fails_removed <- sdd %>%
     filter(
-      if_all(.cols = c(ResultCommentText, ResultMeasureValue_original),
+      if_all(.cols = c(ResultCommentText, ResultMeasureValue_original, ResultDetectionConditionText),
         .fns = ~
           !grepl(
             pattern = paste0(fail_text, collapse = "|"),
@@ -211,7 +211,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   greater_vals <- sdd_mdls_added %>%
     # First, remove the samples that we've already approximated:
     filter((!index %in% mdl_updates$index)) %>%
-    # only want NAs in the altered value column and where there is a `<` and a number in the original values column...
+    # only want NAs in the altered value column and where there is a `>` and a number in the original values column...
     filter(is.na(ResultMeasureValue) &
             grepl(">", ResultMeasureValue_original) &
              grepl("[0-9]", ResultMeasureValue_original)) %>%
@@ -268,11 +268,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   rm(sdd_mdls_added)
   gc()
 
-  # Clean up approximated values/Gap fill harmonized values --------------------
+  # Gap filling harmonized values --------------------
   
-  # Approximate missing values using depth columns when appropriate.
+  # Gap fill missing values using depth columns when appropriate.
 
-  comment_cols <- c("ActivityCommentText","ResultCommentText", "ResultMeasureValue_original")
+  gap_fill_comment_cols <- c("ActivityCommentText","ResultCommentText", "ResultMeasureValue_original")
 
   unit_cols <- c("ResultMeasure.MeasureUnitCode", "harmonized_units",
   "ActivityDepthHeightMeasure.MeasureUnitCode", "ActivityBottomDepthHeightMeasure.MeasureUnitCode")
@@ -290,7 +290,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     "profile not taken to bottom", "unable to collect bottom", "bottom.*not.*collected", "bottom.*not.*recorded",
     sep = "|")
   
-  # Approximate harmonized_value field with values from depth columns
+  # Gap fill harmonized_value field with values from depth columns
   sdd_approx_added <- sdd_greaterthan_added %>%
     # clean the unit columns for consistency in comparisons
     mutate(
@@ -301,12 +301,12 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       }),
       # create a bottom tag to detect bottom language detected in relevant comment columns to be used for flagging
       bottom_tag = case_when(
-        rowSums(across(all_of(comment_cols), ~grepl("bottom", .x, ignore.case = TRUE))) > 0 ~ 1,
+        rowSums(across(all_of(gap_fill_comment_cols), ~grepl("bottom", .x, ignore.case = TRUE))) > 0 ~ 1,
         TRUE ~ 0
       ),
       # create a negate bottom tag to detect negate language in relevant comment columns
       negate_bottom_tag = case_when(
-        rowSums(across(all_of(comment_cols), ~grepl(negate_bottom_text, .x, ignore.case = TRUE))) > 0 ~ 1,
+        rowSums(across(all_of(gap_fill_comment_cols), ~grepl(negate_bottom_text, .x, ignore.case = TRUE))) > 0 ~ 1,
         TRUE ~ 0
       ),
       # flag 0 = value and units not adjusted
@@ -337,7 +337,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         .default = harmonized_value
       ),
       harmonized_units = case_when(
-        approx_flag == 2 ~ ActivityBottomDepthHeightMeasure.MeasureValue,
+        approx_flag == 2 ~ ActivityBottomDepthHeightMeasure.MeasureUnitCode,
         approx_flag == 1 ~ ActivityDepthHeightMeasure.MeasureUnitCode,
         .default = harmonized_units
       ),
@@ -383,7 +383,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   print(
     paste(
-      round((nrow(sdd_no_na)) / nrow(sdd_approx_added) * 100, 2),
+      round((nrow(sdd_no_na)) / nrow(sdd_approx_added) * 100, 3),
       "% of samples remain after removing NA values."
     )
   )
@@ -440,8 +440,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed due to unit harmonization?
   print(
     paste0(
-      "Percentage of rows removed while converting units: ", #***
-      nrow(sdd_no_na) - nrow(converted_units_sdd)
+      "Percentage of rows removed while converting units: ", 
+      round(((nrow(sdd_no_na)) - nrow(converted_units_sdd)/nrow(sdd_no_na)) * 100, 3)
     )
   )
 
@@ -473,7 +473,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste(
       round((nrow(sdd_bottom_depth)) / nrow(converted_units_sdd) * 100, 3),
-      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValue that can be 
+      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValu. These will be 
       back filled with harmonized values where Secchi on bottom was indicated."
     )
   )
@@ -571,8 +571,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Percentage of records removed due method harmonization?
   print(
     paste0(
-      "Percent of rows removed due to unlikely analytical methods: ",
-      round((nrow(sdd_bottom_depth_added)-nrow(sdd_relevant))/nrow(sdd_bottom_depth_added)*100,3)
+      "Percentage of rows removed due to unlikely analytical methods: ",
+      round((nrow(sdd_bottom_depth_added)-nrow(sdd_relevant))/nrow(sdd_bottom_depth_added)*100,3),
+      " %"
     )
   )
 
@@ -586,26 +587,33 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
 
   # time_tag
+  # Time tagging: Categorize timestamps to identify optimal conditions for Secchi disk depth measurements.
+  # Tag 0 (10am-2pm) represents the ideal time range for measurements due to consistent lighting conditions.
+  # This helps in assessing data quality and reliability of Secchi disk depth readings.
   sdd_time_tag <- sdd_relevant %>%
     mutate(
-      harmonized_local_time = as.POSIXct(harmonized_local_time,
+      harmonized_local_time_temp = as.POSIXct(harmonized_local_time,
                                          format = "%Y-%m-%d %H:%M:%S",
-                                         tz = "UTC"), # to prevent time zone conversions
+                                         tz = "UTC"), # prevent time zone conversions
       time_tag = case_when(
         # tag 0: time is within 10a-2p and is not 11:59:59
-        (format(harmonized_local_time, "%H:%M:%S") != "11:59:59" &
-           hour(harmonized_local_time) >= 10 & hour(harmonized_local_time) < 14) ~ 0,
+        (format(harmonized_local_time_temp, "%H:%M:%S") != "11:59:59" &
+           hour(harmonized_local_time_temp) >= 10 & hour(harmonized_local_time_temp) < 14) ~ 0,
         # tag 1: time is not within 10a-2p and is not 11:59:59
-        (format(harmonized_local_time, "%H:%M:%S") != "11:59:59" &
-           (hour(harmonized_local_time) < 10 | hour(harmonized_local_time) >= 14)) ~ 1,
+        (format(harmonized_local_time_temp, "%H:%M:%S") != "11:59:59" &
+           (hour(harmonized_local_time_temp) < 10 | hour(harmonized_local_time_temp) >= 14)) ~ 1,
         # tag 2: time is 11:59:59 or NA
-        (format(harmonized_local_time, "%H:%M:%S") == "11:59:59" | is.na(harmonized_local_time)) ~ 2,
+        (format(harmonized_local_time_temp, "%H:%M:%S") == "11:59:59" | is.na(harmonized_local_time_temp)) ~ 2,
         .default = NA_integer_
-      ),
-      harmonized_local_time = format(harmonized_local_time, "%Y-%m-%d %H:%M:%S") # return harmonized_local_time to characters
-    )
+      )
+    ) %>% 
+    select(-harmonized_local_time_temp) # remove temporary column
 
   # scope_tag
+  # Scope tagging: Identify whether a viewscope was used during Secchi disk depth measurements.
+  # Using a viewscope can significantly improve measurement accuracy by reducing surface glare 
+  # and wave effects. This tagging helps in assessing the reliability and consistency of the 
+  # Secchi disk depth data across different measurement conditions.
   scope_text <- "scope"
 
   negate_scope_text <- paste(
@@ -619,15 +627,15 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     "scope of cable", "scope of collection", "scope of sample collection",
     sep = "|")
 
-  comment_cols <- c("ResultAnalyticalMethod.MethodName", "ActivityCommentText",
+  scope_comment_cols <- c("ResultAnalyticalMethod.MethodName", "ActivityCommentText",
                     "ResultCommentText")
 
   sdd_scope_tag <- sdd_time_tag %>%
     # tag: 0 = Either the method/comments/p-code indicate that a viewscope was used
     #      1 = P-code does not match viewscope, No indication that a viewscope was used, or there is negate language regarding viewscope used
     mutate(scope_tag = case_when(
-      rowSums(across(all_of(comment_cols), ~grepl(negate_scope_text, .x, ignore.case = TRUE))) > 0  ~ 1, # negate language detected
-      rowSums(across(all_of(comment_cols), ~grepl(scope_text, .x, ignore.case = TRUE))) > 0 | USGSPCode == 72187 ~ 0, # scope language detected or correct USGS code
+      rowSums(across(all_of(scope_comment_cols), ~grepl(negate_scope_text, .x, ignore.case = TRUE))) > 0  ~ 1, # negate language detected
+      rowSums(across(all_of(scope_comment_cols), ~grepl(scope_text, .x, ignore.case = TRUE))) > 0 | USGSPCode == 72187 ~ 0, # scope language detected or correct USGS code
       .default = 1) # if negate language is not detected, scope language is not detected and the p-code does not match the one for view scope default to 1
     )
 
@@ -653,6 +661,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     arrange(desc(n))
 
   tiering_record_out_path <- "3_harmonize/out/sdd_tiering_record.csv"
+  
+  write_csv(tiering_record,
+            tiering_record_out_path)
 
   # Slim the tiered product (post flagging)
 
@@ -674,13 +685,12 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   gc()
 
   # Flag --------------------------------------------------------------------
-  # We are going to flag everything that hasn't been flagged yet during this step
-  # we are not going to worry about bottom language in this step because it is
-  # already in the bottom tag. if people care about these they can make their own
-  # combinations of the tags that already exist
+  # Now that we have cleaned and tiered our data we are able to conduct a final
+  # flagging sweep. In this step we will create the mdl_flag, greater_flag, 
+  # field_flag, and misc_flag.
 
   # comment_cols
-  comment_cols <- c("ActivityCommentText", "ResultCommentText")
+  flag_comment_cols <- c("ActivityCommentText", "ResultCommentText")
   # environmental indicator text
   environmental_indicator <- paste0(c("wind", "chop", "choppy", "precipitation",
                                       "rain", "calm", "clear"),
@@ -691,7 +701,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       # MDL
       # Flag: 0 = value not adjusted and value is greater than 0.01
       #       1 = original NA value adjusted using MDL method
-      #       2 = harmonized value below 0.01; not adjusted
+      #       2 = harmonized value below 0.01m; not adjusted
       mdl_flag = case_when(
         (harmonized_value > 0.01) ~ 0,
         (harmonized_value <= 0.01) ~ 2,
@@ -711,7 +721,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       ),
       # create adverse language tags for field flag
       environmental_indicator_tag = if_else(
-        rowSums(across(all_of(comment_cols), ~grepl(environmental_indicator, .x, ignore.case = TRUE))) > 0,
+        rowSums(across(all_of(flag_comment_cols), ~grepl(environmental_indicator, .x, ignore.case = TRUE))) > 0,
         1,
         0),
       # field flag
@@ -731,8 +741,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         harmonized_value > ActivityBottomDepthHeightMeasure.MeasureValue ~ 2,
         index %in% sdd_specialcharacters$index ~ 3,
         .default = 0
-      )
-      )
+        )
+      ) %>% 
+    select(-harmonized_comments) # Offload the harmonized_comments column
 
   # Slim the tiered and completely flagged product
   cleaned_flagged_sdd <- flagged_sdd %>%
@@ -744,7 +755,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste0(
       "Percentage of rows removed while assigning flags: ",
-      round((nrow(tiered_methods_sdd) - nrow(cleaned_flagged_sdd)) / nrow(tiered_methods_sdd) * 100, 3)
+      round((nrow(tiered_methods_sdd) - nrow(cleaned_flagged_sdd)) / nrow(tiered_methods_sdd) * 100, 3),
+      " %"
     )
   )
 
@@ -770,6 +782,15 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   gc()
 
   # Unrealistic values ------------------------------------------------------
+  
+  # We exclude reported Secchi disk depth (SDD) measurements exceeding 62 meters from the final dataset.
+  # This threshold is established based on the following rationale:
+  # 1. SDD values greater than 31 meters are flagged as potentially anomalous in our quality control process.
+  # 2. The 62-meter threshold represents a doubling of this initial flagging criterion.
+  # 3. Measurements beyond this point are considered improbable and likely erroneous.
+  # 4. Removing these extreme outliers enhances the overall reliability and interpretability of the dataset.
+  # 5. This conservative approach aims to minimize the inclusion of potentially spurious data while 
+  #    preserving legitimate measurements within expected ranges for typical aquatic environments.
 
   realistic_sdd <- cleaned_flagged_sdd %>%
     filter(harmonized_value <= 62)
@@ -786,7 +807,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste0(
       "Percentage of rows removed while removing unrealistic values: ",
-      round((nrow(cleaned_flagged_sdd) - nrow(realistic_sdd)) / nrow(cleaned_flagged_sdd) * 100, 3)
+      round((nrow(cleaned_flagged_sdd) - nrow(realistic_sdd)) / nrow(cleaned_flagged_sdd) * 100, 3),
+      " %"
     )
   )
 
@@ -951,7 +973,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste0(
       "Percentage of rows removed while aggregating simultaneous records: ",
-      round((nrow(realistic_sdd) - nrow(no_simul_sdd)) / nrow(realistic_sdd) * 100, 3)
+      round((nrow(realistic_sdd) - nrow(no_simul_sdd)) / nrow(realistic_sdd) * 100, 3),
+      " %"
     )
   )
 

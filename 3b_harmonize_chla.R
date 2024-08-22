@@ -59,7 +59,6 @@ p3_chla_targets_list <- list(
     name = p3_cleaned_wqp_data_chl,
     command = p3_wqp_data_aoi_ready_chl$wqp_data_clean_path,
     read = read_feather(path = !!.x),
-    cue = tar_cue("always"),
     packages = "feather"),
   
   
@@ -84,7 +83,6 @@ p3_chla_targets_list <- list(
     name = p3_chla_preagg_grouped,
     command = p3_chla_harmonized$chla_grouped_preagg_path,
     read = read_feather(path = !!.x),
-    cue = tar_cue("always"),
     packages = "feather"),
   
   # Harmonized chlorophyll data after simultaneous record aggregation (i.e.,
@@ -160,7 +158,25 @@ p3_chla_targets_list <- list(
     },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
-  )
+  ),
   
+  # Get file IDs ------------------------------------------------------------
+  
+  # In order to access "stable" versions of the dataset created by the pipeline,
+  # we get their Google Drive file IDs and store those in the repo so that
+  # the harmonization pipeline can retrieve them more easily. The targets below
+  # will include all file IDs in the Drive location, not just stable ones
+  
+  tar_file_read(
+    name = p3_chla_drive_ids,
+    command = get_file_ids(google_email = p0_harmonization_config$google_email,
+                           drive_folder = p0_chl_output_path,
+                           file_path = "3_harmonize/out/chl_drive_ids.csv",
+                           depend = p3_chl_site_info_drive_file
+    ),
+    read = read_csv(file = !!.x),
+    packages = c("tidyverse", "googledrive")
+  )
+
 )
 

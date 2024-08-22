@@ -59,7 +59,6 @@ p3_sdd_targets_list <- list(
     name = p3_cleaned_wqp_data_sdd,
     command = p3_wqp_data_aoi_ready_sdd$wqp_data_clean_path,
     read = read_feather(path = !!.x),
-    cue = tar_cue("always"),
     packages = "feather"),
   
   
@@ -84,7 +83,6 @@ p3_sdd_targets_list <- list(
     name = p3_sdd_preagg_grouped,
     command = p3_sdd_harmonized$sdd_grouped_preagg_path,
     read = read_feather(path = !!.x),
-    cue = tar_cue("always"),
     packages = "feather"),
   
   # Harmonized SDD data after simultaneous record aggregation (i.e.,
@@ -160,7 +158,26 @@ p3_sdd_targets_list <- list(
     },
     packages = c("tidyverse", "googledrive"),
     error = "stop"
-  )
+  ),
   
+  # Get file IDs ------------------------------------------------------------
+  
+  # In order to access "stable" versions of the dataset created by the pipeline,
+  # we get their Google Drive file IDs and store those in the repo so that
+  # the harmonization pipeline can retrieve them more easily. The targets below
+  # will include all file IDs in the Drive location, not just stable ones
+  
+  # SDD
+  tar_file_read(
+    name = p3_sdd_drive_ids,
+    command = get_file_ids(google_email = p0_harmonization_config$google_email,
+                           drive_folder = p0_sdd_output_path,
+                           file_path = "3_harmonize/out/sdd_drive_ids.csv",
+                           depend = p3_sdd_site_info_drive_file
+    ),
+    read = read_csv(file = !!.x),
+    packages = c("tidyverse", "googledrive")
+  )
+ 
 )
 

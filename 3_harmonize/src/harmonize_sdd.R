@@ -699,20 +699,23 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   flagged_sdd <- tiered_methods_sdd %>%
     mutate(
       # MDL
-      # Flag: 0 = value not adjusted and value is greater than 0.01
-      #       1 = original NA value adjusted using MDL method
-      #       2 = harmonized value below 0.01m; not adjusted
+      # Flag: 0 = value greater than 0.01m with NO "<" character value
+      #       1 = value greater than 0.01m with "<" character
+      #       2 = value less than 0.01m with NO "<" character (these values will get mutated to be 0.01m)
+      #       3 = value less than 0.01m with "<" character (these values will get mutated to be 0.01m)
       mdl_flag = case_when(
-        (harmonized_value > 0.01) ~ 0,
-        (harmonized_value <= 0.01) ~ 2,
+        (harmonized_value > 0.01 & !(index %in% mdl_updates$index)) ~ 0,
+        (harmonized_value > 0.01 & (index %in% mdl_updates$index)) ~ 1,
+        (harmonized_value <= 0.01 & !(index %in% mdl_updates$index)) ~ 2,
+        (harmonized_value <= 0.01 & (index %in% mdl_updates$index)) ~ 3,
         .default = NA_integer_
         ),
       greater_flag = case_when(
         # greater than
-        # Flag: 0 = value less than 31m with NO special characters
-        #       1 = value less than 31m with special characters
-        #       2 = value greater than 31m with NO special characters
-        #       3 = value greater than 31m with special characters
+        # Flag: 0 = value less than 31m with NO ">" character
+        #       1 = value less than 31m with ">" character
+        #       2 = value greater than 31m with NO ">" character
+        #       3 = value greater than 31m with ">" character
         (harmonized_value < 31 & !(index %in% greater_vals$index)) ~ 0,
         (harmonized_value < 31 & (index %in% greater_vals$index)) ~ 1,
         (harmonized_value >= 31 & !(index %in% greater_vals$index)) ~ 2,
@@ -781,7 +784,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   rm(tiered_methods_sdd, flagged_sdd)
   gc()
 
-  # Unrealistic values ------------------------------------------------------
+  # Realistic range of values ------------------------------------------------------
   
   # We exclude reported Secchi disk depth (SDD) measurements exceeding 62 meters from the final dataset.
   # This threshold is established based on the following rationale:
@@ -791,9 +794,13 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # 4. Removing these extreme outliers enhances the overall reliability and interpretability of the dataset.
   # 5. This conservative approach aims to minimize the inclusion of potentially spurious data while 
   #    preserving legitimate measurements within expected ranges for typical aquatic environments.
+  
+  # We convert those values less than 0.01m to 0.01m.
+  # This conversion is established because a human can't discern less than a 1cm resolution
 
   realistic_sdd <- cleaned_flagged_sdd %>%
-    filter(harmonized_value <= 62)
+    filter(harmonized_value <= 62) %>% 
+    mutate(harmonized_value = if_else(mdl_flag %in% c(2,3), 0.01, harmonized_value))
 
   dropped_unreal <- tibble(
     step = "sdd harmonization",
@@ -808,6 +815,14 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     paste0(
       "Percentage of rows removed while removing unrealistic values: ",
       round((nrow(cleaned_flagged_sdd) - nrow(realistic_sdd)) / nrow(cleaned_flagged_sdd) * 100, 3),
+      " %"
+    )
+  )
+  
+  print(
+    paste0(
+      "Percentage of rows where harmonized_value was converted to 0.01m: ",
+      round((nrow(cleaned_flagged_sdd) - nrow(filter(realistic_sdd, mdl_flag %in% c(2,3)))) / nrow(cleaned_flagged_sdd) * 100, 3),
       " %"
     )
   )

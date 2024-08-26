@@ -474,7 +474,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste(
       round((nrow(sdd_bottom_depth)) / nrow(converted_units_sdd) * 100, 3),
-      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValu. These will be 
+      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValue but Secchi on bottom has been indicated and a harmonized value is present. These will be 
       back filled with harmonized values where Secchi on bottom was indicated."
     )
   )

@@ -210,7 +210,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # contain values greater than some amount.
 
   greater_vals <- sdd_mdls_added %>%
-    # First, remove the samples that we've already approximated:
+    # First, remove the samples that we've already cleaned:
     filter((!index %in% mdl_updates$index)) %>%
     # only want NAs in the altered value column and where there is a `>` and a number in the original values column...
     filter(is.na(ResultMeasureValue) &

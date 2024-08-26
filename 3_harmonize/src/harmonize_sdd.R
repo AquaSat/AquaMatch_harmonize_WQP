@@ -108,8 +108,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed due to fails language?
   print(
     paste0(
-      "Percentage of rows removed due to fail-related language: ",
-      round((nrow(sdd) - nrow(sdd_fails_removed)) / nrow(sdd) * 100, 3)
+      round((nrow(sdd) - nrow(sdd_fails_removed)) / nrow(sdd) * 100, 3),
+      " % of samples were removed due to fail-related language."
     )
   )
 
@@ -384,8 +384,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   print(
     paste(
-      round((nrow(sdd_no_na)) / nrow(sdd_approx_added) * 100, 3),
-      "% of samples remain after removing NA values."
+      round((nrow(sdd_approx_added) - nrow(sdd_no_na)) / nrow(sdd_approx_added) * 100, 3),
+      "% of samples were removed due to NA harmonized values or units."
     )
   )
 
@@ -441,8 +441,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed due to unit harmonization?
   print(
     paste0(
-      "Percentage of rows removed while converting units: ", 
-      round(((nrow(sdd_no_na)) - nrow(converted_units_sdd)/nrow(sdd_no_na)) * 100, 3)
+      round(((nrow(sdd_no_na) - nrow(converted_units_sdd)) / nrow(sdd_no_na)) * 100, 3),
+      " % of samples removed while converting units."
     )
   )
 
@@ -797,7 +797,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   #    preserving legitimate measurements within expected ranges for typical aquatic environments.
   
   # We convert those values less than 0.01m to 0.01m.
-  # This conversion is established because a human can't discern less than a 1cm resolution
+  # This conversion is established because a human can't discern less than a 1cm resolution.
 
   realistic_sdd <- cleaned_flagged_sdd %>%
     filter(harmonized_value <= 62) %>% 

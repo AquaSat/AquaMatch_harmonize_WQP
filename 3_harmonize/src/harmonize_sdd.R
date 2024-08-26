@@ -646,7 +646,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       # tier: 0 = Restrictive. Time reported within the allotted window and method indicates use of viewscope.
       #       1 = Narrowed. Either time reported within the allotted window or method indicates use of viewscope, but not both.
       #       2 = Inclusive. Time not reported/time reported outside of window, and no indication of viewscope used.
-      #       3 = Inclusive. harmonized value gap filled with depth column.
+      #       3 = Inclusive. `harmonized_value` gap filled with depth column.
       (time_tag == 0) & (scope_tag == 0) ~ 0,
       xor((time_tag == 0), (scope_tag == 0)) ~ 1,
       (time_tag != 0) & (scope_tag != 0) ~ 2,

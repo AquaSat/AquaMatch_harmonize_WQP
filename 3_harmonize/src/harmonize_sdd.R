@@ -723,7 +723,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         (harmonized_value >= 31 & (index %in% greater_vals$index)) ~ 3,
         .default = NA_integer_
       ),
-      # create adverse language tags for field flag
+      # create environmental indicator tags for field flag
       environmental_indicator_tag = if_else(
         rowSums(across(all_of(flag_comment_cols), ~grepl(environmental_indicator, .x, ignore.case = TRUE))) > 0,
         1,

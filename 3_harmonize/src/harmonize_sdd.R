@@ -791,7 +791,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # This threshold is established based on the following rationale:
   # 1. SDD values greater than 31 meters are flagged as potentially anomalous in our quality control process.
   # 2. The 62-meter threshold represents a doubling of this initial flagging criterion.
-  # 3. Measurements beyond this point are considered improbable and likely erroneous.
+  # 3. Measurements beyond this point are considered improbable and likely erroneous due to unit conversion or other data entry issues.
   # 4. Removing these extreme outliers enhances the overall reliability and interpretability of the dataset.
   # 5. This conservative approach aims to minimize the inclusion of potentially spurious data while 
   #    preserving legitimate measurements within expected ranges for typical aquatic environments.

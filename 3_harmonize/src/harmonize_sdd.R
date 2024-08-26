@@ -156,7 +156,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Clean up MDLs --------------------------------------------------------------
 
-  # Find MDLs and make them usable as numeric data
+  # Find MDL character ("<") and make them usable as numeric data
   mdl_updates <- sdd_specialcharacters_removed %>%
     # only want NAs in the altered value column and where there is a `<` and a number in the original values column...
     filter(is.na(ResultMeasureValue) &

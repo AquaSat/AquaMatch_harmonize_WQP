@@ -442,7 +442,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste0(
       round(((nrow(sdd_no_na) - nrow(converted_units_sdd)) / nrow(sdd_no_na)) * 100, 3),
-      " % of samples removed while converting units."
+      " % of samples were removed while converting units."
     )
   )
 
@@ -474,8 +474,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   print(
     paste(
       round((nrow(sdd_bottom_depth)) / nrow(converted_units_sdd) * 100, 3),
-      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValue but Secchi on bottom has been indicated and a harmonized value is present. These will be 
-      back filled with harmonized values where Secchi on bottom was indicated."
+      "% of samples have no reported ActivityBottomDepthHeightMeasure.MeasureValue 
+      but Secchi on bottom has been indicated and a harmonized value is present. 
+      These will be back filled with harmonized values where Secchi on bottom was indicated."
     )
   )
 
@@ -572,9 +573,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Percentage of records removed due method harmonization?
   print(
     paste0(
-      "Percentage of rows removed due to unlikely analytical methods: ",
       round((nrow(sdd_bottom_depth_added)-nrow(sdd_relevant))/nrow(sdd_bottom_depth_added)*100,3),
-      " %"
+      " % of samples were removed due to unlikely analytical methods."
     )
   )
 
@@ -758,9 +758,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Print how many records removed due to assigning flags
   print(
     paste0(
-      "Percentage of rows removed while assigning flags: ",
       round((nrow(tiered_methods_sdd) - nrow(cleaned_flagged_sdd)) / nrow(tiered_methods_sdd) * 100, 3),
-      " %"
+      " % of samples were removed while assigning flags."
     )
   )
 
@@ -814,17 +813,15 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   print(
     paste0(
-      "Percentage of rows removed while removing unrealistic values: ",
       round((nrow(cleaned_flagged_sdd) - nrow(realistic_sdd)) / nrow(cleaned_flagged_sdd) * 100, 3),
-      " %"
+      " % of samples were removed while removing unrealistic values."
     )
   )
   
   print(
     paste0(
-      "Percentage of rows where harmonized_value was converted to 0.01m: ",
-      round((nrow(cleaned_flagged_sdd) - nrow(filter(realistic_sdd, mdl_flag %in% c(2,3)))) / nrow(cleaned_flagged_sdd) * 100, 3),
-      " %"
+      round((nrow(filter(realistic_sdd, mdl_flag %in% c(2,3)))) / nrow(realistic_sdd) * 100, 3),
+      " % of samples had harmonized_value converted to 0.01m due to MDL."
     )
   )
 
@@ -988,9 +985,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # How many records removed in aggregating simultaneous records?
   print(
     paste0(
-      "Percentage of rows removed while aggregating simultaneous records: ",
       round((nrow(realistic_sdd) - nrow(no_simul_sdd)) / nrow(realistic_sdd) * 100, 3),
-      " %"
+      " % of samples were removed while aggregating simultaneous records."
     )
   )
 

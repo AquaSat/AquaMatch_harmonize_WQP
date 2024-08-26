@@ -50,6 +50,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
 
   # Now get counts of fail-related string detections for each column:
+  # Note that ActivityCommentText not included because fail comments were mostly about non-SDD measurements
   fail_counts <- list("ResultCommentText", "ResultMeasureValue_original",
                       "ResultDetectionConditionText") %>%
     # Set list item names equal to each item in the list so that map will return

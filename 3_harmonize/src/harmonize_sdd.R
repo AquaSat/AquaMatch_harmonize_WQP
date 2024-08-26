@@ -158,17 +158,19 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Find MDL character ("<") and make them usable as numeric data
   mdl_updates <- sdd_specialcharacters_removed %>%
-    # only want NAs in the altered value column and where there is a `<` and a number in the original values column...
+    # only want NAs in the altered value column and where there is a `<` and a number in the original values column
+    # and no alphabetical characters...
     filter(is.na(ResultMeasureValue) &
            grepl("<", ResultMeasureValue_original) &
-           grepl("[0-9]", ResultMeasureValue_original)) %>%
+           grepl("[0-9]", ResultMeasureValue_original) &
+           !grepl("[a-zA-Z]", ResultMeasureValue_original)) %>%
     # Extract the first numeric value after '<' from ResultMeasureValue_original and
-    # convert it to a number. This captures values like "<0.5", ignoring any text after the number.
+    # convert it to a number. This converts values like "<0.5", to "0.5".
     # There are no instances of "<-" strings in the data, but an abs() is included
     # just in case.
     mutate(harmonized_value = abs(as.numeric(str_extract(ResultMeasureValue_original, "-?\\d+(\\.\\d+)?"))),
            harmonized_units = ResultMeasure.MeasureUnitCode,
-           harmonized_comments = "Approximated during MDL step") %>%
+           harmonized_comments = "Cleaned during MDL step") %>%
     # keep important data
     select(index, harmonized_value, harmonized_units, harmonized_comments)
 
@@ -187,7 +189,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
            harmonized_units = ifelse((index %in% mdl_updates$index),
                                      harmonized_units, ResultMeasure.MeasureUnitCode),
            harmonized_comments = ifelse(index %in% mdl_updates$index,
-                                        "Approximated during 'MDLs' step",
+                                        "Cleaned during 'MDLs' step",
                                         harmonized_comments))
 
   dropped_mdls <- tibble(
@@ -212,25 +214,26 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   greater_vals <- sdd_mdls_added %>%
     # First, remove the samples that we've already cleaned:
     filter((!index %in% mdl_updates$index)) %>%
-    # only want NAs in the altered value column and where there is a `>` and a number in the original values column...
+    # only want NAs in the altered value column and where there is a `>` and a number in the original values column
+    # and no alphabetical characters...
     filter(is.na(ResultMeasureValue) &
             grepl(">", ResultMeasureValue_original) &
-             grepl("[0-9]", ResultMeasureValue_original)) %>%
+             grepl("[0-9]", ResultMeasureValue_original) &
+             !grepl("[a-zA-Z]", ResultMeasureValue_original)) %>%
     # Extract the first numeric value after '>' from ResultMeasureValue_original and
-    # convert it to a number. This captures values like ">0.5", ignoring any text after 
-    # the number, and ensures the result is positive.
+    # convert it to a number. This converts values like ">0.5" to "0.5".
     # There are no instances of ">-" strings in the data, but an abs() is included
     # just in case.
     mutate(harmonized_value = abs(as.numeric(str_extract(ResultMeasureValue_original, "-?\\d+(\\.\\d+)?"))),
       harmonized_units = ResultMeasure.MeasureUnitCode,
-      harmonized_comments = "Approximated during 'greater than' step")
+      harmonized_comments = "Cleaned during 'greater than' step")
 
   # this will cause coercion errors, which is expected, as some values have additional characters in
   # them that cause this step to have errors.
   greater_vals$greater_value <- as.numeric(
     str_replace_all(
       greater_vals$ResultMeasureValue_original,
-      c("\\>" = "", "\\=" = "" )))
+      c("\\>" = "")))
 
   greater_vals$greater_value[is.nan(greater_vals$greater_value)] <- NA
 
@@ -253,7 +256,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
            harmonized_units = ifelse(index %in% greater_vals$index,
                                      ResultMeasure.MeasureUnitCode, harmonized_units),
            harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        "Approximated during 'greater than' step",
+                                        "Cleaned during 'greater than' step",
                                         harmonized_comments))
 
   dropped_greaterthan <- tibble(
@@ -729,11 +732,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         1,
         0),
       # field flag
-      # Flag: 0 = no environmental indicator present
-      #       1 = environmental indicator present
+      # Flag: 0 = environmental indicator present
+      #       1 = no environmental indicator present
       field_flag = case_when(
-        environmental_indicator_tag == 0 ~ 0,
-        .default = 1
+        environmental_indicator_tag == 1 ~ 0,  # environmental indicator present
+        .default = 1  # no environmental indicator present
       ),
       # miscellaneous flag
       # Flag: 0 = no misc flag

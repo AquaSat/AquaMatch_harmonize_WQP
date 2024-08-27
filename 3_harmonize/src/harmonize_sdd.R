@@ -209,7 +209,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Next step, incorporating "greater than" values. Using a similar approach to
   # gap filling the MDL ("less than") values, we can gap fill the results that
-  # contain values greater than some amount.
+  # contain a greater than symbol.
 
   greater_vals <- sdd_mdls_added %>%
     # First, remove the samples that we've already cleaned:

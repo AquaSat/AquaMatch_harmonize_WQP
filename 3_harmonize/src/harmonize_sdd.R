@@ -899,7 +899,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       lat = unique(lat),
       datum = unique(datum)
     ) %>%
-    # Calculate coefficient of variation as the standardard deviation divided by
+    # Calculate coefficient of variation as the standard deviation divided by
     # the mena value (harmonized_value in this case)
     mutate(
       harmonized_value_cv = harmonized_value_sd/harmonized_value

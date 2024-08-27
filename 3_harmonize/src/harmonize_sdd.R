@@ -156,7 +156,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
 
   # Clean up MDLs --------------------------------------------------------------
 
-  # Find MDL character ("<") and make them usable as numeric data
+  # Find "less than" ("<") characters and make them usable as numeric data.
+  # For other parameters finding "<" more directly relates to method detection
+  # limits ("MDLs"), but for consistency with flagging columns across datasets we use
+  # the same naming conventions for SDD.
+
   mdl_updates <- sdd_specialcharacters_removed %>%
     # only want NAs in the altered value column and where there is a `<` and a number in the original values column
     # and no alphabetical characters...

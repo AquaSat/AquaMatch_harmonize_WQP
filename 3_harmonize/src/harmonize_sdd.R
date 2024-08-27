@@ -530,7 +530,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
 
 
-  # Aggregate and tier analytical methods -----------------------------------
+ # Aggregate analytical methods --------------------------------------------
 
   # Get an idea of how many analytical methods exist:
   print(

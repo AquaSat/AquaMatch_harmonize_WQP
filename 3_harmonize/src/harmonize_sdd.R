@@ -590,6 +590,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     order = 10
   )
 
+
+ # Tier analytical methods -------------------------------------------------
+
   # time_tag
   # Time tagging: Categorize timestamps to identify optimal conditions for Secchi disk depth measurements.
   # Tag 0 (10am-2pm) represents the ideal time range for measurements due to consistent lighting conditions.

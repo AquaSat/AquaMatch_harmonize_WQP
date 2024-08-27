@@ -584,7 +584,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   dropped_methods <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while aggregating analytical methods",
-    short_reason = "Analytical methods",
+    short_reason = "Aggregate methods",
     number_dropped = nrow(converted_units_sdd) - nrow(sdd_relevant),
     n_rows = nrow(sdd_relevant),
     order = 10

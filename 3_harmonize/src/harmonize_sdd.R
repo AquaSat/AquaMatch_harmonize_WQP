@@ -679,7 +679,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   dropped_tiers <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while tiering analytical methods",
-    short_reason = "Analytical methods",
+    short_reason = "Tier methods",
     number_dropped = nrow(sdd_bottom_depth_added) - nrow(tiered_methods_sdd),
     n_rows = nrow(tiered_methods_sdd),
     order = 11

@@ -386,6 +386,8 @@ fill_date_time <- function(dataset, site_data){
     "AKST",     "Etc/GMT+9",
     # Atlantic Standard Time
     "AST",      "Etc/GMT+4",
+    # Bering Daylight Time (retired)
+    "BDT",      "Etc/GMT+10",
     # Bering Standard Time (retired)
     "BST",      "Etc/GMT+11",
     # Central Daylight Time

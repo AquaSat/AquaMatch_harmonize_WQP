@@ -2,6 +2,8 @@
 
 This repository is covered by the MIT use license. We request that all downstream uses of this work be available to the public when possible.
 
+You can view the AquaMatch bookdown documentation [here](https://aquasat.github.io/AquaMatch_harmonize_WQP/).
+
 ### Background
 
 This repository is one part of an expansion and update of the original [AquaSat](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019WR024883) product, a dataset of \~600k coincident field and satellite matchups across four parameters: total suspended solids (TSS), dissolved organic carbon (DOC), chlorophyll-*a* (CHLA), and Secchi disc depth (SDD). The updated product, **AquaMatch**, expands the number of parameters of *in situ* data included in the matching process, adds tiers describing data quality, and adds new satellites and spectral bands. This project repository, AquaMatch_harmonize_WQP, contains the second step in the AquaMatch process: a harmonization workflow for *in situ* [Water Quality Portal (WQP)](waterqualitydata.us/) data following its download. The first step is contained in another repository, [AquaMatch_download_WQP](https://github.com/AquaSat/AquaMatch_download_WQP). The AquaMatch_download_WQP process is dedicated inventorying and downloading the *in-situ* data from the [Water Quality Portal (WQP)](waterqualitydata.us/).

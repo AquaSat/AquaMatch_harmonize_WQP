@@ -4,6 +4,7 @@ output:
     html_preview: false
 params:
   documented_drops: NA
+  sdd_chars: NA
 always_allow_html: true
 ---
 
@@ -16,47 +17,67 @@ knitr::opts_chunk$set(dev = "png",
 
 # Secchi harmonization process
 
-```{r echo=FALSE} 
-documented_drops <- params$documented_drops
+```{r echo=FALSE}
+documented_drops <- params$documented_drops %>%
+  filter(grepl(pattern = "sdd|secchi", x = step, ignore.case = TRUE),
+         !((step == "sdd harmonization") & short_reason == "Start"))
+sdd_chars <- params$sdd_chars
 ```
 
+Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
+
+The text below first walks through the pre-harmonization steps for the raw secchi disk depth dataset and then delves into the specifics of the harmonization process.
+
 ```{r echo = FALSE}
-step_order_rev <- max(documented_drops$order):min(documented_drops$order)
+# Redo the ordering of the steps, conceptualizing the pre-harmonization and
+# harmonization processes as one step
+documented_drops <- bind_rows(
+  # Make sure pre-harmonization comes first
+  documented_drops %>%
+    filter(grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order),
+  documented_drops %>%
+    filter(!grepl(pattern = "pre-harmonization", x = step, ignore.case = TRUE)) %>%
+    arrange(order)) %>%
+  # New order is just row nums
+  mutate(reorder = row_number())
+
+step_order_rev <- max(documented_drops$reorder):min(documented_drops$reorder)
+
+max_steps <- max(documented_drops$reorder)
 
 step_data <- documented_drops %>%
-  group_by(step) %>%
-  mutate(scaled = scale(n_rows, center = FALSE)) %>%
-  ungroup() %>%
-  mutate(order = factor(order,
-                        levels = step_order_rev),
+  mutate(scaled = scale(n_rows, center = FALSE),
+         reorder = factor(reorder,
+                          levels = step_order_rev),
          rows_label = paste0(short_reason,
                              ":  ",
                              round((n_rows / 1000000), 1),
-                             " M rows")) %>%
-  filter(step == "sdd harmonization") 
+                             " M rows"))
 ```
 
-
-### Initial dataset
+## Pre-harmonization of the raw secchi WQP dataset
 
 ```{r echo=FALSE}
-step_0_rows <- filter(step_data,
-                      order == 0) %>%
+step_counter <- 1
+
+step_1_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 ```
 
-After the pre-harmonization process the secchi-only WQP dataset contains `r step_0_rows` rows.
+At the start of the pre-harmonization process the raw chlorophyll WQP dataset contains `r step_1_rows` rows. 
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order == 0) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -65,7 +86,8 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[1]) +
+  scale_fill_manual(values = viridis(n = max_steps,
+                                     direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -75,32 +97,152 @@ step_data %>%
 
 <br>
 
+### Missing results
+
+```{r echo = FALSE}
+step_counter <- 2
+
+step_2_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_2_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
+```
+
+Next, records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
+
+1. Both the result column and detection limit column had `NA` data
+2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
+3. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+
+`r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Filter Status
+
+```{r echo = FALSE}
+step_counter <- 3
+
+step_3_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_3_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
+```
+
+The final step in pre-harmonization is to filter the `ResultStatusIdentifier` column to include only the following statuses:
+
++ `"Accepted"` 
++ `"Final"`
++ `"Historical"`
++ `"Validated"`
++ `"Preliminary"`
++ `NA`
+
+These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
+
+This step removes `r step_3_dropped` rows of data, leaving it with `r step_3_rows` rows remaining.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+## Harmonization-ready secchi dataset
+
+Once ready for harmonization, the secchi-only dataset contains the following user-defined `characteristicNames`: `r sdd_chars`.
+
+These names are chosen in order to select for only those measurements that pertain to secchi disk depth measurements.
+
+<br>
 
 ### Filter for water media
 
 ```{r echo = FALSE}
-step_1_rows <- filter(step_data,
-                      order == 1) %>%
+step_counter <- 4
+
+step_4_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_1_dropped <- filter(step_data,
-                         order == 1) %>%
+step_4_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-The first step in secchi harmonization is to ensure that the media type for the data is `"water"` or `"Water"`. This should just be a precautionary step: `r step_1_dropped` rows are removed. The row count after this is `r step_1_rows`.
+We next ensure that the media type for all chlorophyll data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:1) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -109,7 +251,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[2:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -119,35 +261,59 @@ step_data %>%
 
 <br>
 
-### Remove fails and other missing data
+### Document and remove fails
 
 ```{r echo = FALSE}
-step_2_rows <- filter(step_data,
-                      order == 2) %>%
+step_counter <- 5
+
+step_5_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_2_dropped <- filter(step_data,
-                         order == 2) %>%
+step_5_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
-In this step we filter out records based on indications that they have failed data for some reason. We screen the following columns: `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, and `ResultMeasureValue`. Examples of text that results in a dropped record includes (but is not limited to): `"fail"`, `"suspect"`, `"error"`, `"beyond accept"`, `"interference"`, `"questionable"`, `"problem"`, `"violation"`, `"rejected"`, `"no secchi"`. Specific target text varies by column. 
+In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures"). 
 
-`r step_2_dropped` rows are removed and `r step_2_rows` rows remain.
+After reviewing the contents of the `ResultCommentText`, `ResultMeasureValue_original`, and `ResultDetectionConditionText` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "error", "fail", "invalid", "no result",  "questionable", "suspect", "unable", "reject", "no data", "Not Reported", "no reading", "-99", "upper quantitation limit".
+
+Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
+
+<br>
+
+#### ResultCommentText fail detects
+<img src="3_harmonize/out/sdd_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
+
+#### ResultDetectionConditionText fail detects
+
+<img src="3_harmonize/out/sdd_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/>
+
+#### ResultMeasureValue_original fail detects
+<img src="3_harmonize/out/sdd_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/>
+
+<br>
+
+<!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
+
+<!-- <br> -->
+
+`r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:2) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -156,7 +322,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[3:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -166,38 +332,79 @@ step_data %>%
 
 <br>
 
+### Clean special characters 
+
+```{r echo = FALSE}
+step_counter <- 6
+
+step_6_rows <- filter(step_data,
+                      reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_6_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
+```
+
+Before proceeding with the Method Detection Limit (MDL) cleanup, we first address the issue of special characters in the Secchi disk depth measurements. Some entries in the dataset contain special characters at the beginning of the measurement value, which need to be removed for proper numerical analysis. We do this by first identifying measurements with the special characters `-`, `\*`, or `=`. Then we remove those special characters and convert the values to numeric values and preserve an account about which records were modified. 
+
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
 
 ### Clean MDLs
 
 ```{r echo = FALSE}
-step_3_rows <- filter(step_data,
-                      order == 3) %>%
+step_counter <- 7
+
+step_7_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_3_dropped <- filter(step_data,
-                         order == 3) %>%
+step_7_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or  `"below"`.
-
-If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
-
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
-
-This should not result in a change in rows but we still check: `r step_3_dropped` rows are removed. The row count after this is `r step_3_rows`.
+In this step, we clean up the reported values using Method Detection Limits (MDLs). We first identify records where the numeric value is missing (i.e., `NA`) in the `ResultMeasureValue` column. We then look for the presence of a `<` symbol followed by a number in the `ResultMeasureValue_original` column. If these conditions are met and there are no alphabetical characters in the original value, we extract the numeric value after the `<` symbol. This extracted value is then used as the harmonized value for the measurement.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:3) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -206,7 +413,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[4:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -216,39 +423,33 @@ step_data %>%
 
 <br>
 
-### Clean approximate values
+### Clean values with "greater than" data
 
 ```{r echo = FALSE}
-step_4_rows <- filter(step_data,
-                      order == 4) %>%
+step_counter <- 8
+
+step_8_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_4_dropped <- filter(step_data,
-                         order == 4) %>%
+step_8_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
-
-1. Numeric-only version of the column is still `NA` after MDL cleaning
-2. The original column text contained a number
-3. Any of `ResultLaboratoryCommentText`, `ResultCommentText`, or `ResultDetectionConditionText` match this regular expression, ignoring case: `"result approx|RESULT IS APPROX|value approx"`
-
-We then use the approximate value as the record's value moving forward.
-
-This should not result in a change in rows but we still check: `r step_4_dropped` rows are removed. The row count after this is `r step_4_rows`.
+After handling the Method Detection Limits (MDLs), we proceed to clean up values reported as "greater than" a certain measurement. We identify records where the numeric value is missing (`NA`) in the `ResultMeasureValue` column. We look for the presence of a `>` symbol followed by a number in the `ResultMeasureValue_original` column. If these conditions are met and there are no alphabetical characters in the original value, we extract the numeric value after the `>` symbol. This extracted value is then used as the harmonized value for the measurement.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:4) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -257,7 +458,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[5:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -265,40 +466,56 @@ step_data %>%
         legend.position = "none")
 ```
 
+<br>
 
-### Clean values with "greater than" data
+### Gap filling harmonized values
 
 ```{r echo = FALSE}
-step_5_rows <- filter(step_data,
-                      order == 5) %>%
+step_counter <- 9
+
+step_9_rows <- filter(step_data,
+                      reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_5_dropped <- filter(step_data,
-                         order == 5) %>%
-  pull(number_dropped) %>%
-  round(digits = 2)
+step_9_dropped <- filter(step_data,
+                         reorder == step_counter) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
 ```
 
-The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
+After cleaning up the "greater than" values, we proceed to gap fill missing values in the `harmonized_value` column using depth-related information when appropriate. We clean and standardize unit columns for consistency in comparisons. Then, we create tags based on comment fields. `bottom_tag` indicates presence of "bottom" language in relevant comment columns. `negate_bottom_tag` indicates presence of language suggesting the bottom was not reached or measured. 
 
-1. Numeric-only version of the column is still `NA` after MDL & approximate cleaning
-2. The original column text contained a number
-3. The original column text contained a `>`
+After this, we create the `approx_flag` that indicates the source of the gap filled values. 
 
-We then use the "greater than" value (without `>`) as the record's value moving forward.
+`approx_flag` value definitions:
++ `0`: Value and units not adjusted (original `harmonized_value` is not `NA`)
++ `1`: Value filled using `ActivityDepthHeightMeasure` column.
++ `2`: Value filled using `ActivityBottomDepthHeightMeasure` column.
 
-This should not result in a change in rows but we still check: `r step_5_dropped` rows are removed. The row count after this is `r step_5_rows`.
+The logic of the `approx_flag` assignment is as follows:
+1. If the harmonized value is not `NA` set flag to `0`.
+2. If the harmonized value is `NA`, and either there is no "bottom" language or there is language negating the bottom measurement, and `ActivityDepthHeightMeasure.MeasureValue` is available and non-zero set flag to `1`
+3. If the harmonized value is `NA`, and there is "bottom" language is the comments, and there is no language negating the bottom measurement, and the `ActivityBottomDepthHeightMeasure.MeasureValue` is available and non-zero set flag to `2`.'
+4. For all other cases set `approx_flag` to `NA`, as we are unable to approximate.
+
+This flagging system allows us to:
+1. Preserve original data where available.
+2. Prioritize bottom depth measurements when we're confident the bottom was reached.
+3. Use activity depth measurements when bottom measurements are unavailable or unreliable.
+4. Clearly identify records where approximation was not possible.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:5) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -307,7 +524,54 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[6:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Drop unresolved NA measurements
+
+```{r echo = FALSE}
+step_counter <- 10
+
+step_10_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_10_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
+```
+
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -320,40 +584,56 @@ step_data %>%
 ### Harmonize record units
 
 ```{r echo = FALSE}
-step_6_rows <- filter(step_data,
-                      order == 6) %>%
+step_counter <- 11
+
+step_11_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_6_dropped <- filter(step_data,
-                         order == 6) %>%
+step_11_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-The next step in secchi harmonization is working with the units of the WQP records. These can vary widely. We create the following conversion table, which is used to translate units provided in WQP into meters:
+The next step in sdd harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into meters (m):
 
-```{r echo=FALSE}
-tibble(
-  ResultMeasure.MeasureUnitCode = c("m", "ft", "cm", "in", "mm", "mi"),
-  conversion = c(1, 0.3048, 0.01, 0.0254, 0.001, 1609.34)
-) %>%
+```{r echo=FALSE, message = FALSE}
+read_csv("../3_harmonize/out/sdd_unit_table.csv") %>%
   kable() %>%
   kable_paper() %>%
   kable_styling(full_width = FALSE)
 ```
 
-We also limit values to less than 15m to ensure realistic data. `r step_6_dropped` rows are removed. The row count after this is `r step_6_rows`.
+<br>
+
+Below is a pie chart that breaks down the different unit codes that were dropped in the unit harmonization process, and how many records were lost with each code.
+
+<br>
+
+
+<img src="3_harmonize/out/sdd_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/>
+
+<br>
+
+Additionally we provide a set of histograms of harmonized measurements by `CharacteristicName`:
+
+<br>
+
+<img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/>
+
+<br>
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:6) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -362,7 +642,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[7:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -372,33 +652,114 @@ step_data %>%
 
 <br>
 
-### Filter based on analytical method
+### Clean and flag bottom depth data
 
 ```{r echo = FALSE}
-step_7_rows <- filter(step_data,
-                      order == 7) %>%
+step_counter <- 12
+
+step_12_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_7_dropped <- filter(step_data,
-                         order == 7) %>%
+step_12_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
+```
+
+After harmonizing record units we focus on cleaning and flagging the bottom depth data. The purpose of this step is to accurately represent when the secchi disk reached the bottom of the water body. First we identify the relevant samples: those samples that contain "bottom" language in the comments, don't contain language negating the bottom measurement, and lack information in the bottom depth columns. Then we flag and fill the bottom depth data. We create a `depth_flag` to indicate the source of bottom depth values:
++ `0`: Bottom depth value not adjusted and no indication that secchi disk hit bottom.
++ `1`: Bottom depth value filled in with `harmonized_value` due to indication that secchi disk hit bottom.
+Finally, we convert all bottom depth values to meters
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Filter and tier methods
+
+
+```{r echo = FALSE}
+step_counter <- 13
+
+step_13_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_13_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-Our next step is to aggregate secchi analytical methods into groups and then filter out methods that may have been erroneously added, were unclear, or which don't meet our needs. We accomplish this using an external match table `csv` file that is joined to the dataset. Methods that are coded `"unlikely"` to be accurate methods are dropped.
+<!-- need to come back to this one it is very different from chla one -->
 
-This process drops `r step_7_dropped` rows leaving `r step_7_rows` remaining.
+After cleaning and standardizing the sdd bottom depth measurements, we proceed to aggregate and tier the analytical methods used. 
+
+Prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-secchi disk depth measurements. Phrases used to flag and remove unrelated methods for secchi disk depth data are: "chlorophyll", "sulfate", "sediment", "5310", "counting", "plasma", "NTU", "nephelometry", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320", "chemical", "unknown", "unspecified", "no information exists for method", "other or unknown procedure", "laboratory calculation", "2550","total suspended solids", "not available", "qa", "unkown", "calculation", "10200G", "meteorological".
+
+This process drops `some` rows leaving `some` remaining.
+
+*Time tagging for optimal measurement conditions*
+We then categorize measurements based on the time they were taken by creating a `time_tag`. This tagging helps identify measurements taken under optimal lighting conditions.
+
++ `time_tag 0`: Measurement taken between 10AM and 2PM (ideal conditions)
++ `time_tag 1`: Measurement taken outside of 10AM and 2PM.
++ `time_tag 2`: Measurement with time `11:59:59` or `NA` (likely default values)
+
+*Scope tagging for measurement technique*
+Next, we identify whether a viewscope was used during measurements. Using a viewscope can improve measurement accuracy by reducing surface glare and wave effects. The language used to identify when a viewscope is mentioned in a record is "scope". The language used to identify when a viewscope is not used in a record is the list: "no.\*viewscope", "no.\*scope", "without.\*scope", "not using scope", "no scope.\*used", "viewscope.\*not.\*sent", "viewscope.\*not.\*collected", "leaky.\*scope", "scope.\*needs.\*resealing", "unable.\*get.\*readings.\*scope", "hard to use.\*scope", "issues with viewscope", "no readings.\*viewscope", "no.\*s\\.?d\\.?.\*viewscope", "secchi.\*not using", "Viewscope: No", "Viewscope used\\? - No", "-Viewscope used\\? - No", "Without Scope", "without viewscope", "no viewscope used", "Viewscope: No;", "scope of cable", "scope of collection", "scope of sample collection". The comment columns that these language lists were checked against were: `ResultAnalyticalMethod.MethodName`, `ActivityCommentText`, `ResultCommentText`.
+<!-- check that the correct strings were escaped (idk if \ were properly escaped) -->
+
++ `scope_tag 0`: Indication that a viewscope was used (based on method description, comments, or USGS pcode)
++ `scope_tag 1`: No indication of viewscope use or explicit mention of not using a viewscope.
+
+*Tiering measurements based on time and scope tags*
+
+Finally, we assign each measurement to a tier based on on the time and scope tags, and the depth_flag.
+
++ `Tier 0` (Restrictive): Measurement taken within the ideal time window and using a viewscope.
++ `Tier 1` (Narrowed): Either ideal time or viewscope use, but not both.
++ `Tier 2` (Inclusive): Neither ideal time nor viewscope use confirmed.
++ `Tier 3` (Inclusive): Measuremnts that were gap-filled using depth column data.
+
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:7) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -407,7 +768,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[8:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -417,35 +778,55 @@ step_data %>%
 
 <br>
 
-### Filter based on fraction type
+### Flag 
 
 ```{r echo = FALSE}
-step_8_rows <- filter(step_data,
-                       order == 8) %>%
+step_counter <- 14
+
+step_14_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_8_dropped <- filter(step_data,
-                         order == 8) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+step_14_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
 ```
 
-The next step in our secchi harmonization is filtering based on the `ResultSampleFractionText` column. We assign fractions into two categories based on whether the fraction text makes sense or not and then retain only those records that have a fraction with `"Makes sense"`. Fractions included in this are `NA`, `"Total"`, `" "`, `"None"`, `"Unfiltered"`, `"Field"`.
+After cleaning and tiering the sdd data, we conduct a final flagging sweep. This process creates several flags to provide additional context and quality indicators for each measurement. 
 
-This process drops `r step_8_dropped` rows leaving `r step_8_rows` remaining in the dataset.
+We create four types of flags:
+1. `mdl_flag`: This flag indicates whether the measurement is close to or below the method detection limit of 0.01m. This flag builds off of the `Clean MDLs` step which tracks whether or not a `<` symbol is part of the original value column. Those values with an MDL flag of 2 or 3 will be set to 0.01m.
+  + `flag 0`: Value greater than 0.01m with NO `<` character.
+  + `flag 1`: Value greater than 0.01m with `<` character.
+  + `flag 2`: Value less than or equal to 0.01m with NO `<` character (these values will be set to 0.01m)
+  + `flag 3`: Value less than or equal to 0.01m with `<` character (these values will be set to 0.01m)
+2. `greater_flag`: This flag indicates whether the measurement is close to or greater than 31m. This flag builds off of the `Clean values with "greater than" data` step which tracks whether or not a `>` symbol is part of the original value column. 
+  + `flag 0`: Value less than 31m with NO `>` character.
+  + `flag 1`: Value less than 31m with `>` character.
+  + `flag 2`: Value greater than 31m with NO `>` character.
+  + `flag 3`: Value greater than 31m with `>` character.
+3. `field_flag`: Unlike the chlorophyll *a* process which focuses on sampling methods, the field flag for SDD measurements is based on the presence of environmental indicators in the comments. We look for the following environmental indicators: "wind", "chop", "choppy", "precipitation", "rain", "calm", "clear". The comment columns that this list of environmental indicators were checked against were: `ActivityCommentText`, `ResultCommentText`.
+  + `flag 0`: Environmental indicator present in comments
+  + `flag 1`: No environmental indicator present in comments.
+4. `misc_flag`: The miscellaneous flag captures various other conditions that might affect data quality or interpretation.
+  + `flag 0`: No miscellaneous condition flagged
+  + `flag 1`: Bottom of water body indicated
+  + `flag 2`: Harmonized value is greater than the bottom depth value
+  + `flag 3`: Special characters removed (-,=.\*)
+
+No records should be removed by this process.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:8) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -454,7 +835,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[9:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -464,35 +845,41 @@ step_data %>%
 
 <br>
 
-### Filter based on sample method
+### Remove values outside of realistic range
 
 ```{r echo = FALSE}
-step_9_rows <- filter(step_data,
-                       order == 9) %>%
+step_counter <- 15
+
+step_15_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_9_dropped <- filter(step_data,
-                         order == 9) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+step_15_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
 ```
 
-We next filter based on the sample method, or `SampleCollectionMethod.MethodName` column. As with analytical methods, we accomplish this using an external match table `csv` file that is joined to the dataset. Methods that are coded `"unlikely"` to be accurate methods are dropped.
+Before finalizing the dataset, we remove sdd values that are beyond a realistic threshold. We use 62 meters as our cutoff for removal. This threshold is established based on the following rationale:
 
-This process drops `r step_9_dropped` rows leaving `r step_9_rows` remaining.
+1. SDD values greater than 31 meters are flagged as potentially anomalous in our quality control process.
+2. The 62-meter threshold represents a doubling of this initial flagging criterion.
+Measurements beyond this point are considered improbable and likely erroneous due to unit conversion or other data entry issues.
+3. Removing these extreme outliers enhances the overall reliability and interpretability of the dataset.
+4. This conservative approach aims to minimize the inclusion of potentially spurious data while preserving legitimate measurements within expected ranges for typical aquatic environments.
+
+Additionally, we convert values less than 0.01m to 0.01m. This conversion is established because a human can't discern less than a 1cm resolution in Secchi disk depth measurements.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:9) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -501,7 +888,7 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[10:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
@@ -511,35 +898,39 @@ step_data %>%
 
 <br>
 
-### Filter based on collection equipment
+### Aggregate simultaneous records
 
 ```{r echo = FALSE}
-step_10_rows <- filter(step_data,
-                       order == 10) %>%
+step_counter <- 16
+
+step_16_rows <- filter(step_data,
+                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_10_dropped <- filter(step_data,
-                         order == 10) %>%
-  mutate(thou_dropped = number_dropped / 1000) %>%
-  pull(thou_dropped) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+step_16_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  mutate(mil_dropped = number_dropped / 1000000) %>%
+  pull(mil_dropped) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
 ```
 
-Finally, we examine the collection equipment (`SampleCollectionEquipmentName`) column to check for equipment that indicates non-secchi measurements. Once again we use an external match table `csv` file that is joined to the dataset. Equipment types that are coded `"unlikely"` to be accurate to secchi are dropped.
+The final step of Secchi disk depth (SDD) harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the Water Quality Portal (WQP) or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-This process drops `r step_10_dropped` rows leaving `r step_10_rows` remaining.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartTime.Time`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_local_time`, `harmonized_utc`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the dataset prior to its aggregation (pipeline target <!-- target here -->), and including the `subgroup_id` column, so that users can use the non-aggregated data as well and make joins between dataset versions.
+
+The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
 ```{r echo = FALSE}
 step_data %>%
-  filter(order %in% 0:10) %>%
+  filter(reorder %in% 1:step_counter) %>%
   ggplot() +
-  geom_bar(aes(x = order, y = scaled, fill = order),
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
            stat = "identity")  +
-  geom_text_repel(aes(x = order, y = 0.1, label = rows_label),
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
                   bg.color = "white", bg.r = 0.15,
                   point.size = NA,
                   xlim = c(-Inf, Inf),
@@ -548,12 +939,27 @@ step_data %>%
                   hjust = "left") +
   xlab("Step number") +
   ylab(NULL) +
-  scale_fill_manual(values = viridis(n = 11, direction = -1)[11:1]) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
   scale_x_discrete(drop = F) +
   coord_flip() +
   theme_bw() +
   theme(axis.text.x = element_blank(),
         legend.position = "none")
 ```
+
+<br>
+
+### Harmonized secchi disk depth
+
+At this point the harmonization of the secchi disk depth data from the WQP is complete and we export the final dataset for use later in the workflow.
+
+Below is a final set of histograms showing the distribution of harmonized measurements (top) and CVs (bottom) broken down by `tier` ***after*** aggregating simultaneous records.
+
+<br>
+
+<img src="3_harmonize/out/sdd_tier_dists_postagg.png" alt="Distribution of SDD values by tier" width="650"/>
+
+
+<img src="3_harmonize/out/sdd_tier_cv_dists_postagg.png" alt="Distribution of SDD CVs by tier" width="650"/>
 
 <br>

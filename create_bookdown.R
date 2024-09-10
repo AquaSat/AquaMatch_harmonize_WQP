@@ -20,6 +20,9 @@ bookdown_targets_list <- list(
   tar_file(doc_harmonization_rmd,
            "bookdown_raw/05_doc_harmonization.Rmd"),
   
+  tar_file(sdd_harmonization_rmd,
+           "bookdown_raw/06_sdd_harmonization.Rmd"),
+  
   tar_file(notes_rmd,
            "bookdown_raw/notes.Rmd"),
   
@@ -91,6 +94,21 @@ bookdown_targets_list <- list(
         documented_drops = p3_documented_drops,
         doc_chars = p1_wqp_params_doc$doc),
       output_file = "05_doc_harmonization",
+      output_dir = "chapters") %>%
+      change_ext(inext = "md", outext = "Rmd"),
+    format = "file",
+    packages = c("tidyverse", "bookdown", "ggrepel", "viridis", "kableExtra",
+                 "rmarkdown")
+  ),
+  
+  tar_target(
+    sdd_harmonization_report,
+    render(
+      sdd_harmonization_rmd,
+      params = list(
+        documented_drops = p3_documented_drops,
+        sdd_chars = p1_wqp_params_sdd$sdd),
+      output_file = "05_sdd_harmonization",
       output_dir = "chapters") %>%
       change_ext(inext = "md", outext = "Rmd"),
     format = "file",

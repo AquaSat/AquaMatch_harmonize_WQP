@@ -26,7 +26,7 @@ sdd_chars <- params$sdd_chars
 
 Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
 
-The text below first walks through the pre-harmonization steps for the raw secchi disk depth dataset and then delves into the specifics of the harmonization process.
+The text below first walks through the pre-harmonization steps for the raw Secchi disk depth dataset and then delves into the specifics of the harmonization process.
 
 ```{r echo = FALSE}
 # Redo the ordering of the steps, conceptualizing the pre-harmonization and
@@ -56,7 +56,7 @@ step_data <- documented_drops %>%
                              " M rows"))
 ```
 
-## Pre-harmonization of the raw secchi WQP dataset
+## Pre-harmonization of the raw Secchi WQP dataset
 
 ```{r echo=FALSE}
 step_counter <- 1
@@ -208,11 +208,11 @@ step_data %>%
 
 <br>
 
-## Harmonization-ready secchi dataset
+## Harmonization-ready Secchi dataset
 
-Once ready for harmonization, the secchi-only dataset contains the following user-defined `characteristicNames`: `r sdd_chars`.
+Once ready for harmonization, the Secchi-only dataset contains the following user-defined `characteristicNames`: `r sdd_chars`.
 
-These names are chosen in order to select for only those measurements that pertain to secchi disk depth measurements.
+These names are chosen in order to select for only those measurements that pertain to Secchi disk depth measurements.
 
 <br>
 
@@ -283,7 +283,7 @@ step_5_dropped <- filter(step_data,
 
 In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures"). 
 
-After reviewing the contents of the `ResultCommentText`, `ResultMeasureValue_original`, and `ResultDetectionConditionText` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "error", "fail", "invalid", "no result",  "questionable", "suspect", "unable", "reject", "no data", "Not Reported", "no reading", "-99", "upper quantitation limit".
+After reviewing the contents of the `ResultCommentText`, `ResultMeasureValue_original` (an unedited duplicate of the `ResultMeasureValue` field), and `ResultDetectionConditionText` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "error", "fail", "invalid", "no result",  "questionable", "suspect", "unable", "reject", "no data", "Not Reported", "no reading", "-99", "upper quantitation limit".
 
 Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
 
@@ -350,9 +350,9 @@ step_6_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-Before proceeding with the Method Detection Limit (MDL) cleanup, we first address the issue of special characters in the Secchi disk depth measurements. Some entries in the dataset contain special characters at the beginning of the measurement value, which need to be removed for proper numerical analysis. We do this by first identifying measurements with the special characters `-`, `\*`, or `=`. Then we remove those special characters and convert the values to numeric values and preserve an account about which records were modified. 
+We next address the issue of special characters in the Secchi disk depth measurements. Some entries in the dataset contain special characters at the beginning of the measurement value, which need to be removed for proper numerical analysis. We do this by first identifying measurements with the special characters `-`, `\*`, or `=`. Then we remove those special characters and convert the values to numeric values and note which records were modified. 
 
-
+This should not result in a change in rows but we still check: `r step_6_dropped` rows are removed and `r step_6_rows` rows remain.
 ```{r echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
@@ -378,7 +378,7 @@ step_data %>%
 
 <br>
 
-### Clean MDLs
+### Clean values with "less than" data
 
 ```{r echo = FALSE}
 step_counter <- 7
@@ -396,8 +396,11 @@ step_7_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-In this step, we clean up the reported values using Method Detection Limits (MDLs). We first identify records where the numeric value is missing (i.e., `NA`) in the `ResultMeasureValue` column. We then look for the presence of a `<` symbol followed by a number in the `ResultMeasureValue_original` column. If these conditions are met and there are no alphabetical characters in the original value, we extract the numeric value after the `<` symbol. This extracted value is then used as the harmonized value for the measurement.
+In this step, we find and clean records containing `<` symbols. We first identify records where the numeric value is missing (`NA`) in the `ResultMeasureValue` column. We then look for the presence of a `<` symbol followed by a number in the `ResultMeasureValue_original` column. If these conditions are met and there are no alphabetical characters in the original value, we extract the numeric value after the `<` symbol. This extracted value is then used as the harmonized value for the measurement.
 
+This step is one component of the rules defining our `mdl_flag` column, so it is labeled here as "Clean MDLs" ("MDL" = Method detection limit).
+
+This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed and `r step_7_rows` rows remain.
 ```{r echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
@@ -441,7 +444,18 @@ step_8_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-After handling the Method Detection Limits (MDLs), we proceed to clean up values reported as "greater than" a certain measurement. We identify records where the numeric value is missing (`NA`) in the `ResultMeasureValue` column. We look for the presence of a `>` symbol followed by a number in the `ResultMeasureValue_original` column. If these conditions are met and there are no alphabetical characters in the original value, we extract the numeric value after the `>` symbol. This extracted value is then used as the harmonized value for the measurement.
+We next proceed to clean up values reported as "greater than" a certain measurement. This is similar to the proceeding step of cleaning up "less than" data.
+
+The `ResultMeasureValue` column was checked for all three of the following conditions:
+
+1. Numeric-only version of the column was still `NA` after "<" removal
+2. The original column text contained a number
+3. The original column text contained a >
+4. The original column text did not have any letters in it
+
+We then used the numeric value (without >) as the record’s `harmonized_value` moving forward.
+
+This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed and `r step_8_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -488,26 +502,17 @@ step_9_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-After cleaning up the "greater than" values, we proceed to gap fill missing values in the `harmonized_value` column using depth-related information when appropriate. We clean and standardize unit columns for consistency in comparisons. Then, we create tags based on comment fields. `bottom_tag` indicates presence of "bottom" language in relevant comment columns. `negate_bottom_tag` indicates presence of language suggesting the bottom was not reached or measured. 
+After cleaning up the "greater than" values, we proceed to fill missing values in the `harmonized_value` column using Secchi disk depth information present in `ActivityBottomDepthHeightMeasure.MeasureValue`, `ActivityDepthHeightMeasure.MeasureValue`, and their corresponding units columns.
 
-After this, we create the `approx_flag` that indicates the source of the gap filled values. 
+To do this we checked the `ActivityCommentText`, `ResultCommentText`, and `ResultMeasureValue` columns for language that referenced the "bottom" of the water body. Mentions of "bottom" alone were taken as a positive indicator that sampling hit the bottom, while the following other strings were used to indicate that sampling did not hit the bottom:  "no bottom", "not.*bottom", "couldn't.*bottom", "could not.*bottom", "unable to.*bottom", "too deep", "too shallow", "doesn't reach", "did not reach", "blocked", "hidden", "disappeared", "hose frozen", "pump frozen", "cable not long enough", "cord not long enough", "won't stay on bottom", "current too strong", "too windy", "fast current", "flooding", "readings not on bottom", "measurements not collected", "sample taken at", "depth too great", "can't get true bottom", "seen on bottom: no", "bottom reading not taken", "afraid to touch bottom", "forgot bottom reading", "didn't hit bottom", "did not hit bottom", "vegetation blocks", "turbid", "probe not on bottom", "sonde.*not.*bottom", "hydrolab not on bottom", "profile not taken to bottom", "unable to collect bottom", "bottom.*not.*collected", "bottom.*not.*recorded".
 
-`approx_flag` value definitions:
+After this, we flagged these records with the `approx_flag`, indicating the source of the gap filled values:
+
 + `0`: Value and units not adjusted (original `harmonized_value` is not `NA`)
-+ `1`: Value filled using `ActivityDepthHeightMeasure` column.
-+ `2`: Value filled using `ActivityBottomDepthHeightMeasure` column.
++ `1`: `harmonized_value` filled using `ActivityDepthHeightMeasure` column
++ `2`: `harmonized_value` filled using `ActivityBottomDepthHeightMeasure` column
 
-The logic of the `approx_flag` assignment is as follows:
-1. If the harmonized value is not `NA` set flag to `0`.
-2. If the harmonized value is `NA`, and either there is no "bottom" language or there is language negating the bottom measurement, and `ActivityDepthHeightMeasure.MeasureValue` is available and non-zero set flag to `1`
-3. If the harmonized value is `NA`, and there is "bottom" language is the comments, and there is no language negating the bottom measurement, and the `ActivityBottomDepthHeightMeasure.MeasureValue` is available and non-zero set flag to `2`.'
-4. For all other cases set `approx_flag` to `NA`, as we are unable to approximate.
-
-This flagging system allows us to:
-1. Preserve original data where available.
-2. Prioritize bottom depth measurements when we're confident the bottom was reached.
-3. Use activity depth measurements when bottom measurements are unavailable or unreliable.
-4. Clearly identify records where approximation was not possible.
+This should not result in a change in rows but we still check: `r step_9_dropped` rows are removed and `r step_9_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -556,6 +561,8 @@ step_10_dropped <- filter(step_data,
 
 The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
 
+`r step_10_dropped` rows are removed. The final row count after this is `r step_10_rows`.
+
 ```{r echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
@@ -599,7 +606,7 @@ step_11_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-The next step in sdd harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into meters (m):
+The next step in SDD harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into meters (m):
 
 ```{r echo=FALSE, message = FALSE}
 read_csv("../3_harmonize/out/sdd_unit_table.csv") %>%
@@ -672,10 +679,22 @@ step_12_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-After harmonizing record units we focus on cleaning and flagging the bottom depth data. The purpose of this step is to accurately represent when the secchi disk reached the bottom of the water body. First we identify the relevant samples: those samples that contain "bottom" language in the comments, don't contain language negating the bottom measurement, and lack information in the bottom depth columns. Then we flag and fill the bottom depth data. We create a `depth_flag` to indicate the source of bottom depth values:
-+ `0`: Bottom depth value not adjusted and no indication that secchi disk hit bottom.
-+ `1`: Bottom depth value filled in with `harmonized_value` due to indication that secchi disk hit bottom.
-Finally, we convert all bottom depth values to meters
+The next harmonization step involved gap filling the `ActivityBottomDepthHeightMeasure.MeasureValue` and `ActivityBottomDepthHeightMeasure.MeasureUnitCode` columns.
+
+There are four columns that explicitly contain depth information for a given WQP entry. Of these columns we are only interested in the `ActivityBottomDepthHeightMeasure.MeasureValue` column for Secchi disk depth because it may be an indicator of the bottom of the water body for a given WQP entry. Here we harmonize the values in the bottom depth column. To keep this data in line with the rest of the data in AquaSat v2, the other harmonized depth columns are filled with `NA` since Secchi disk depth is a discrete depth measurement. 
+
+Those harmonized depth columns are:
+
+  + `harmonized_top_depth_value`
+  + `harmonized_top_depth_unit`
+  + `harmonized_discrete_depth_value`
+  + `harmonized_discrete_depth_unit`
+
+In order to gap fill bottom depths we searched for records with previously identified bottom-related language and no information in the bottom depth value and unit columns. These entries were flagged using the `depth_flag` column, where `0` = bottom depth value not adjusted and no indication that Secchi disk hit bottom, and `1` = bottom depth value back filled with `harmonized_value` due to indication that Secchi disk hit bottom.
+
+If an entry was flagged, then the `harmonized_bottom_depth_value` column was filled using the `harmonized_value` and the `harmonized_bottom_depth_unit` column was filled using the `harmonized_units` column. Finally, the units for the harmonized bottom depth values were converted to meters (m).
+
+This should not result in a change in rows but we still check: `r step_12_dropped` rows are removed and `r step_12_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -702,8 +721,7 @@ step_data %>%
 
 <br>
 
-### Filter and tier methods
-
+### Filter methods
 
 ```{r echo = FALSE}
 step_counter <- 13
@@ -717,40 +735,79 @@ step_13_rows <- filter(step_data,
 
 step_13_dropped <- filter(step_data,
                           reorder == step_counter) %>%
-  pull(number_dropped) %>%
-  round(digits = 1)
+  mutate(thou_dropped = number_dropped / 1000) %>%
+  pull(thou_dropped) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
 ```
 
-<!-- need to come back to this one it is very different from chla one -->
+After cleaning and standardizing the Secchi bottom depth measurements, we proceed to filter the analytical methods used. 
 
-After cleaning and standardizing the sdd bottom depth measurements, we proceed to aggregate and tier the analytical methods used. 
+We check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-Secchi disk depth measurements. Phrases used to flag and remove unrelated methods for Secchi disk depth data are: "10200G", "2320", "2540", "2550", "alkalin", "calculation",  "chemical", "chlorophyll", "coliform", "conductance", "laboratory calculation", "meteorological", "nephelometry", "nitrate", "no information exists for method", "not available", "other or unknown procedure", "qa", "temperature",  "total suspended solids", "unknown", "unkown", "unspecified".
 
-Prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-secchi disk depth measurements. Phrases used to flag and remove unrelated methods for secchi disk depth data are: "chlorophyll", "sulfate", "sediment", "5310", "counting", "plasma", "NTU", "nephelometry", "coliform", "carbon", "2540", "conductance", "nitrate", "nitrite", "nitrogen", "alkalin", "phosphorus", "periphyton", "peri", "biomass", "temperature", "elemental analyzer", "2320", "chemical", "unknown", "unspecified", "no information exists for method", "other or unknown procedure", "laboratory calculation", "2550","total suspended solids", "not available", "qa", "unkown", "calculation", "10200G", "meteorological".
+This process drops `r step_13_dropped` rows leaving `r step_13_rows` remaining.
 
-This process drops `some` rows leaving `some` remaining.
 
-*Time tagging for optimal measurement conditions*
-We then categorize measurements based on the time they were taken by creating a `time_tag`. This tagging helps identify measurements taken under optimal lighting conditions.
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
 
-+ `time_tag 0`: Measurement taken between 10AM and 2PM (ideal conditions)
-+ `time_tag 1`: Measurement taken outside of 10AM and 2PM.
-+ `time_tag 2`: Measurement with time `11:59:59` or `NA` (likely default values)
+<br>
 
-*Scope tagging for measurement technique*
-Next, we identify whether a viewscope was used during measurements. Using a viewscope can improve measurement accuracy by reducing surface glare and wave effects. The language used to identify when a viewscope is mentioned in a record is "scope". The language used to identify when a viewscope is not used in a record is the list: "no.\*viewscope", "no.\*scope", "without.\*scope", "not using scope", "no scope.\*used", "viewscope.\*not.\*sent", "viewscope.\*not.\*collected", "leaky.\*scope", "scope.\*needs.\*resealing", "unable.\*get.\*readings.\*scope", "hard to use.\*scope", "issues with viewscope", "no readings.\*viewscope", "no.\*s\\.?d\\.?.\*viewscope", "secchi.\*not using", "Viewscope: No", "Viewscope used\\? - No", "-Viewscope used\\? - No", "Without Scope", "without viewscope", "no viewscope used", "Viewscope: No;", "scope of cable", "scope of collection", "scope of sample collection". The comment columns that these language lists were checked against were: `ResultAnalyticalMethod.MethodName`, `ActivityCommentText`, `ResultCommentText`.
-<!-- check that the correct strings were escaped (idk if \ were properly escaped) -->
+### Tier methods
 
-+ `scope_tag 0`: Indication that a viewscope was used (based on method description, comments, or USGS pcode)
-+ `scope_tag 1`: No indication of viewscope use or explicit mention of not using a viewscope.
+```{r echo = FALSE}
+step_counter <- 14
 
-*Tiering measurements based on time and scope tags*
+step_14_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
 
-Finally, we assign each measurement to a tier based on on the time and scope tags, and the depth_flag.
+step_14_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
 
-+ `Tier 0` (Restrictive): Measurement taken within the ideal time window and using a viewscope.
-+ `Tier 1` (Narrowed): Either ideal time or viewscope use, but not both.
-+ `Tier 2` (Inclusive): Neither ideal time nor viewscope use confirmed.
-+ `Tier 3` (Inclusive): Measuremnts that were gap-filled using depth column data.
+```
+
+We then tiered the data using information on the time of day of the measurement, whether a viewscope was used, and whether the `harmonized_value` was gap filled. 
+
+We tiered the data as follows:
+
+<!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
+
+| **Tier** | **Name**    | **Description**                                                                                                                                                                                                                                                                                           | **SDD details**                                                                                                    |
+|----------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| 0        | Restrictive | Data that are verifiably self-similar across organizations and  time-periods and can be considered highly reliable and interoperable                                                                                                                                                                      | Time was reported between 10am-2pm and was not 11:59:59. Method indicates use of viewscope                        |
+| 1        | Narrowed    | Data that we have good reason to believe are self-similar, but for which  we can’t verify full interoperability across data providers                                                                                                                                                                     | Either time reported was between 10am-2pm and was no 11:59:59, OR method indicates use of viewscope, but not both |
+| 2        | Inclusive   | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Time not reported/was outside of 10am-2pm/was 11:59:59 and no indication that viewscope was used                  |
+| 3        | Inclusive   | Same as above                                                                                                                                                                                                                                                                                             | Data where the `harmonized_value` is gap filled from other columns in the record                                    |
+
+<br>
+
+This should not result in a change in rows but we still check: `r step_14_dropped` rows are removed and `r step_14_rows` rows remain.
 
 
 ```{r echo = FALSE}
@@ -781,44 +838,58 @@ step_data %>%
 ### Flag 
 
 ```{r echo = FALSE}
-step_counter <- 14
+step_counter <- 15
 
-step_14_rows <- filter(step_data,
+step_15_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 1) %>%
   paste0(., " million")
 
-step_14_dropped <- filter(step_data,
+step_15_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 1)
 ```
 
-After cleaning and tiering the sdd data, we conduct a final flagging sweep. This process creates several flags to provide additional context and quality indicators for each measurement. 
+After cleaning and tiering the Secchi data, we conduct a final flagging sweep. This process creates several flags to provide additional context and quality indicators for each measurement. 
 
 We create four types of flags:
-1. `mdl_flag`: This flag indicates whether the measurement is close to or below the method detection limit of 0.01m. This flag builds off of the `Clean MDLs` step which tracks whether or not a `<` symbol is part of the original value column. Those values with an MDL flag of 2 or 3 will be set to 0.01m.
-  + `flag 0`: Value greater than 0.01m with NO `<` character.
-  + `flag 1`: Value greater than 0.01m with `<` character.
-  + `flag 2`: Value less than or equal to 0.01m with NO `<` character (these values will be set to 0.01m)
-  + `flag 3`: Value less than or equal to 0.01m with `<` character (these values will be set to 0.01m)
-2. `greater_flag`: This flag indicates whether the measurement is close to or greater than 31m. This flag builds off of the `Clean values with "greater than" data` step which tracks whether or not a `>` symbol is part of the original value column. 
-  + `flag 0`: Value less than 31m with NO `>` character.
-  + `flag 1`: Value less than 31m with `>` character.
-  + `flag 2`: Value greater than 31m with NO `>` character.
-  + `flag 3`: Value greater than 31m with `>` character.
-3. `field_flag`: Unlike the chlorophyll *a* process which focuses on sampling methods, the field flag for SDD measurements is based on the presence of environmental indicators in the comments. We look for the following environmental indicators: "wind", "chop", "choppy", "precipitation", "rain", "calm", "clear". The comment columns that this list of environmental indicators were checked against were: `ActivityCommentText`, `ResultCommentText`.
-  + `flag 0`: Environmental indicator present in comments
-  + `flag 1`: No environmental indicator present in comments.
-4. `misc_flag`: The miscellaneous flag captures various other conditions that might affect data quality or interpretation.
-  + `flag 0`: No miscellaneous condition flagged
-  + `flag 1`: Bottom of water body indicated
-  + `flag 2`: Harmonized value is greater than the bottom depth value
-  + `flag 3`: Special characters removed (-,=.\*)
 
-No records should be removed by this process.
+1. `mdl_flag`: This flag indicates whether the value was corrected 1) because original WQP record contained a “<” character or, 2) because the original value was less than 0.01m.
+
+    + `flag 0`: Value greater than 0.01m with NO `<` character in original entry
+    + `flag 1`: Value greater than 0.01m with `<` character in original entry
+    + `flag 2`: Value less than or equal to 0.01m with NO `<` character in original entry; final value adjusted to to 0.01m
+    + `flag 3`: Value less than or equal to 0.01m with `<` character in original entry; final value adjusted to 0.01m
+  
+<br>
+  
+2. `greater_flag`: This flag indicates 1) whether the value was corrected because the original WQP record contained a ">" character and 2), whether the `harmonized_value` is greater than 31m. Depths greater than 31m are flagged as potentially anomalous.
+
+    + `flag 0`: Value less than 31m with NO `>` character
+    + `flag 1`: Value less than 31m with `>` character
+    + `flag 2`: Value greater than 31m with NO `>` character
+    + `flag 3`: Value greater than 31m with `>` character
+
+<br>
+  
+3. `field_flag`: Indicates whether the `ActivityCommentText` or `ResultCommentText` columns contained language indicating environmental conditions, i.e.: "wind", "chop", "choppy", "precipitation", "rain", "calm", or "clear".
+
+    + `flag 0`: Environmental indicator present in comment
+    + `flag 1`: No environmental indicator present in comments
+
+<br>
+
+4. `misc_flag`: The miscellaneous flag captures various other conditions that might affect data quality or interpretation.
+
+    + `flag 0`: No miscellaneous condition flagged
+    + `flag 1`: Bottom of water body indicated
+    + `flag 2`: Harmonized value is greater than the bottom depth value
+    + `flag 3`: Special characters removed (-,=.\*)
+
+This should not result in a change in rows but we still check: `r step_15_dropped` rows are removed and `r step_15_rows` rows remain.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -845,33 +916,29 @@ step_data %>%
 
 <br>
 
-### Remove values outside of realistic range
+### Remove unrealistic values
 
 ```{r echo = FALSE}
-step_counter <- 15
+step_counter <- 16
 
-step_15_rows <- filter(step_data,
+step_16_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 1) %>%
   paste0(., " million")
 
-step_15_dropped <- filter(step_data,
+step_16_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
   round(digits = 1)
 ```
 
-Before finalizing the dataset, we remove sdd values that are beyond a realistic threshold. We use 62 meters as our cutoff for removal. This threshold is established based on the following rationale:
-
-1. SDD values greater than 31 meters are flagged as potentially anomalous in our quality control process.
-2. The 62-meter threshold represents a doubling of this initial flagging criterion.
-Measurements beyond this point are considered improbable and likely erroneous due to unit conversion or other data entry issues.
-3. Removing these extreme outliers enhances the overall reliability and interpretability of the dataset.
-4. This conservative approach aims to minimize the inclusion of potentially spurious data while preserving legitimate measurements within expected ranges for typical aquatic environments.
+Before finalizing the dataset we removed Secchi disk depth values that were beyond a realistic threshold. We used 62 m as our cutoff for removal because it is double the limit for our `greater_flag`.
 
 Additionally, we convert values less than 0.01m to 0.01m. This conversion is established because a human can't discern less than a 1cm resolution in Secchi disk depth measurements.
+
+This process drops `r step_16_dropped` rows leaving `r step_16_rows` remaining.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -901,16 +968,16 @@ step_data %>%
 ### Aggregate simultaneous records
 
 ```{r echo = FALSE}
-step_counter <- 16
+step_counter <- 17
 
-step_16_rows <- filter(step_data,
+step_17_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
   round(digits = 1) %>%
   paste0(., " million")
 
-step_16_dropped <- filter(step_data,
+step_17_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
@@ -918,11 +985,13 @@ step_16_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of Secchi disk depth (SDD) harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the Water Quality Portal (WQP) or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
+The final step of Secchi disk depth harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the Water Quality Portal (WQP) or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartTime.Time`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_local_time`, `harmonized_utc`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the dataset prior to its aggregation (pipeline target <!-- target here -->), and including the `subgroup_id` column, so that users can use the non-aggregated data as well and make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartTime.Time`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_local_time`, `harmonized_utc`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the dataset prior to its aggregation (pipeline target `p3_sdd_preagg_grouped`), and including the `subgroup_id` column, so that users can use the non-aggregated data as well and make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
+
+`r step_17_dropped` rows dropped leaving `r step_17_rows` remaining in the final harmonized and aggregated Secchi disk depth dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -949,9 +1018,9 @@ step_data %>%
 
 <br>
 
-### Harmonized secchi disk depth
+### Harmonized Secchi disk depth
 
-At this point the harmonization of the secchi disk depth data from the WQP is complete and we export the final dataset for use later in the workflow.
+At this point the harmonization of the Secchi disk depth data from the WQP is complete and we export the final dataset for use later in the workflow.
 
 Below is a final set of histograms showing the distribution of harmonized measurements (top) and CVs (bottom) broken down by `tier` ***after*** aggregating simultaneous records.
 

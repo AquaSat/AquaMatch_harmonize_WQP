@@ -561,7 +561,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   )
   
   
-  # Aggregate analytical methods --------------------------------------------
+  # Filter analytical methods -----------------------------------------------
   
   # Get an idea of how many analytical methods exist:
   print(
@@ -612,9 +612,9 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   dropped_methods <- tibble(
     step = "sdd harmonization",
-    reason = "Dropped rows while aggregating analytical methods",
-    short_reason = "Aggregate methods",
-    number_dropped = nrow(converted_units_sdd) - nrow(sdd_relevant),
+    reason = "Dropped rows while filtering analytical methods",
+    short_reason = "Filter methods",
+    number_dropped = nrow(sdd_bottom_depth_added) - nrow(sdd_relevant),
     n_rows = nrow(sdd_relevant),
     order = 10
   )
@@ -728,7 +728,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     step = "sdd harmonization",
     reason = "Dropped rows while tiering analytical methods",
     short_reason = "Tier methods",
-    number_dropped = nrow(sdd_bottom_depth_added) - nrow(tiered_methods_sdd),
+    number_dropped = nrow(sdd_relevant) - nrow(tiered_methods_sdd),
     n_rows = nrow(tiered_methods_sdd),
     order = 11
   )
@@ -833,8 +833,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   dropped_flags <- tibble(
     step = "sdd harmonization",
     reason = "Dropped rows while assigning flags",
-    short_reason = "Field flagging",
-    number_dropped = nrow(cleaned_flagged_sdd) - nrow(tiered_methods_sdd),
+    short_reason = "Finalize flags",
+    number_dropped = nrow(tiered_methods_sdd) - nrow(cleaned_flagged_sdd),
     n_rows = nrow(cleaned_flagged_sdd),
     order = 12
   )

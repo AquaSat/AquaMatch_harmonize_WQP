@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>5 Chlorophyll a (chla) harmonization process | _main.knit</title>
+  <title>7 Secchi harmonization process | _main.knit</title>
   <meta name="description" content="" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="5 Chlorophyll a (chla) harmonization process | _main.knit" />
+  <meta property="og:title" content="7 Secchi harmonization process | _main.knit" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="5 Chlorophyll a (chla) harmonization process | _main.knit" />
+  <meta name="twitter:title" content="7 Secchi harmonization process | _main.knit" />
   
   
   
@@ -30,8 +30,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="tiering-flagging-and-quality-control-philosophy.html"/>
-<link rel="next" href="doc-harmonization-process.html"/>
+<link rel="prev" href="doc-harmonization-process.html"/>
+<link rel="next" href="notes.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -252,8 +252,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="chlorophyll-a-chla-harmonization-process" class="section level1 hasAnchor" number="5">
-<h1><span class="header-section-number">5</span> Chlorophyll <em>a</em> (chla) harmonization process<a href="chlorophyll-a-chla-harmonization-process.html#chlorophyll-a-chla-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="secchi-harmonization-process" class="section level1 hasAnchor" number="7">
+<h1><span class="header-section-number">7</span> Secchi harmonization process<a href="secchi-harmonization-process.html#secchi-harmonization-process" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Following the completion of the {dataRetrieval} download process
 described previously, the pipeline contains raw WQP data for each
 parameter of interest. Before we harmonize each parameter we run through
@@ -261,16 +261,16 @@ a series of universal “pre-harmonization” steps, which ensure that the
 datasets are appropriately formatted when entering their harmonization
 routines.</p>
 <p>The text below first walks through the pre-harmonization steps for the
-raw chlorophyll <em>a</em> dataset and then delves into the specifics of the
+raw Secchi disk depth dataset and then delves into the specifics of the
 harmonization process.</p>
-<div id="pre-harmonization-of-the-raw-chlorophyll-wqp-dataset" class="section level2 hasAnchor" number="5.1">
-<h2><span class="header-section-number">5.1</span> Pre-harmonization of the raw chlorophyll WQP dataset<a href="chlorophyll-a-chla-harmonization-process.html#pre-harmonization-of-the-raw-chlorophyll-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="pre-harmonization-of-the-raw-secchi-wqp-dataset" class="section level2 hasAnchor" number="7.1">
+<h2><span class="header-section-number">7.1</span> Pre-harmonization of the raw Secchi WQP dataset<a href="secchi-harmonization-process.html#pre-harmonization-of-the-raw-secchi-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>At the start of the pre-harmonization process the raw chlorophyll WQP
-dataset contains 4.7 million rows.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
+dataset contains 3.1 million rows.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
-<div id="missing-results" class="section level3 hasAnchor" number="5.1.1">
-<h3><span class="header-section-number">5.1.1</span> Missing results<a href="chlorophyll-a-chla-harmonization-process.html#missing-results" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="missing-results-2" class="section level3 hasAnchor" number="7.1.1">
+<h3><span class="header-section-number">7.1.1</span> Missing results<a href="secchi-harmonization-process.html#missing-results-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Next, records that have missing data are dropped from the dataset.
 Several criteria are used when checking for missing data. If any of the
 below criteria are met the row is flagged as missing:</p>
@@ -283,13 +283,13 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>50.7 thousand rows are dropped, resulting in a final count of 4.6
+<p>30.6 thousand rows are dropped, resulting in a final count of 3.1
 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="filter-status" class="section level3 hasAnchor" number="5.1.2">
-<h3><span class="header-section-number">5.1.2</span> Filter status<a href="chlorophyll-a-chla-harmonization-process.html#filter-status" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="filter-status-2" class="section level3 hasAnchor" number="7.1.2">
+<h3><span class="header-section-number">7.1.2</span> Filter Status<a href="secchi-harmonization-process.html#filter-status-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The final step in pre-harmonization is to filter the
 <code>ResultStatusIdentifier</code> column to include only the following statuses:</p>
 <ul>
@@ -305,48 +305,45 @@ however we also include <code>NA</code> in an effort to be conservative. More
 specifically, when making decisions for this and other columns we
 occasionally retain <code>NA</code> values if removing the records would otherwise
 drop 10% or more of the available data.</p>
-<p>This step removes 40.2 thousand rows of data, leaving it with 4.6
-million rows remaining.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
+<p>This step removes 9.2 thousand rows of data, leaving it with 3.1 million
+rows remaining.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
 </div>
-<div id="harmonization-ready-chlorophyll-dataset" class="section level2 hasAnchor" number="5.2">
-<h2><span class="header-section-number">5.2</span> Harmonization-ready chlorophyll dataset<a href="chlorophyll-a-chla-harmonization-process.html#harmonization-ready-chlorophyll-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Once ready for harmonization, the chlorophyll <em>a</em>-only WQP dataset
-contains the following user-defined <code>characteristicNames</code>: Chlorophyll
-a, Chlorophyll a (probe relative fluorescence), Chlorophyll a, corrected
-for pheophytin, Chlorophyll a (probe), Chlorophyll a, free of
-pheophytin, Chlorophyll a, uncorrected for pheophytin, Chlorophyll a -
-Phytoplankton (suspended).</p>
+<div id="harmonization-ready-secchi-dataset" class="section level2 hasAnchor" number="7.2">
+<h2><span class="header-section-number">7.2</span> Harmonization-ready Secchi dataset<a href="secchi-harmonization-process.html#harmonization-ready-secchi-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Once ready for harmonization, the Secchi-only dataset contains the
+following user-defined <code>characteristicNames</code>: Depth, Secchi disk depth,
+Depth, Secchi disk depth (choice list), Secchi Reading Condition (choice
+list), Secchi depth, Water transparency, Secchi disc.</p>
 <p>These names are chosen in order to select for only those measurements
-that pertain to chlorophyll <em>a</em>.</p>
+that pertain to Secchi disk depth measurements.</p>
 <p><br></p>
-<div id="filter-for-water-media" class="section level3 hasAnchor" number="5.2.1">
-<h3><span class="header-section-number">5.2.1</span> Filter for water media<a href="chlorophyll-a-chla-harmonization-process.html#filter-for-water-media" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="filter-for-water-media-1" class="section level3 hasAnchor" number="7.2.1">
+<h3><span class="header-section-number">7.2.1</span> Filter for water media<a href="secchi-harmonization-process.html#filter-for-water-media-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We next ensure that the media type for all chlorophyll data is
-<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 2886 rows are
-removed. The final row count after this is 4.6 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
+<code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 2075 rows are
+removed. The final row count after this is 3.1 million.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="document-and-remove-fails" class="section level3 hasAnchor" number="5.2.2">
-<h3><span class="header-section-number">5.2.2</span> Document and remove fails<a href="chlorophyll-a-chla-harmonization-process.html#document-and-remove-fails" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="document-and-remove-fails-2" class="section level3 hasAnchor" number="7.2.2">
+<h3><span class="header-section-number">7.2.2</span> Document and remove fails<a href="secchi-harmonization-process.html#document-and-remove-fails-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>In this step we filter out records based on indications that they have
 failed data quality assurance or quality control for some reason given
 by the data provider (these instances are referred to here as
 “failures”).</p>
-<p>After reviewing the contents of the <code>ActivityCommentText</code>,
-<code>ResultLaboratoryCommentText</code>, <code>ResultCommentText</code>, and
-<code>ResultMeasureValue_original</code> columns, we developed a list of terms that
-captured the majority of instances where records had failures or
-unacceptable measurements. We found the phrasing to be consistent across
-columns and so we searched for the same (case agnostic) terms in all
-four locations. The terms are: “beyond accept”, “cancelled”,
-“contaminat”, “error”, “fail”, “improper”, “instrument down”,
-“interference”, “invalid”, “no result”, “no test”, “not accept”,
-“outside of accept”, “problem”, “QC EXCEEDED”, “questionable”,
-“suspect”, “unable”, “violation”, “reject”, “no data”.</p>
+<p>After reviewing the contents of the <code>ResultCommentText</code>,
+<code>ResultMeasureValue_original</code> (an unedited duplicate of the
+<code>ResultMeasureValue</code> field), and <code>ResultDetectionConditionText</code> columns,
+we developed a list of terms that captured the majority of instances
+where records had failures or unacceptable measurements. We found the
+phrasing to be consistent across columns and so we searched for the same
+(case agnostic) terms in all four locations. The terms are: “error”,
+“fail”, “invalid”, “no result”, “questionable”, “suspect”, “unable”,
+“reject”, “no data”, “Not Reported”, “no reading”, “-99”, “upper
+quantitation limit”.</p>
 <p>Below are pie charts that break down the number of failure detections by
 column. Note that the plotting below is automated so if one or more of
 the columns listed above are not plotted, this indicates that the
@@ -354,123 +351,140 @@ column(s) did not return any matches for the failure phrases. Also note
 that a single record can contain multiple failure phrases; therefore,
 failure phrases are not mutually exclusive.</p>
 <p><br></p>
-<div id="activitycommenttext-fail-detects" class="section level4 hasAnchor" number="5.2.2.1">
-<h4><span class="header-section-number">5.2.2.1</span> ActivityCommentText fail detects<a href="chlorophyll-a-chla-harmonization-process.html#activitycommenttext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="3_harmonize/out/chla_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/></p>
+<div id="resultcommenttext-fail-detects-2" class="section level4 hasAnchor" number="7.2.2.1">
+<h4><span class="header-section-number">7.2.2.1</span> ResultCommentText fail detects<a href="secchi-harmonization-process.html#resultcommenttext-fail-detects-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/sdd_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/></p>
 </div>
-<div id="resultcommenttext-fail-detects" class="section level4 hasAnchor" number="5.2.2.2">
-<h4><span class="header-section-number">5.2.2.2</span> ResultCommentText fail detects<a href="chlorophyll-a-chla-harmonization-process.html#resultcommenttext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/></p>
+<div id="resultdetectionconditiontext-fail-detects" class="section level4 hasAnchor" number="7.2.2.2">
+<h4><span class="header-section-number">7.2.2.2</span> ResultDetectionConditionText fail detects<a href="secchi-harmonization-process.html#resultdetectionconditiontext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/sdd_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/></p>
 </div>
-<div id="resultlaboratorycommenttext-fail-detects" class="section level4 hasAnchor" number="5.2.2.3">
-<h4><span class="header-section-number">5.2.2.3</span> ResultLaboratoryCommentText fail detects<a href="chlorophyll-a-chla-harmonization-process.html#resultlaboratorycommenttext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p><img src="3_harmonize/out/chla_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/></p>
+<div id="resultmeasurevalue_original-fail-detects" class="section level4 hasAnchor" number="7.2.2.3">
+<h4><span class="header-section-number">7.2.2.3</span> ResultMeasureValue_original fail detects<a href="secchi-harmonization-process.html#resultmeasurevalue_original-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/sdd_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/></p>
 <p><br></p>
 <!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
-<p>89 thousand rows are removed after detecting failure-related phrases and
-4.5 million rows remain.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
+<p>5.8 thousand rows are removed after detecting failure-related phrases
+and 3.1 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
 </div>
-<div id="clean-mdls" class="section level3 hasAnchor" number="5.2.3">
-<h3><span class="header-section-number">5.2.3</span> Clean MDLs<a href="chlorophyll-a-chla-harmonization-process.html#clean-mdls" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>In this step method detection limits (MDLs) are used to clean up the
-reported values. When a numeric value is missing for the data record
-(i.e., <code>NA</code> or text that became <code>NA</code> during an <code>as.numeric</code> call) we
-check for non-detect language in the <code>ResultLaboratoryCommentText</code>,
-<code>ResultCommentText</code>, <code>ResultDetectionConditionText</code>, and
-<code>ResultMeasureValue</code> columns. This language can be <code>"non-detect"</code>,
-<code>"not detect"</code>, <code>"non detect"</code>, <code>"undetect"</code>, or <code>"below"</code>.</p>
-<p>If non-detect language exists then we use the
-<code>DetectionQuantitationLimitMeasure.MeasureValue</code> column for the MDL,
-otherwise if there is a <code>&lt;</code> and a number in the <code>ResultMeasureValue</code>
-column we use that number instead.</p>
-<p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
-value moving forward.</p>
-<p>We produce a new column, <code>mdl_flag</code>, from the MDL cleaning process.
-Records where no MDL-based adjustment was made and which are at or above
-the MDL are assigned a 0. Records with corrected values based on the MDL
-method are assigned a 1. Finally, records where no MDL-based adjustment
-was made and which contain a numeric value below the provided MDL are
-assigned a 2.</p>
+<div id="clean-special-characters" class="section level3 hasAnchor" number="7.2.3">
+<h3><span class="header-section-number">7.2.3</span> Clean special characters<a href="secchi-harmonization-process.html#clean-special-characters" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We next address the issue of special characters in the Secchi disk depth
+measurements. Some entries in the dataset contain special characters at
+the beginning of the measurement value, which need to be removed for
+proper numerical analysis. We do this by first identifying measurements
+with the special characters <code>-</code>, <code>\*</code>, or <code>=</code>. Then we remove those
+special characters and convert the values to numeric values and note
+which records were modified.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.5 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
+are removed and 3.1 million rows remain.
+<img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="clean-approximate-values" class="section level3 hasAnchor" number="5.2.4">
-<h3><span class="header-section-number">5.2.4</span> Clean approximate values<a href="chlorophyll-a-chla-harmonization-process.html#clean-approximate-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Cleaning approximate values involves a similar process as for MDL
-cleaning. We flag “approximated” values in the dataset. The
-<code>ResultMeasureValue</code> column gets checked for <strong>all</strong> three of the
+<div id="clean-values-with-less-than-data" class="section level3 hasAnchor" number="7.2.4">
+<h3><span class="header-section-number">7.2.4</span> Clean values with “less than” data<a href="secchi-harmonization-process.html#clean-values-with-less-than-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>In this step, we find and clean records containing <code>&lt;</code> symbols. We first
+identify records where the numeric value is missing (<code>NA</code>) in the
+<code>ResultMeasureValue</code> column. We then look for the presence of a <code>&lt;</code>
+symbol followed by a number in the <code>ResultMeasureValue_original</code> column.
+If these conditions are met and there are no alphabetical characters in
+the original value, we extract the numeric value after the <code>&lt;</code> symbol.
+This extracted value is then used as the harmonized value for the
+measurement.</p>
+<p>This step is one component of the rules defining our <code>mdl_flag</code> column,
+so it is labeled here as “Clean MDLs” (“MDL” = Method detection limit).</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed and 3.1 million rows remain.
+<img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="clean-values-with-greater-than-data-2" class="section level3 hasAnchor" number="7.2.5">
+<h3><span class="header-section-number">7.2.5</span> Clean values with “greater than” data<a href="secchi-harmonization-process.html#clean-values-with-greater-than-data-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We next proceed to clean up values reported as “greater than” a certain
+measurement. This is similar to the proceeding step of cleaning up “less
+than” data.</p>
+<p>The <code>ResultMeasureValue</code> column was checked for all three of the
 following conditions:</p>
 <ol style="list-style-type: decimal">
-<li>Numeric-only version of the column is still <code>NA</code> after MDL cleaning</li>
+<li>Numeric-only version of the column was still <code>NA</code> after “&lt;” removal</li>
 <li>The original column text contained a number</li>
-<li>Any of <code>ResultLaboratoryCommentText</code>, <code>ResultCommentText</code>, or
-<code>ResultDetectionConditionText</code> match this regular expression,
-ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
+<li>The original column text contained a &gt;</li>
+<li>The original column text did not have any letters in it</li>
 </ol>
-<p>We then use the approximate value as the record’s value moving forward.</p>
-<p>Records with corrected values based on the above method are noted with a
-1 in the <code>approx_flag</code> column. Note, however, that occasionally
-approximate language will be used in a record but not changed or
-flagged. This occurs when the language is used in a comment-related
-column and <strong>not</strong> the result column itself, meaning that there is a
-usable numeric value provided (and thus doesn’t need correction).</p>
+<p>We then used the numeric value (without &gt;) as the record’s
+<code>harmonized_value</code> moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.5 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
+are removed and 3.1 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="clean-values-with-greater-than-data" class="section level3 hasAnchor" number="5.2.5">
-<h3><span class="header-section-number">5.2.5</span> Clean values with “greater than” data<a href="chlorophyll-a-chla-harmonization-process.html#clean-values-with-greater-than-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The next step is similar to the MDL and approximate value cleaning
-processes, and follows the approximate cleaning process most closely.
-The goal is to clean up values that were entered as “greater than” some
-value. The <code>ResultMeasureValue</code> column gets checked for <strong>all</strong> three of
-the following conditions:</p>
-<ol style="list-style-type: decimal">
-<li>Numeric-only version of the column is still <code>NA</code> after MDL &amp;
-approximate cleaning</li>
-<li>The original column text contained a number</li>
-<li>The original column text contained a <code>&gt;</code></li>
-</ol>
-<p>We then use the “greater than” value (without <code>&gt;</code>) as the record’s value
-moving forward.</p>
-<p>Records with corrected values based on the above method are noted with a
-1 in the <code>greater_flag</code> column.</p>
-<p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.5 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
+<div id="gap-filling-harmonized-values" class="section level3 hasAnchor" number="7.2.6">
+<h3><span class="header-section-number">7.2.6</span> Gap filling harmonized values<a href="secchi-harmonization-process.html#gap-filling-harmonized-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>After cleaning up the “greater than” values, we proceed to fill missing
+values in the <code>harmonized_value</code> column using Secchi disk depth
+information present in <code>ActivityBottomDepthHeightMeasure.MeasureValue</code>,
+<code>ActivityDepthHeightMeasure.MeasureValue</code>, and their corresponding units
+columns.</p>
+<p>To do this we checked the <code>ActivityCommentText</code>, <code>ResultCommentText</code>,
+and <code>ResultMeasureValue</code> columns for language that referenced the
+“bottom” of the water body. Mentions of “bottom” alone were taken as a
+positive indicator that sampling hit the bottom, while the following
+other strings were used to indicate that sampling did not hit the
+bottom: “no bottom”, “not.<em>bottom”, ”couldn’t.</em>bottom”, “could
+not.<em>bottom”, ”unable to.</em>bottom”, “too deep”, “too shallow”, “doesn’t
+reach”, “did not reach”, “blocked”, “hidden”, “disappeared”, “hose
+frozen”, “pump frozen”, “cable not long enough”, “cord not long enough”,
+“won’t stay on bottom”, “current too strong”, “too windy”, “fast
+current”, “flooding”, “readings not on bottom”, “measurements not
+collected”, “sample taken at”, “depth too great”, “can’t get true
+bottom”, “seen on bottom: no”, “bottom reading not taken”, “afraid to
+touch bottom”, “forgot bottom reading”, “didn’t hit bottom”, “did not
+hit bottom”, “vegetation blocks”, “turbid”, “probe not on bottom”,
+“sonde.<em>not.</em>bottom”, “hydrolab not on bottom”, “profile not taken to
+bottom”, “unable to collect bottom”, “bottom.<em>not.</em>collected”,
+“bottom.<em>not.</em>recorded”.</p>
+<p>After this, we flagged these records with the <code>approx_flag</code>, indicating
+the source of the gap filled values:</p>
+<ul>
+<li><code>0</code>: Value and units not adjusted (original <code>harmonized_value</code> is not
+<code>NA</code>)</li>
+<li><code>1</code>: <code>harmonized_value</code> filled using <code>ActivityDepthHeightMeasure</code>
+column</li>
+<li><code>2</code>: <code>harmonized_value</code> filled using
+<code>ActivityBottomDepthHeightMeasure</code> column</li>
+</ul>
+<p>This should not result in a change in rows but we still check: 0
+thousand rows are removed and 3.1 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="drop-unresolved-na-measurements" class="section level3 hasAnchor" number="5.2.6">
-<h3><span class="header-section-number">5.2.6</span> Drop unresolved NA measurements<a href="chlorophyll-a-chla-harmonization-process.html#drop-unresolved-na-measurements" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="drop-unresolved-na-measurements-2" class="section level3 hasAnchor" number="7.2.7">
+<h3><span class="header-section-number">7.2.7</span> Drop unresolved NA measurements<a href="secchi-harmonization-process.html#drop-unresolved-na-measurements-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The goal of the preceding three steps was to prevent records with
 seemingly missing measurement data from being dropped if there was still
 a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
-dropped. We also filter out any negative values in the dataset at this
-point.</p>
-<p>26.1 thousand rows are removed. The final row count after this is 4.5
+dropped.</p>
+<p>43.1 thousand rows are removed. The final row count after this is 3
 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-22-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="harmonize-record-units" class="section level3 hasAnchor" number="5.2.7">
-<h3><span class="header-section-number">5.2.7</span> Harmonize record units<a href="chlorophyll-a-chla-harmonization-process.html#harmonize-record-units" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The next step in chla harmonization is converting the units of WQP
+<div id="harmonize-record-units-2" class="section level3 hasAnchor" number="7.2.8">
+<h3><span class="header-section-number">7.2.8</span> Harmonize record units<a href="secchi-harmonization-process.html#harmonize-record-units-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The next step in SDD harmonization is converting the units of WQP
 records. We create the following conversion table, which is used to
-translate units provided in WQP into micrograms per liter (ug/L):</p>
+translate units provided in WQP into meters (m):</p>
 <table class=" lightable-paper table" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
-ResultMeasure.MeasureUnitCode
+harmonized_units
 </th>
 <th style="text-align:right;">
 conversion
@@ -480,106 +494,66 @@ conversion
 <tbody>
 <tr>
 <td style="text-align:left;">
-mg/l
+m
 </td>
 <td style="text-align:right;">
-1e+03
+1.0000
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-mg/L
+ft
 </td>
 <td style="text-align:right;">
-1e+03
+0.3048
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-ppm
+cm
 </td>
 <td style="text-align:right;">
-1e+03
+0.0100
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-ug/l
+in
 </td>
 <td style="text-align:right;">
-1e+00
+0.0254
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-ug/L
+mm
 </td>
 <td style="text-align:right;">
-1e+00
+0.0010
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-mg/m3
+feet
 </td>
 <td style="text-align:right;">
-1e+00
+0.3048
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-ppb
+meters
 </td>
 <td style="text-align:right;">
-1e+00
+1.0000
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-mg/cm3
+mi
 </td>
 <td style="text-align:right;">
-1e+06
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ug/ml
-</td>
-<td style="text-align:right;">
-1e+03
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mg/ml
-</td>
-<td style="text-align:right;">
-1e+06
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ppt
-</td>
-<td style="text-align:right;">
-1e+06
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-ug/mL
-</td>
-<td style="text-align:right;">
-1e+03
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-mg/mL
-</td>
-<td style="text-align:right;">
-1e+06
+1609.3400
 </td>
 </tr>
 </tbody>
@@ -587,89 +561,92 @@ mg/mL
 <p><br></p>
 <p>Below is a pie chart that breaks down the different unit codes that were
 dropped in the unit harmonization process, and how many records were
-lost with each code. Note that while RFU is a valid unit for
-chlorophyll-a from an <em>in situ</em> probe, we have no way to convert those
-data to ug/L, and therefore dismiss those measurements from the dataset.</p>
+lost with each code.</p>
 <p><br></p>
-<p><img src="3_harmonize/out/chla_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/></p>
+<p><img src="3_harmonize/out/sdd_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/></p>
 <p><br></p>
 <p>Additionally we provide a set of histograms of harmonized measurements
 by <code>CharacteristicName</code>:</p>
 <p><br></p>
-<p><img src="3_harmonize/out/chla_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/></p>
+<p><img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/></p>
 <p><br></p>
-<p>242.7 thousand rows are removed. The final row count after this is 4.2
-million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="clean-depth-data" class="section level3 hasAnchor" number="5.2.8">
-<h3><span class="header-section-number">5.2.8</span> Clean depth data<a href="chlorophyll-a-chla-harmonization-process.html#clean-depth-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The next harmonization step cleans the four depth-related columns
-obtained from the WQP. The details behind this step are covered in the
-<em>Depth flags</em> section of the <em>Tiering, flagging, and quality control
-philosophy</em> chapter.</p>
-<p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 4.2 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
-<p><br></p>
-</div>
-<div id="filter-and-tier-methods" class="section level3 hasAnchor" number="5.2.9">
-<h3><span class="header-section-number">5.2.9</span> Filter and tier methods<a href="chlorophyll-a-chla-harmonization-process.html#filter-and-tier-methods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>We next review the analytical methods used in measuring chlorophyll <em>a</em>,
-primarily by classifying the text provided with each record in
-<code>ResultAnalyticalMethod.MethodName</code>. Once these methods are classified
-we arrange them into hierarchical tiers as described in the <em>Method
-tiering</em> section of the <em>Tiering, flagging, and quality control
-philosophy</em> chapter.</p>
-<p>However, prior to classification we check the
-<code>ResultAnalyticalMethod.MethodName</code> column for names that indicate
-non-chlorophyll <em>a</em> measurements. Phrases used to flag and remove
-unrelated methods from chlorophyll <em>a</em> data are: “sulfate”, “sediment”,
-“5310”, “counting”, “plasma”, “turbidity”, “coliform”, “carbon”, “2540”,
-“conductance”, “nitrate”, “nitrite”, “nitrogen”, “alkalin”,
-“zooplankton”, “phosphorus”, “periphyton”, “peri”, “biomass”,
-“temperature”, “elemental analyzer”, “2320”.</p>
-<p>This process drops 69.2 thousand rows leaving 4.2 million remaining.</p>
-<p>The next step towards creating tiers is to then classify the methods in
-<code>ResultAnalyticalMethod.MethodName</code> into either: HPLC methods,
-spectrophotometer and fluorometer methods, or methods for which a
-pheophytin correction is recorded as part of the methodology. These
-classifications are not the final tiers, but they inform the tiering in
-the final step of this process. The criteria for each of the above
-classifications are:</p>
+<div id="clean-and-flag-bottom-depth-data" class="section level3 hasAnchor" number="7.2.9">
+<h3><span class="header-section-number">7.2.9</span> Clean and flag bottom depth data<a href="secchi-harmonization-process.html#clean-and-flag-bottom-depth-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The next harmonization step involved gap filling the
+<code>ActivityBottomDepthHeightMeasure.MeasureValue</code> and
+<code>ActivityBottomDepthHeightMeasure.MeasureUnitCode</code> columns.</p>
+<p>There are four columns that explicitly contain depth information for a
+given WQP entry. Of these columns we are only interested in the
+<code>ActivityBottomDepthHeightMeasure.MeasureValue</code> column for Secchi disk
+depth because it may be an indicator of the bottom of the water body for
+a given WQP entry. Here we harmonize the values in the bottom depth
+column. To keep this data in line with the rest of the data in AquaSat
+v2, the other harmonized depth columns are filled with <code>NA</code> since Secchi
+disk depth is a discrete depth measurement.</p>
+<p>Those harmonized depth columns are:</p>
 <ul>
-<li><strong>HPLC:</strong> Detection of “447”, “chromatography”, or “hplc” in the
-<code>ResultAnalyticalMethod.MethodName</code> or presence of 70951 or 70953 in
-the <code>USGSPCode</code> column</li>
-<li><strong>Spectro/fluoro:</strong> Detection of “445”, “fluor”, “Welshmeyer”, “fld”,
-“10200”, “446”, “trichromatic”, “spectrophoto”, “monochrom”,
-“monchrom”, or “spec” not as part of a word in
-<code>ResultAnalyticalMethod.MethodName</code></li>
-<li><strong>Pheophytin correction:</strong> Detection of “correct”, “445”, “446”, or
-“in presence” in <code>ResultAnalyticalMethod.MethodName</code> or detection of
-“corrected for pheophytin” or “free of pheophytin” in
-<code>CharacteristicName</code></li>
+<li><code>harmonized_top_depth_value</code></li>
+<li><code>harmonized_top_depth_unit</code></li>
+<li><code>harmonized_discrete_depth_value</code></li>
+<li><code>harmonized_discrete_depth_unit</code></li>
 </ul>
-<p>Finally, we group the data into three tiers as described in <em>Tiering,
-flagging, and quality control philosophy</em>. These tiers are:</p>
+<p>In order to gap fill bottom depths we searched for records with
+previously identified bottom-related language and no information in the
+bottom depth value and unit columns. These entries were flagged using
+the <code>depth_flag</code> column, where <code>0</code> = bottom depth value not adjusted and
+no indication that Secchi disk hit bottom, and <code>1</code> = bottom depth value
+back filled with <code>harmonized_value</code> due to indication that Secchi disk
+hit bottom.</p>
+<p>If an entry was flagged, then the <code>harmonized_bottom_depth_value</code> column
+was filled using the <code>harmonized_value</code> and the
+<code>harmonized_bottom_depth_unit</code> column was filled using the
+<code>harmonized_units</code> column. Finally, the units for the harmonized bottom
+depth values were converted to meters (m).</p>
+<p>This should not result in a change in rows but we still check: 0
+thousand rows are removed and 3 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-27-1.png" /><!-- --></p>
 <p><br></p>
+</div>
+<div id="filter-methods" class="section level3 hasAnchor" number="7.2.10">
+<h3><span class="header-section-number">7.2.10</span> Filter methods<a href="secchi-harmonization-process.html#filter-methods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>After cleaning and standardizing the Secchi bottom depth measurements,
+we proceed to filter the analytical methods used.</p>
+<p>We check the <code>ResultAnalyticalMethod.MethodName</code> column for names that
+indicate non-Secchi disk depth measurements. Phrases used to flag and
+remove unrelated methods for Secchi disk depth data are: “10200G”,
+“2320”, “2540”, “2550”, “alkalin”, “calculation”, “chemical”,
+“chlorophyll”, “coliform”, “conductance”, “laboratory calculation”,
+“meteorological”, “nephelometry”, “nitrate”, “no information exists for
+method”, “not available”, “other or unknown procedure”, “qa”,
+“temperature”, “total suspended solids”, “unknown”, “unkown”,
+“unspecified”.</p>
+<p>This process drops 85.8 thousand rows leaving 2.9 million remaining.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="tier-methods" class="section level3 hasAnchor" number="7.2.11">
+<h3><span class="header-section-number">7.2.11</span> Tier methods<a href="secchi-harmonization-process.html#tier-methods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>We then tiered the data using information on the time of day of the
+measurement, whether a viewscope was used, and whether the
+<code>harmonized_value</code> was gap filled.</p>
+<p>We tiered the data as follows:</p>
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
 <table>
 <colgroup>
-<col width="1%" />
 <col width="2%" />
-<col width="66%" />
-<col width="28%" />
-<col width="1%" />
+<col width="3%" />
+<col width="68%" />
+<col width="26%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th>Tier</th>
-<th>Name</th>
-<th>Description</th>
-<th>Chl <em>a</em> details</th>
-<th></th>
+<th><strong>Tier</strong></th>
+<th><strong>Name</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>SDD details</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -677,152 +654,158 @@ flagging, and quality control philosophy</em>. These tiers are:</p>
 <td>0</td>
 <td>Restrictive</td>
 <td>Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable</td>
-<td>Includes records using HPLC methods</td>
-<td></td>
+<td>Time was reported between 10am-2pm and was not 11:59:59. Method indicates use of viewscope</td>
 </tr>
 <tr class="even">
 <td>1</td>
 <td>Narrowed</td>
 <td>Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers</td>
-<td>Spectrophotometer and fluorometer methods that <strong>are also</strong> pheophytin-corrected <strong><em>OR</em></strong> records where <code>USGSPCode</code> is 32209</td>
-<td></td>
+<td>Either time reported was between 10am-2pm and was no 11:59:59, OR method indicates use of viewscope, but not both</td>
 </tr>
 <tr class="odd">
 <td>2</td>
 <td>Inclusive</td>
-<td>Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes <code>NA</code> or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter</td>
-<td>All other records by default, including <code>NA</code> methods and <em>in situ</em> probes</td>
-<td></td>
+<td>Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes NA or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter</td>
+<td>Time not reported/was outside of 10am-2pm/was 11:59:59 and no indication that viewscope was used</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Inclusive</td>
+<td>Same as above</td>
+<td>Data where the <code>harmonized_value</code> is gap filled from other columns in the record</td>
 </tr>
 </tbody>
 </table>
 <p><br></p>
-<p><strong>Note</strong>: Spectrophotometer and fluorometer methods that are labeled as
-pheophytin-corrected are grouped into the “Narrowed” tier. Depending on
-the exact implementation of EPA method 445, the correction philosophy
-may vary, and there is no agreed upon method to rectify inconsistencies
-in data entry related to these methodological differences. The final
-harmonization product that aggregates simultaneous records does <em>not</em>
-retain the <code>CharacteristicName</code> or <code>ResultAnalyticalMethod.MethodName</code>
-columns. However, the non-aggregated version of the harmonized dataset
-(<code>p3_chla_preagg_grouped</code>) includes those columns. We encourage any
-users that want to explicitly compare or account for pheophytin
-correction to use the <code>p3_chla_preagg_grouped</code> dataset.</p>
-<p><br></p>
-<p>At this point we export a file
-(<code>3_harmonize/out/chla_tiering_record.csv</code>) that contains a record of
-how specific method text was tiered and how many row counts corresponded
-to each method.</p>
-<p><br></p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-27-1.png" /><!-- --></p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed and 2.9 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="flag-based-on-field-methods" class="section level3 hasAnchor" number="5.2.10">
-<h3><span class="header-section-number">5.2.10</span> Flag based on field methods<a href="chlorophyll-a-chla-harmonization-process.html#flag-based-on-field-methods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Next we flag field sampling methods based primarily on the
-<code>SampleCollectionMethod.MethodName</code> column. We first classify each
-record into either <em>in vitro</em> or <em>in situ</em> methods (i.e., <em>in vitro</em>
-assumes a water sample was collected and taken to a lab for analysis;
-<em>in situ</em> assumes a measurement was obtained in the field).</p>
-<p>We used the following strings to mark <strong>in vitro</strong> samples: “grab”,
-“bottle”, “vessel”, “bucket”, “jar”, “composite”, “integrate”, “UHL001”,
-“surface”, “filter”, “filtrat”, “1060B”, “kemmerer”, “collect”,
-“rosette”, “equal width”, “vertical”, “van dorn”, “bail”, “sample”,
-“sampling”, “lab” not in the middle of another word, or a “G” on its own
-as shorthand for “grab”. <strong>In situ</strong> samples were detected using “<em>in
-situ</em>”, “probe”, or “ctd”.</p>
-<p>Lastly we created the field flag based on whether the sampling method
-used agrees with the analytical method. Flags of 0 indicated that the
-field sampling method is in agreement with the analytical method, 1
-indicates that the field sampling methods are uncharacteristic of the
-analytical method, and anything with tier of 2 is given a field flag of
-2 due to the ambiguity associated with those observations’ analytical
-methods and corresponding sampling methods.</p>
-<p>The following rules are used for chlorophyll a field sampling flags:</p>
+<div id="flag" class="section level3 hasAnchor" number="7.2.12">
+<h3><span class="header-section-number">7.2.12</span> Flag<a href="secchi-harmonization-process.html#flag" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>After cleaning and tiering the Secchi data, we conduct a final flagging
+sweep. This process creates several flags to provide additional context
+and quality indicators for each measurement.</p>
+<p>We create four types of flags:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>mdl_flag</code>: This flag indicates whether the value was corrected 1)
+because original WQP record contained a “&lt;” character or, 2)
+because the original value was less than 0.01m.</p>
 <ul>
-<li><strong>Flag 0</strong>: Restrictive and narrowed tiers with in vitro field methods</li>
-<li><strong>Flag 1</strong>: Restrictive and narrowed tiers with in situ field methods</li>
-<li><strong>Flag 2</strong>: Any entry in the inclusive tier</li>
-</ul>
-<p>No records should be removed by this process and so there are 0 rows
-dropped leaving 4.2 million remaining in the harmonized chlorophyll <em>a</em>
-dataset.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
+<li><code>flag 0</code>: Value greater than 0.01m with NO <code>&lt;</code> character in
+original entry</li>
+<li><code>flag 1</code>: Value greater than 0.01m with <code>&lt;</code> character in original
+entry</li>
+<li><code>flag 2</code>: Value less than or equal to 0.01m with NO <code>&lt;</code> character
+in original entry; final value adjusted to to 0.01m</li>
+<li><code>flag 3</code>: Value less than or equal to 0.01m with <code>&lt;</code> character in
+original entry; final value adjusted to 0.01m</li>
+</ul></li>
+</ol>
+<p><br></p>
+<ol start="2" style="list-style-type: decimal">
+<li><p><code>greater_flag</code>: This flag indicates 1) whether the value was
+corrected because the original WQP record contained a “&gt;” character
+and 2), whether the <code>harmonized_value</code> is greater than 31m. Depths
+greater than 31m are flagged as potentially anomalous.</p>
+<ul>
+<li><code>flag 0</code>: Value less than 31m with NO <code>&gt;</code> character</li>
+<li><code>flag 1</code>: Value less than 31m with <code>&gt;</code> character</li>
+<li><code>flag 2</code>: Value greater than 31m with NO <code>&gt;</code> character</li>
+<li><code>flag 3</code>: Value greater than 31m with <code>&gt;</code> character</li>
+</ul></li>
+</ol>
+<p><br></p>
+<ol start="3" style="list-style-type: decimal">
+<li><p><code>field_flag</code>: Indicates whether the <code>ActivityCommentText</code> or
+<code>ResultCommentText</code> columns contained language indicating
+environmental conditions, i.e.: “wind”, “chop”, “choppy”,
+“precipitation”, “rain”, “calm”, or “clear”.</p>
+<ul>
+<li><code>flag 0</code>: Environmental indicator present in comment</li>
+<li><code>flag 1</code>: No environmental indicator present in comments</li>
+</ul></li>
+</ol>
+<p><br></p>
+<ol start="4" style="list-style-type: decimal">
+<li><p><code>misc_flag</code>: The miscellaneous flag captures various other
+conditions that might affect data quality or interpretation.</p>
+<ul>
+<li><code>flag 0</code>: No miscellaneous condition flagged</li>
+<li><code>flag 1</code>: Bottom of water body indicated</li>
+<li><code>flag 2</code>: Harmonized value is greater than the bottom depth value</li>
+<li><code>flag 3</code>: Special characters removed (-,=.*)</li>
+</ul></li>
+</ol>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed and 2.9 million rows remain.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="miscellaneous-flag" class="section level3 hasAnchor" number="5.2.11">
-<h3><span class="header-section-number">5.2.11</span> Miscellaneous flag<a href="chlorophyll-a-chla-harmonization-process.html#miscellaneous-flag" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Next we add a placeholder for the miscellaneous flag column,
-<code>misc_flag</code>.</p>
-<p>Some parameters will have additional flagging requirements that
-chlorophyll <em>a</em> does not, so we include this placeholder to maintain the
-same columns across all parameter data products.</p>
-<p>No records should be removed by this process and so there are 0 rows
-dropped leaving 4.2 million remaining in the harmonized chlorophyll <em>a</em>
-dataset.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
+<div id="remove-unrealistic-values-1" class="section level3 hasAnchor" number="7.2.13">
+<h3><span class="header-section-number">7.2.13</span> Remove unrealistic values<a href="secchi-harmonization-process.html#remove-unrealistic-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Before finalizing the dataset we removed Secchi disk depth values that
+were beyond a realistic threshold. We used 62 m as our cutoff for
+removal because it is double the limit for our <code>greater_flag</code>.</p>
+<p>Additionally, we convert values less than 0.01m to 0.01m. This
+conversion is established because a human can’t discern less than a 1cm
+resolution in Secchi disk depth measurements.</p>
+<p>This process drops 2082 rows leaving 2.9 million remaining.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="remove-unrealistic-values" class="section level3 hasAnchor" number="5.2.12">
-<h3><span class="header-section-number">5.2.12</span> Remove unrealistic values<a href="chlorophyll-a-chla-harmonization-process.html#remove-unrealistic-values" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Before finalizing the dataset we remove chlorophyll <em>a</em> values that are
-beyond a realistic threshold. We use 1000 ug/L as our cutoff for removal
-(Wetzel, 2001, Chapter 15, Figure 19).</p>
-<p>7662 rows are removed. The final row count after this is 4.2 million.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
-<p><br></p>
-</div>
-<div id="aggregate-simultaneous-records" class="section level3 hasAnchor" number="5.2.13">
-<h3><span class="header-section-number">5.2.13</span> Aggregate simultaneous records<a href="chlorophyll-a-chla-harmonization-process.html#aggregate-simultaneous-records" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The final step of chlorophyll <em>a</em> harmonization is to aggregate
+<div id="aggregate-simultaneous-records-2" class="section level3 hasAnchor" number="7.2.14">
+<h3><span class="header-section-number">7.2.14</span> Aggregate simultaneous records<a href="secchi-harmonization-process.html#aggregate-simultaneous-records-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The final step of Secchi disk depth harmonization is to aggregate
 simultaneous observations. Any group of samples determined to be
 simultaneous are simplified into a single record containing the mean and
 coefficient of variation (CV) of the group. These can be either true
-duplicate entries in the WQP or records with non-identical values
-recorded at the same time and place and by the same organization (field
-and/or lab replicates/duplicates). The CV can be used to filter the
-dataset based on the amount of variability that is tolerable to specific
-use cases. Note, however, that many entries will have a CV that is <code>NA</code>
-because there are no duplicates or 0 because the records are duplicates
-and all entries have the same <code>harmonized_value</code>.</p>
+duplicate entries in the Water Quality Portal (WQP) or records with
+non-identical values recorded at the same time and place and by the same
+organization (field and/or lab replicates/duplicates). The CV can be
+used to filter the dataset based on the amount of variability that is
+tolerable to specific use cases. Note, however, that many entries will
+have a CV that is <code>NA</code> because there are no duplicates or 0 because the
+records are duplicates and all entries have the same <code>harmonized_value</code>.</p>
 <p>We identify simultaneous records to aggregate by creating identical
 subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter</code>,
 <code>OrganizationIdentifier</code>, <code>MonitoringLocationIdentifier</code>,
 <code>MonitoringLocationTypeName</code>, <code>ResolvedMonitoringLocationTypeName</code>,
-<code>ActivityStartDate</code>, <code>ActivityStartDateTime</code>,
-<code>ActivityStartTime.TimeZoneCode</code>, <code>harmonized_tz</code>, <code>harmonized_utc</code>,
+<code>ActivityStartDate</code>, <code>ActivityStartTime.Time</code>,
+<code>ActivityStartTime.TimeZoneCode</code>, <code>harmonized_tz</code>,
+<code>harmonized_local_time</code>, <code>harmonized_utc</code>, <code>ActivityStartDateTime</code>,
 <code>harmonized_top_depth_value</code>, <code>harmonized_top_depth_unit</code>,
 <code>harmonized_bottom_depth_value</code>, <code>harmonized_bottom_depth_unit</code>,
 <code>harmonized_discrete_depth_value</code>, <code>harmonized_discrete_depth_unit</code>,
 <code>depth_flag</code>, <code>mdl_flag</code>, <code>approx_flag</code>, <code>greater_flag</code>, <code>tier</code>,
-<code>field_flag</code>, <code>misc_flag</code>, <code>harmonized_units.</code> This selection limits the
+<code>field_flag</code>, <code>misc_flag</code>, <code>harmonized_units</code>. This selection limits the
 columns included in the final dataset, but we also provide a copy of the
-AquaMatch dataset prior to its aggregation (pipeline target
-<code>p3_chla_preagg_grouped</code>), and including the <code>subgroup_id</code> column, so
-that users can use the non-aggregated data as well and match make joins
+dataset prior to its aggregation (pipeline target
+<code>p3_sdd_preagg_grouped</code>), and including the <code>subgroup_id</code> column, so
+that users can use the non-aggregated data as well and make joins
 between dataset versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
 <code>harmonized_value_cv</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
-<p>0 rows dropped leaving 4.2 million remaining in the final harmonized and
-aggregated chlorophyll <em>a</em> dataset.</p>
-<p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
+<p>0.3 million rows dropped leaving 2.7 million remaining in the final
+harmonized and aggregated Secchi disk depth dataset.</p>
+<p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-37-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="harmonized-chlorophyll-a" class="section level3 hasAnchor" number="5.2.14">
-<h3><span class="header-section-number">5.2.14</span> Harmonized chlorophyll a<a href="chlorophyll-a-chla-harmonization-process.html#harmonized-chlorophyll-a" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>At this point the harmonization of the chlorophyll <em>a</em> data from the WQP
-is complete and we export the final dataset for use later in the
+<div id="harmonized-secchi-disk-depth" class="section level3 hasAnchor" number="7.2.15">
+<h3><span class="header-section-number">7.2.15</span> Harmonized Secchi disk depth<a href="secchi-harmonization-process.html#harmonized-secchi-disk-depth" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>At this point the harmonization of the Secchi disk depth data from the
+WQP is complete and we export the final dataset for use later in the
 workflow.</p>
 <p>Below is a final set of histograms showing the distribution of
 harmonized measurements (top) and CVs (bottom) broken down by <code>tier</code>
 <strong><em>after</em></strong> aggregating simultaneous records.</p>
 <p><br></p>
-<p><img src="3_harmonize/out/chla_tier_dists_postagg.png" alt="Distribution of chl *a* values by tier" width="650"/></p>
-<p><img src="3_harmonize/out/chla_tier_cv_dists_postagg.png" alt="Distribution of chl *a* CVs by tier" width="650"/></p>
+<p><img src="3_harmonize/out/sdd_tier_dists_postagg.png" alt="Distribution of SDD values by tier" width="650"/></p>
+<p><img src="3_harmonize/out/sdd_tier_cv_dists_postagg.png" alt="Distribution of SDD CVs by tier" width="650"/></p>
 <p><br></p>
 
-<!-- Image settings -->
 </div>
 </div>
 </div>
@@ -831,8 +814,8 @@ harmonized measurements (top) and CVs (bottom) broken down by <code>tier</code>
           </div>
         </div>
       </div>
-<a href="tiering-flagging-and-quality-control-philosophy.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="doc-harmonization-process.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="doc-harmonization-process.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="notes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

@@ -59,3 +59,4 @@ chapters/
 # scratch directories
 scratch.R
 scratch/
+3_harmonize/out/sdd_harmonized_final.csv

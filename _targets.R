@@ -19,7 +19,6 @@ tar_source(files = c(
   "3b_harmonize_chla.R",
   "3c_harmonize_doc.R",
   "3d_harmonize_sdd.R",
-  "3e_harmonize_tc.R",
   "create_bookdown.R"))
 
 # The list of targets/steps
@@ -500,5 +499,4 @@ c(config_targets,
   p3_chla_targets_list,
   p3_doc_targets_list,
   p3_sdd_targets_list,
-  p3_tc_targets_list,
   bookdown_targets_list)

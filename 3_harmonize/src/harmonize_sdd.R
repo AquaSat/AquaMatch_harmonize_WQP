@@ -993,8 +993,10 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     mutate(plot_value = harmonized_value+0.001,
            tier = factor(tier, 
                          levels = c(0, 1, 2, 3), 
-                         labels = c("Restrictive (Tier 0)", "Narrowed (Tier 1)",
-                                    "Inclusive (Tier 2)", "Inclusive (Tier 3)")
+                         labels = c("Restrictive (Tier 0)",
+                                    "Narrowed (Tier 1)",
+                                    "Inclusive (Tier 2)",
+                                    "Inclusive (Tier 3)")
            )) %>%
     ggplot() +
     geom_histogram(aes(plot_value)) +

@@ -350,7 +350,7 @@ step_6_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-We next address the issue of special characters in the Secchi disk depth measurements. Some entries in the dataset contain special characters at the beginning of the measurement value, which need to be removed for proper numerical analysis. We do this by first identifying measurements with the special characters `-`, `\*`, or `=`. Then we remove those special characters and convert the values to numeric values and note which records were modified. 
+We next address the issue of special characters in the Secchi disk depth measurements. Some entries in the dataset contain special characters at the beginning of the measurement value, which need to be removed for proper numerical analysis. We do this by first identifying measurements with the special characters `-`, `*`, or `=`. Then we remove those special characters and convert the values to numeric values and note which records were modified. 
 
 This should not result in a change in rows but we still check: `r step_6_dropped` rows are removed and `r step_6_rows` rows remain.
 ```{r echo = FALSE}
@@ -450,10 +450,10 @@ The `ResultMeasureValue` column was checked for all three of the following condi
 
 1. Numeric-only version of the column was still `NA` after "<" removal
 2. The original column text contained a number
-3. The original column text contained a >
+3. The original column text contained a ">"
 4. The original column text did not have any letters in it
 
-We then used the numeric value (without >) as the record’s `harmonized_value` moving forward.
+We then used the numeric value (without ">") as the record’s `harmonized_value` moving forward.
 
 This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed and `r step_8_rows` rows remain.
 
@@ -504,7 +504,7 @@ step_9_dropped <- filter(step_data,
 
 After cleaning up the "greater than" values, we proceed to fill missing values in the `harmonized_value` column using Secchi disk depth information present in `ActivityBottomDepthHeightMeasure.MeasureValue`, `ActivityDepthHeightMeasure.MeasureValue`, and their corresponding units columns.
 
-To do this we checked the `ActivityCommentText`, `ResultCommentText`, and `ResultMeasureValue` columns for language that referenced the "bottom" of the water body. Mentions of "bottom" alone were taken as a positive indicator that sampling hit the bottom, while the following other strings were used to indicate that sampling did not hit the bottom:  "no bottom", "not.*bottom", "couldn't.*bottom", "could not.*bottom", "unable to.*bottom", "too deep", "too shallow", "doesn't reach", "did not reach", "blocked", "hidden", "disappeared", "hose frozen", "pump frozen", "cable not long enough", "cord not long enough", "won't stay on bottom", "current too strong", "too windy", "fast current", "flooding", "readings not on bottom", "measurements not collected", "sample taken at", "depth too great", "can't get true bottom", "seen on bottom: no", "bottom reading not taken", "afraid to touch bottom", "forgot bottom reading", "didn't hit bottom", "did not hit bottom", "vegetation blocks", "turbid", "probe not on bottom", "sonde.*not.*bottom", "hydrolab not on bottom", "profile not taken to bottom", "unable to collect bottom", "bottom.*not.*collected", "bottom.*not.*recorded".
+In order to gap-fill the harmonized_value column from the ActivityBottomDepthHeightMeasure we required both "bottom text" and no "negate text" to be present and for ActivityDepthHeightMeasure we required no "bottom text" present but instances of "negate text" was okay. "Bottom text" was defined as when the `ActivityCommentText`, `ResultCommentText`, and `ResultMeasureValue` columns contained language that referenced the "bottom" of the water body. Mentions of "bottom" alone were taken as a positive indicator that sampling hit the bottom, while the following other strings were used to negate such indication ("negate text"):  "no bottom", "not.*bottom", "couldn't.*bottom", "could not.*bottom", "unable to.*bottom", "too deep", "too shallow", "doesn't reach", "did not reach", "blocked", "hidden", "disappeared", "hose frozen", "pump frozen", "cable not long enough", "cord not long enough", "won't stay on bottom", "current too strong", "too windy", "fast current", "flooding", "readings not on bottom", "measurements not collected", "sample taken at", "depth too great", "can't get true bottom", "seen on bottom: no", "bottom reading not taken", "afraid to touch bottom", "forgot bottom reading", "didn't hit bottom", "did not hit bottom", "vegetation blocks", "turbid", "probe not on bottom", "sonde.*not.*bottom", "hydrolab not on bottom", "profile not taken to bottom", "unable to collect bottom", "bottom.*not.*collected", "bottom.*not.*recorded". The strings listed here include the regex symbols of "." for a single-character wildcard and ".*" for a greedy wildcard of any character length.
 
 After this, we flagged these records with the `approx_flag`, indicating the source of the gap filled values:
 
@@ -681,9 +681,7 @@ step_12_dropped <- filter(step_data,
 
 The next harmonization step involved gap filling the `ActivityBottomDepthHeightMeasure.MeasureValue` and `ActivityBottomDepthHeightMeasure.MeasureUnitCode` columns.
 
-There are four columns that explicitly contain depth information for a given WQP entry. Of these columns we are only interested in the `ActivityBottomDepthHeightMeasure.MeasureValue` column for Secchi disk depth because it may be an indicator of the bottom of the water body for a given WQP entry. Here we harmonize the values in the bottom depth column. To keep this data in line with the rest of the data in AquaSat v2, the other harmonized depth columns are filled with `NA` since Secchi disk depth is a discrete depth measurement. 
-
-Those harmonized depth columns are:
+There are four columns that explicitly contain depth information for a given WQP entry. Of these columns we are only interested in the `ActivityBottomDepthHeightMeasure.MeasureValue` column for Secchi disk depth because it may be an indicator of the bottom of the water body for a given WQP entry. Here we harmonize the values in the bottom depth column. To keep this data in line with the rest of the data in AquaSat v2, the other harmonized depth columns are filled with `NA` since Secchi disk depth is a discrete depth measurement. Those harmonized depth columns are:
 
   + `harmonized_top_depth_value`
   + `harmonized_top_depth_unit`
@@ -802,7 +800,7 @@ We tiered the data as follows:
 |----------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
 | 0        | Restrictive | Data that are verifiably self-similar across organizations and  time-periods and can be considered highly reliable and interoperable                                                                                                                                                                      | Time was reported between 10am-2pm and was not 11:59:59. Method indicates use of viewscope                        |
 | 1        | Narrowed    | Data that we have good reason to believe are self-similar, but for which  we can’t verify full interoperability across data providers                                                                                                                                                                     | Either time reported was between 10am-2pm and was no 11:59:59, OR method indicates use of viewscope, but not both |
-| 2        | Inclusive   | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Time not reported/was outside of 10am-2pm/was 11:59:59 and no indication that viewscope was used                  |
+| 2        | Inclusive   | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. | Time not reported/was outside of 10am-2pm/was 11:59:59 and no indication that viewscope was used                  |
 | 3        | Inclusive   | Same as above                                                                                                                                                                                                                                                                                             | Data where the `harmonized_value` is gap filled from other columns in the record                                    |
 
 <br>

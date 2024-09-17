@@ -327,14 +327,14 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       bottom_tag = case_when(
         rowSums(
           across(all_of(gap_fill_comment_cols),
-                 ~grepl("bottom", .x, ignore.case = TRUE))) > 0 ~ 1,
+                 ~ grepl("bottom", .x, ignore.case = TRUE))) > 0 ~ 1,
         TRUE ~ 0
       ),
       # Create a negate bottom tag to detect negate language in relevant comment columns
       negate_bottom_tag = case_when(
         rowSums(
           across(all_of(gap_fill_comment_cols),
-                 ~grepl(negate_bottom_text, .x, ignore.case = TRUE))) > 0 ~ 1,
+                 ~ grepl(negate_bottom_text, .x, ignore.case = TRUE))) > 0 ~ 1,
         TRUE ~ 0
       ),
       # flag 0 = value and units not adjusted
@@ -901,7 +901,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   plotting_subset <- realistic_sdd %>%
     select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001)
+    mutate(plot_value = harmonized_value)
   
   char_dists <- plotting_subset %>%
     ggplot() +
@@ -979,7 +979,8 @@ harmonize_sdd <- function(raw_sdd, p_codes){
         harmonized_value, harmonized_value_cv, lat, lon, datum),
       .after = misc_flag
     ) %>% 
-    # Round the final harmonized_value
+    # Round the final harmonized_value so we don't provide false estimates
+    # of precision due to unit conversion
     mutate(harmonized_value = round(harmonized_value, 2))
   
   rm(grouped_sdd)

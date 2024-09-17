@@ -909,8 +909,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
     xlab(expression("Harmonized SDD (m, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
-            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    ggtitle(label = "Distribution of harmonized SDD values by CharacteristicName") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +

@@ -47,10 +47,10 @@ p3_sdd_targets_list <- list(
   
   tar_target(
     name = p3_wqp_data_aoi_ready_sdd,
-    command = clean_wqp_data(wqp_data = p3_wqp_data_aoi_date_time_sdd,
-                             char_names_crosswalk = p1_char_names_crosswalk_sdd,
-                             site_data = p2_site_counts_sdd,
-                             wqp_metadata = p1_wqp_inventory_aoi_sdd),
+    command = clean_wqp_data_sdd(wqp_data = p3_wqp_data_aoi_date_time_sdd,
+                                 char_names_crosswalk = p1_char_names_crosswalk_sdd,
+                                 site_data = p2_site_counts_sdd,
+                                 wqp_metadata = p1_wqp_inventory_aoi_sdd),
     packages = c("tidyverse", "feather")
   ),
   
@@ -67,7 +67,7 @@ p3_sdd_targets_list <- list(
   tar_target(
     name = p3_sdd_harmonized,
     command = harmonize_sdd(raw_sdd = p3_cleaned_wqp_data_sdd,
-                             p_codes = p3_p_codes),
+                            p_codes = p3_p_codes),
     packages = c("tidyverse", "feather", "ggrepel", "scales")
   ),
   
@@ -178,6 +178,6 @@ p3_sdd_targets_list <- list(
     read = read_csv(file = !!.x),
     packages = c("tidyverse", "googledrive")
   )
- 
+  
 )
 

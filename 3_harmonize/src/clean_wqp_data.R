@@ -161,6 +161,168 @@ clean_wqp_data <- function(wqp_data,
   
 }
 
+#' @title Clean WQP data
+#' 
+#' @description 
+#' Function to harmonize WQP data in preparation for further analysis. Included
+#' in this function are steps to unite diverse characteristic names by assigning
+#' them to more commonly-used water quality parameter names; to flag missing
+#' records as well as duplicate records; and to carry out parameter-specific
+#' harmonization steps for temperature and conductivity data, including
+#' harmonizing units where possible. 
+#' 
+#' @param wqp_data data frame containing the data downloaded from the WQP, 
+#' where each row represents a data record. 
+#' @param char_names_crosswalk data frame containing columns "char_name" and 
+#' "parameter". The column "char_name" contains character strings representing 
+#' known WQP characteristic names associated with each parameter.
+#' @param commenttext_missing character string(s) indicating which strings from
+#' the WQP column "ResultCommentText" correspond with missing result values. By 
+#' default, the column "ResultCommentText" will be searched for the following 
+#' strings: "analysis lost", "not analyzed", "not recorded", "not collected", 
+#' and "no measurement taken", but other values may be added by passing in a new
+#' vector with all values to be treated as missing.  
+#' @param duplicate_definition character string(s) indicating which columns are
+#' used to identify a duplicate record. Duplicate records are defined as those 
+#' that share the same value for each column within `duplicate_definition`. By 
+#' default, a record will be considered duplicated if it shares the same 
+#' organization, site id, date, time, characteristic name, and sample fraction. 
+#' However, these options can be customized by passing a vector of column names 
+#' to the argument `duplicate_definition`.
+#' @param remove_duplicated_rows logical; should duplicated records be omitted
+#' from the cleaned dataset? Defaults to FALSE 
+#' 
+#' @returns 
+#' Returns a formatted and harmonized data frame containing data downloaded from 
+#' the Water Quality Portal, where each row represents a unique data record.
+#' 
+
+clean_wqp_data_sdd <- function(wqp_data,
+                               char_names_crosswalk,
+                               site_data,
+                               wqp_metadata,
+                               commenttext_missing = c("analysis lost", "not analyzed",
+                                                       "not recorded", "not collected",
+                                                       "no measurement taken"),
+                               duplicate_definition = c("OrganizationIdentifier",
+                                                        "MonitoringLocationIdentifier",
+                                                        "ActivityStartDate",
+                                                        "ActivityStartTime.Time",
+                                                        "CharacteristicName",
+                                                        "ResultSampleFractionText"),
+                               remove_duplicated_rows = FALSE){
+  
+  # Starting values for dataset
+  starting_data <- tibble(
+    step = NULL,
+    reason = "Starting dataset",
+    short_reason = "Start",
+    number_dropped = 0,
+    n_rows = nrow(wqp_data),
+    order = 0
+  )
+  
+  # Clean data and assign flags if applicable
+  wqp_data_no_dup <- wqp_data %>%
+    # Harmonize characteristic names by assigning a common parameter name
+    # to the groups of characteristics supplied in `char_names_crosswalk`.
+    left_join(y = char_names_crosswalk, by = c("CharacteristicName" = "char_name")) %>%
+    # Add in coordinate data alongside records
+    left_join(x = .,
+              y = site_data %>%
+                select(MonitoringLocationIdentifier, CharacteristicName,
+                       lon, lat, datum),
+              by = c("MonitoringLocationIdentifier", "CharacteristicName")) %>%
+    # Flag true missing results
+    flag_missing_results_sdd(., commenttext_missing)
+  
+  
+  rm(wqp_data)
+  gc()
+  
+  # Remove records flagged as having missing results
+  wqp_data_no_missing <- wqp_data_no_dup %>%
+    filter(!flag_missing_result) %>%
+    # All will now be FALSE; remove col
+    select(-flag_missing_result)
+  
+  # Inform the user what we found for missing rows
+  message(sprintf(paste0("Removed %s records with missing results."),
+                  nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing)))
+  
+  dropped_missing <- tibble(
+    step = NULL,
+    reason = "Removed missing results",
+    short_reason = "Remove missing",
+    number_dropped = nrow(wqp_data_no_dup) - nrow(wqp_data_no_missing),
+    n_rows = nrow(wqp_data_no_missing),
+    order = 1
+  )
+  
+  rm(wqp_data_no_dup)
+  gc()
+  
+  # Remove records that don't meet needs for status
+  wqp_data_pass_status <- wqp_data_no_missing %>%
+    filter(ResultStatusIdentifier %in%
+             c("Accepted", "Final", "Historical", "Validated", "Preliminary")|
+             is.na(ResultStatusIdentifier))
+  
+  # Inform the user what we found for status checks
+  message(sprintf(paste0("Removed %s records with unacceptable statuses."), 
+                  nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status)))
+  
+  dropped_status <- tibble(
+    step = NULL,
+    reason = "Keep only status = accepted/final/historical/validated/preliminary/NA",
+    short_reason = "Finalized statuses",
+    number_dropped = nrow(wqp_data_no_missing) - nrow(wqp_data_pass_status),
+    n_rows = nrow(wqp_data_pass_status),
+    order = 2
+  )
+  
+  rm(wqp_data_no_missing)
+  gc()
+  
+  # Remove white space before export
+  wqp_data_clean <- wqp_data_pass_status %>%
+    mutate(year = year(ActivityStartDate),
+           ResultMeasure.MeasureUnitCode = trimws(ResultMeasure.MeasureUnitCode))
+  
+  data_out_path <- paste0("3_harmonize/out/",
+                          unique(wqp_data_clean$parameter),
+                          "_wqp_data_aoi_ready.feather")
+  
+  write_feather(x = wqp_data_clean, path = data_out_path)
+  
+  rm(wqp_data_pass_status)
+  gc()
+  
+  # Record of all steps where rows were dropped, why, and how many
+  compiled_dropped <- bind_rows(starting_data, dropped_missing,
+                                dropped_status)
+  
+  # Make sure only one parameter was cleaned
+  if(length(unique(wqp_data_clean$parameter)) > 1){
+    stop("More than one parameter detected in final data frame.")
+  }
+  
+  # Identify the parameter that's been cleaned in this script:
+  compiled_dropped <- compiled_dropped %>%
+    mutate(step = paste0(unique(wqp_data_clean$parameter), " pre-harmonization"))
+  
+  documented_drops_out_path <- paste0("3_harmonize/out/clean_wqp_data_",
+                                      unique(wqp_data_clean$parameter),
+                                      "_dropped_metadata.csv")
+  
+  write_csv(x = compiled_dropped,
+            file = documented_drops_out_path)
+  
+  return(list(
+    wqp_data_clean_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path))
+  
+}
 
 #' @title Flag missing results
 #' 
@@ -198,7 +360,40 @@ flag_missing_results <- function(wqp_data, commenttext_missing){
   
 }
 
-
+#' @title Flag missing results (Secchi specific)
+#' 
+#' @description 
+#' Function to flag true missing results when any of the strings from
+#' `commenttext_missing` are found in the column "ResultCommentText".
+#' 
+#' @param wqp_data data frame containing the data downloaded from the WQP, 
+#' where each row represents a data record. Must contain the column "ResultCommentText".
+#' @param commenttext_missing character string(s) indicating which strings from
+#' the WQP column "ResultCommentText" correspond with missing result values.
+#' 
+#' @note
+#' This function is specific to Secchi disk depth data and removes fewer records
+#' than it does for other parameters.
+#' 
+#' @returns
+#' Returns a data frame containing data downloaded from the Water Quality Portal,
+#' where each row represents a data record. New columns appended to the original
+#' data frame include flags for missing results. 
+#' 
+flag_missing_results_sdd <- function(wqp_data, commenttext_missing){
+  
+  wqp_data_out <- wqp_data %>%
+    mutate(
+      flag_missing_result = grepl(
+        pattern = paste(commenttext_missing, collapse = "|"),
+        x = ResultCommentText,
+        ignore.case = TRUE
+      )
+    )
+  
+  return(wqp_data_out)
+  
+}
 
 #' @title Flag duplicated records
 #' 
@@ -232,7 +427,6 @@ flag_duplicates <- function(wqp_data, duplicate_definition){
   return(wqp_data_out)
   
 }
-
 
 #' @title Remove duplicated records
 #' 
@@ -272,7 +466,6 @@ remove_duplicates <- function(wqp_data, duplicate_definition){
   return(wqp_data_out)
   
 }
-
 
 #' @title Retrieve and clean site metadata for harmonized records
 #' 
@@ -405,7 +598,7 @@ fill_date_time <- function(dataset, site_data){
     # Leave out GMT
     # Guam Standard Time Zone
     "GST",      "Etc/GMT-10",
-  	# Hawaii-Aleutian Daylight Time
+    # Hawaii-Aleutian Daylight Time
     "HADT",     "Etc/GMT+9",
     # Hawaii-Aleutian Standard Time
     "HAST",     "Etc/GMT+10",
@@ -428,7 +621,7 @@ fill_date_time <- function(dataset, site_data){
     # Leave out UTC
     # Yukon Standard Time (retired)
     "YST",      "Etc/GMT+9",
-
+    
     # Other tz codes we've encountered:
     
     # Alaska-Hawaii Daylight Time

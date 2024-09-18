@@ -934,9 +934,11 @@ step_16_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-Before finalizing the dataset we removed Secchi disk depth values that were beyond a realistic threshold. We used 80m as our cutoff for removal based on Gieskes et al. (1987).
+Before finalizing the dataset we removed Secchi disk depth values that were beyond a realistic threshold because they were likely erroneous. We used 80m as our cutoff for removal based on Gieskes et al. (1987).
 
 Additionally, we convert values less than 0.01m to 0.01m based on observed Secchi disk depth records (NALMS, 2024).
+
+These changes improve the overall reliability of the dataset by minimizing the amount of data with potential inaccuracies and preserving measurements that correctly describe the aquatic environment.
 
 This process drops `r step_16_dropped` rows leaving `r step_16_rows` remaining.
 

@@ -7,6 +7,8 @@ always_allow_html: true
 
 # References
 
+Davies-Colley, R. J., W. N. Vant, and D. G. Smith. 1993. Colour and Clarity of Natural Waters: Science and Management of Optical Water Quality, Ellis Horwood.
+
 DeCicco, L. and others. 2024. dataRetrieval: R packages for discovering and retrieving water data available from U.S. federal hydrologic web services. doi:10.5066/P9X4L3GE
 
 Gieskes, W. W. C., C. Veth, A. Woehrmann, and M. Graefe. 1987. Secchi disc visibility world record shattered. Eos, Transactions American Geophysical Union 68: 123–123. doi:10.1029/EO068i009p00123-01

@@ -792,6 +792,8 @@ step_14_dropped <- filter(step_data,
 
 We then tiered the data using information on the time of day of the measurement, whether a viewscope was used, and whether the `harmonized_value` was gap filled. 
 
+Our tiers were informed by Davies-Colley et al. (1993). Specifically, 10am-2pm represents the ideal time range for measurements due to consistent lighting conditions and use of a viewscope can significantly improve measurement accuracy by reducing surface glare and wave effects. These considerations help assess the quality and reliability of the Secchi disk depth data across different measurement conditions.
+
 We tiered the data as follows:
 
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->

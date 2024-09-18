@@ -161,7 +161,7 @@ clean_wqp_data <- function(wqp_data,
   
 }
 
-#' @title Clean WQP data
+#' @title Clean WQP data (Secchi specific)
 #' 
 #' @description 
 #' Function to harmonize WQP data in preparation for further analysis. Included
@@ -233,7 +233,7 @@ clean_wqp_data_sdd <- function(wqp_data,
                 select(MonitoringLocationIdentifier, CharacteristicName,
                        lon, lat, datum),
               by = c("MonitoringLocationIdentifier", "CharacteristicName")) %>%
-    # Flag true missing results
+    # Flag true missing results based on sdd-specific requirements
     flag_missing_results_sdd(., commenttext_missing)
   
   

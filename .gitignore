@@ -55,8 +55,8 @@ chapters/
 # Out files from harmonize steps
 3_harmonize/out/doc_harmonized_final.csv
 3_harmonize/out/chla_harmonized_final.csv
+3_harmonize/out/sdd_harmonized_final.csv
 
 # scratch directories
 scratch.R
 scratch/
-3_harmonize/out/sdd_harmonized_final.csv

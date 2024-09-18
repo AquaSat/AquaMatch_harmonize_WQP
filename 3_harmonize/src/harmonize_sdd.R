@@ -576,9 +576,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     c("10200G", "2320", "2540", "2550", "alkalin", "calculation", 
       "chemical", "chlorophyll", "coliform", "conductance",
       "laboratory calculation", "meteorological", "nephelometry", "nitrate",
-      "no information exists for method", "not available",
-      "other or unknown procedure", "qa", "temperature", 
-      "total suspended solids", "unknown", "unkown", "unspecified"),
+      "temperature", "total suspended solids"),
     collapse = "|")
   
   # Drop data not related to SDD
@@ -767,14 +765,14 @@ harmonize_sdd <- function(raw_sdd, p_codes){
       ),
       greater_flag = case_when(
         # greater_flag
-        # 0 = value less than 31m with NO ">" character
-        # 1 = value less than 31m with ">" character
-        # 2 = value greater than 31m with NO ">" character
-        # 3 = value greater than 31m with ">" character
-        (harmonized_value < 31 & !(index %in% greater_vals$index)) ~ 0,
-        (harmonized_value < 31 & (index %in% greater_vals$index)) ~ 1,
-        (harmonized_value >= 31 & !(index %in% greater_vals$index)) ~ 2,
-        (harmonized_value >= 31 & (index %in% greater_vals$index)) ~ 3,
+        # 0 = value less than 44m with NO ">" character
+        # 1 = value less than 44m with ">" character
+        # 2 = value greater than 44m with NO ">" character
+        # 3 = value greater than 44m with ">" character
+        (harmonized_value < 44 & !(index %in% greater_vals$index)) ~ 0,
+        (harmonized_value < 44 & (index %in% greater_vals$index)) ~ 1,
+        (harmonized_value >= 44 & !(index %in% greater_vals$index)) ~ 2,
+        (harmonized_value >= 44 & (index %in% greater_vals$index)) ~ 3,
         .default = NA_integer_
       ),
       # Create environmental indicator tags for field flag
@@ -846,11 +844,11 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # Realistic range of values ------------------------------------------------------
   
   # We exclude reported Secchi disk depth (SDD) measurements exceeding
-  # 62 meters from the final dataset.
+  # 80 meters from the final dataset.
   # This threshold is established based on the following rationale:
-  # 1. SDD values greater than 31 meters are flagged as potentially anomalous
+  # 1. SDD values greater than 44 meters are flagged as potentially anomalous
   #    in our quality control process.
-  # 2. The 62-meter threshold represents a doubling of this initial flagging criterion.
+  # 2. The 80-meter threshold represents a doubling of this initial flagging criterion.
   # 3. Measurements beyond this point are considered improbable and likely
   #    erroneous due to unit conversion or other data entry issues.
   # 4. Removing these extreme outliers enhances the overall reliability and
@@ -863,7 +861,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # less than 1cm resolution.
   
   realistic_sdd <- cleaned_flagged_sdd %>%
-    filter(harmonized_value <= 62) %>% 
+    filter(harmonized_value <= 80) %>% 
     mutate(harmonized_value = if_else(mdl_flag %in% c(2,3), 0.01, harmonized_value))
   
   dropped_unreal <- tibble(
@@ -991,7 +989,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   # 1. Harmonized values
   tier_dists <- no_simul_sdd %>%
     select(tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value+0.001,
+    mutate(plot_value = harmonized_value,
            tier = factor(tier, 
                          levels = c(0, 1, 2, 3), 
                          labels = c("Restrictive (Tier 0)",
@@ -1004,8 +1002,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     facet_wrap(vars(tier), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized SDD (m, " ~ log[10] ~ "transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized SDD values by tier",
-            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    ggtitle(label = "Distribution of harmonized SDD values by tier") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
@@ -1035,7 +1032,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   tier_cv_dists <- no_simul_sdd %>%
     select(tier, harmonized_value_cv) %>%
-    mutate(plot_value = harmonized_value_cv + 0.001,
+    mutate(plot_value = harmonized_value_cv,
            tier = factor(tier, 
                          levels = c(0, 1, 2, 3), 
                          labels = c("Restrictive (Tier 0)", "Narrowed (Tier 1)",
@@ -1046,8 +1043,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
     facet_wrap(vars(tier), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized SDD CVs by tier",
-            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    ggtitle(label = "Distribution of harmonized SDD CVs by tier") +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

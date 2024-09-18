@@ -1,4 +1,4 @@
 reason,short_reason,number_dropped,n_rows,order,step
 Starting dataset,Start,0,3122460,0,sdd pre-harmonization
-Removed missing results,Remove missing,30589,3091871,1,sdd pre-harmonization
-Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,9150,3082721,2,sdd pre-harmonization
+Removed missing results,Remove missing,655,3121805,1,sdd pre-harmonization
+Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,9161,3112644,2,sdd pre-harmonization

@@ -1,16 +1,16 @@
 step,reason,short_reason,number_dropped,n_rows,order
-sdd harmonization,Starting dataset,Start,0,3082721,0
-sdd harmonization,Filtered for only specific water media,Target water media,2075,3080646,1
-sdd harmonization,Dropped rows containing fail-related language,"Fails, etc.",5821,3074825,2
-sdd harmonization,Dropped rows while cleaning special characters,Clean special characters,0,3074825,3
-sdd harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,3074825,4
-sdd harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,3074825,5
-sdd harmonization,Dropped rows while approximating values,Clean approximates,0,3074825,6
-sdd drop NAs,Dropped unresolved NAs,Unresolved NAs,43128,3031697,7
-sdd unit conversion,Dropped rows while harmonizing units,Harmonize units,624,3031073,8
-sdd bottom depth harmonization,Dropped rows while cleaning bottom depth values,Clean bottom depths,0,3031073,9
-sdd harmonization,Dropped rows while filtering analytical methods,Filter methods,85813,2945260,10
-sdd harmonization,Dropped rows while tiering analytical methods,Tier methods,0,2945260,11
-sdd harmonization,Dropped rows while assigning flags,Finalize flags,0,2945260,12
-sdd harmonization,Dropped rows with unrealistic values,Unrealistic values,2082,2943178,13
-sdd harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,274626,2668552,14
+sdd harmonization,Starting dataset,Start,0,3112644,0
+sdd harmonization,Filtered for only specific water media,Target water media,2075,3110569,1
+sdd harmonization,Dropped rows containing fail-related language,"Fails, etc.",9839,3100730,2
+sdd harmonization,Dropped rows while cleaning special characters,Clean special characters,0,3100730,3
+sdd harmonization,Dropped rows while cleaning MDLs,Clean MDLs,0,3100730,4
+sdd harmonization,Dropped rows while cleaning 'greater than' values,Greater thans,0,3100730,5
+sdd harmonization,Dropped rows while approximating values,Clean approximates,0,3100730,6
+sdd drop NAs,Dropped unresolved NAs,Unresolved NAs,51726,3049004,7
+sdd unit conversion,Dropped rows while harmonizing units,Harmonize units,624,3048380,8
+sdd bottom depth harmonization,Dropped rows while cleaning bottom depth values,Clean bottom depths,0,3048380,9
+sdd harmonization,Dropped rows while filtering analytical methods,Filter methods,11572,3036808,10
+sdd harmonization,Dropped rows while tiering analytical methods,Tier methods,0,3036808,11
+sdd harmonization,Dropped rows while assigning flags,Finalize flags,0,3036808,12
+sdd harmonization,Dropped rows with unrealistic values,Unrealistic values,1819,3034989,13
+sdd harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,291823,2743166,14

@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-11" />
+<meta name="date" content="2024-09-18" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -283,7 +283,7 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>30.6 thousand rows are dropped, resulting in a final count of 3.1
+<p>0.7 thousand rows are dropped, resulting in a final count of 3.1
 million.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -365,7 +365,7 @@ failure phrases are not mutually exclusive.</p>
 <p><br></p>
 <!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
 <!-- <br> -->
-<p>5.8 thousand rows are removed after detecting failure-related phrases
+<p>9.8 thousand rows are removed after detecting failure-related phrases
 and 3.1 million rows remain.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
@@ -377,7 +377,7 @@ and 3.1 million rows remain.</p>
 measurements. Some entries in the dataset contain special characters at
 the beginning of the measurement value, which need to be removed for
 proper numerical analysis. We do this by first identifying measurements
-with the special characters <code>-</code>, <code>\*</code>, or <code>=</code>. Then we remove those
+with the special characters <code>-</code>, <code>*</code>, or <code>=</code>. Then we remove those
 special characters and convert the values to numeric values and note
 which records were modified.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
@@ -412,10 +412,10 @@ following conditions:</p>
 <ol style="list-style-type: decimal">
 <li>Numeric-only version of the column was still <code>NA</code> after “&lt;” removal</li>
 <li>The original column text contained a number</li>
-<li>The original column text contained a &gt;</li>
+<li>The original column text contained a “&gt;”</li>
 <li>The original column text did not have any letters in it</li>
 </ol>
-<p>We then used the numeric value (without &gt;) as the record’s
+<p>We then used the numeric value (without “&gt;”) as the record’s
 <code>harmonized_value</code> moving forward.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
 are removed and 3.1 million rows remain.</p>
@@ -429,12 +429,16 @@ values in the <code>harmonized_value</code> column using Secchi disk depth
 information present in <code>ActivityBottomDepthHeightMeasure.MeasureValue</code>,
 <code>ActivityDepthHeightMeasure.MeasureValue</code>, and their corresponding units
 columns.</p>
-<p>To do this we checked the <code>ActivityCommentText</code>, <code>ResultCommentText</code>,
-and <code>ResultMeasureValue</code> columns for language that referenced the
-“bottom” of the water body. Mentions of “bottom” alone were taken as a
-positive indicator that sampling hit the bottom, while the following
-other strings were used to indicate that sampling did not hit the
-bottom: “no bottom”, “not.<em>bottom”, ”couldn’t.</em>bottom”, “could
+<p>In order to gap-fill the harmonized_value column from the
+ActivityBottomDepthHeightMeasure we required both “bottom text” and no
+“negate text” to be present and for ActivityDepthHeightMeasure we
+required no “bottom text” present but instances of “negate text” was
+okay. “Bottom text” was defined as when the <code>ActivityCommentText</code>,
+<code>ResultCommentText</code>, and <code>ResultMeasureValue</code> columns contained language
+that referenced the “bottom” of the water body. Mentions of “bottom”
+alone were taken as a positive indicator that sampling hit the bottom,
+while the following other strings were used to negate such indication
+(“negate text”): “no bottom”, “not.<em>bottom”, ”couldn’t.</em>bottom”, “could
 not.<em>bottom”, ”unable to.</em>bottom”, “too deep”, “too shallow”, “doesn’t
 reach”, “did not reach”, “blocked”, “hidden”, “disappeared”, “hose
 frozen”, “pump frozen”, “cable not long enough”, “cord not long enough”,
@@ -446,7 +450,9 @@ touch bottom”, “forgot bottom reading”, “didn’t hit bottom”, “did 
 hit bottom”, “vegetation blocks”, “turbid”, “probe not on bottom”,
 “sonde.<em>not.</em>bottom”, “hydrolab not on bottom”, “profile not taken to
 bottom”, “unable to collect bottom”, “bottom.<em>not.</em>collected”,
-“bottom.<em>not.</em>recorded”.</p>
+“bottom.<em>not.</em>recorded”. The strings listed here include the regex
+symbols of “.” for a single-character wildcard and “.*” for a greedy
+wildcard of any character length.</p>
 <p>After this, we flagged these records with the <code>approx_flag</code>, indicating
 the source of the gap filled values:</p>
 <ul>
@@ -470,7 +476,7 @@ a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
 dropped.</p>
-<p>43.1 thousand rows are removed. The final row count after this is 3
+<p>51.7 thousand rows are removed. The final row count after this is 3
 million.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-22-1.png" /><!-- --></p>
 <p><br></p>
@@ -585,8 +591,8 @@ depth because it may be an indicator of the bottom of the water body for
 a given WQP entry. Here we harmonize the values in the bottom depth
 column. To keep this data in line with the rest of the data in AquaSat
 v2, the other harmonized depth columns are filled with <code>NA</code> since Secchi
-disk depth is a discrete depth measurement.</p>
-<p>Those harmonized depth columns are:</p>
+disk depth is a discrete depth measurement. Those harmonized depth
+columns are:</p>
 <ul>
 <li><code>harmonized_top_depth_value</code></li>
 <li><code>harmonized_top_depth_unit</code></li>
@@ -623,7 +629,7 @@ remove unrelated methods for Secchi disk depth data are: “10200G”,
 method”, “not available”, “other or unknown procedure”, “qa”,
 “temperature”, “total suspended solids”, “unknown”, “unkown”,
 “unspecified”.</p>
-<p>This process drops 85.8 thousand rows leaving 2.9 million remaining.</p>
+<p>This process drops 11.6 thousand rows leaving 3 million remaining.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -632,14 +638,20 @@ method”, “not available”, “other or unknown procedure”, “qa”,
 <p>We then tiered the data using information on the time of day of the
 measurement, whether a viewscope was used, and whether the
 <code>harmonized_value</code> was gap filled.</p>
+<p>Our tiers were informed by Davies-Colley et al. (1993). Specifically,
+10am-2pm represents the ideal time range for measurements due to
+consistent lighting conditions and use of a viewscope can significantly
+improve measurement accuracy by reducing surface glare and wave effects.
+These considerations help assess the quality and reliability of the
+Secchi disk depth data across different measurement conditions.</p>
 <p>We tiered the data as follows:</p>
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
 <table>
 <colgroup>
-<col width="2%" />
 <col width="3%" />
-<col width="68%" />
-<col width="26%" />
+<col width="4%" />
+<col width="49%" />
+<col width="42%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -665,7 +677,7 @@ measurement, whether a viewscope was used, and whether the
 <tr class="odd">
 <td>2</td>
 <td>Inclusive</td>
-<td>Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes NA or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter</td>
+<td>Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider.</td>
 <td>Time not reported/was outside of 10am-2pm/was 11:59:59 and no indication that viewscope was used</td>
 </tr>
 <tr class="even">
@@ -678,7 +690,7 @@ measurement, whether a viewscope was used, and whether the
 </table>
 <p><br></p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed and 2.9 million rows remain.</p>
+are removed and 3 million rows remain.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -707,13 +719,13 @@ original entry; final value adjusted to 0.01m</li>
 <ol start="2" style="list-style-type: decimal">
 <li><p><code>greater_flag</code>: This flag indicates 1) whether the value was
 corrected because the original WQP record contained a “&gt;” character
-and 2), whether the <code>harmonized_value</code> is greater than 31m. Depths
-greater than 31m are flagged as potentially anomalous.</p>
+and 2), whether the <code>harmonized_value</code> is greater than 44m (Larson,
+1972). Depths greater than 44m are flagged as potentially anomalous.</p>
 <ul>
-<li><code>flag 0</code>: Value less than 31m with NO <code>&gt;</code> character</li>
-<li><code>flag 1</code>: Value less than 31m with <code>&gt;</code> character</li>
-<li><code>flag 2</code>: Value greater than 31m with NO <code>&gt;</code> character</li>
-<li><code>flag 3</code>: Value greater than 31m with <code>&gt;</code> character</li>
+<li><code>flag 0</code>: Value less than 44m with NO <code>&gt;</code> character</li>
+<li><code>flag 1</code>: Value less than 44m with <code>&gt;</code> character</li>
+<li><code>flag 2</code>: Value greater than 44m with NO <code>&gt;</code> character</li>
+<li><code>flag 3</code>: Value greater than 44m with <code>&gt;</code> character</li>
 </ul></li>
 </ol>
 <p><br></p>
@@ -739,19 +751,21 @@ conditions that might affect data quality or interpretation.</p>
 </ul></li>
 </ol>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed and 2.9 million rows remain.</p>
+are removed and 3 million rows remain.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
 <p><br></p>
 </div>
 <div id="remove-unrealistic-values-1" class="section level3 hasAnchor" number="7.2.13">
 <h3><span class="header-section-number">7.2.13</span> Remove unrealistic values<a href="secchi-harmonization-process.html#remove-unrealistic-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Before finalizing the dataset we removed Secchi disk depth values that
-were beyond a realistic threshold. We used 62 m as our cutoff for
-removal because it is double the limit for our <code>greater_flag</code>.</p>
-<p>Additionally, we convert values less than 0.01m to 0.01m. This
-conversion is established because a human can’t discern less than a 1cm
-resolution in Secchi disk depth measurements.</p>
-<p>This process drops 2082 rows leaving 2.9 million remaining.</p>
+were beyond a realistic threshold because they were likely erroneous. We
+used 80m as our cutoff for removal based on Gieskes et al. (1987).</p>
+<p>Additionally, we convert values less than 0.01m to 0.01m based on
+observed Secchi disk depth records (NALMS, 2024).</p>
+<p>These changes improve the overall reliability of the dataset by
+minimizing the amount of data with potential inaccuracies and preserving
+measurements that correctly describe the aquatic environment.</p>
+<p>This process drops 1819 rows leaving 3 million remaining.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
 <p><br></p>
 </div>

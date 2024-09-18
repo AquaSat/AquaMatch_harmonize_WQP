@@ -857,12 +857,12 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   #    spurious data while preserving legitimate measurements within expected
   #    ranges for typical aquatic environments.
   
-  # We convert values less than 0.01m to 0.01m because a human can't discern
-  # less than 1cm resolution.
+  # We convert values less than 0.01m to 0.01m based on observed Secchi records
+  # e.g., https://www.nalms.org/secchidipin/monitoring-methods/the-secchi-disk/secchi-records/
   
   realistic_sdd <- cleaned_flagged_sdd %>%
     filter(harmonized_value <= 80) %>% 
-    mutate(harmonized_value = if_else(mdl_flag %in% c(2,3), 0.01, harmonized_value))
+    mutate(harmonized_value = if_else(mdl_flag %in% c(2, 3), 0.01, harmonized_value))
   
   dropped_unreal <- tibble(
     step = "sdd harmonization",

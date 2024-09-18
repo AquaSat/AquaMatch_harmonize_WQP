@@ -864,12 +864,12 @@ We create four types of flags:
   
 <br>
   
-2. `greater_flag`: This flag indicates 1) whether the value was corrected because the original WQP record contained a ">" character and 2), whether the `harmonized_value` is greater than 31m. Depths greater than 31m are flagged as potentially anomalous.
+2. `greater_flag`: This flag indicates 1) whether the value was corrected because the original WQP record contained a ">" character and 2), whether the `harmonized_value` is greater than 44m (Larson, 1972). Depths greater than 44m are flagged as potentially anomalous.
 
-    + `flag 0`: Value less than 31m with NO `>` character
-    + `flag 1`: Value less than 31m with `>` character
-    + `flag 2`: Value greater than 31m with NO `>` character
-    + `flag 3`: Value greater than 31m with `>` character
+    + `flag 0`: Value less than 44m with NO `>` character
+    + `flag 1`: Value less than 44m with `>` character
+    + `flag 2`: Value greater than 44m with NO `>` character
+    + `flag 3`: Value greater than 44m with `>` character
 
 <br>
   
@@ -932,9 +932,9 @@ step_16_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-Before finalizing the dataset we removed Secchi disk depth values that were beyond a realistic threshold. We used 62 m as our cutoff for removal because it is double the limit for our `greater_flag`.
+Before finalizing the dataset we removed Secchi disk depth values that were beyond a realistic threshold. We used 80m as our cutoff for removal based on Gieskes et al. (1987).
 
-Additionally, we convert values less than 0.01m to 0.01m. This conversion is established because a human can't discern less than a 1cm resolution in Secchi disk depth measurements.
+Additionally, we convert values less than 0.01m to 0.01m based on observed Secchi disk depth records (NALMS, 2024).
 
 This process drops `r step_16_dropped` rows leaving `r step_16_rows` remaining.
 

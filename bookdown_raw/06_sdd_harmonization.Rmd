@@ -69,7 +69,7 @@ step_1_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the pre-harmonization process the raw chlorophyll WQP dataset contains `r step_1_rows` rows. 
+At the start of the pre-harmonization process the raw Secchi disk depth WQP dataset contains `r step_1_rows` rows. 
 
 ```{r echo = FALSE}
 step_data %>%
@@ -234,7 +234,7 @@ step_4_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-We next ensure that the media type for all chlorophyll data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+We next ensure that the media type for all SDD data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -300,10 +300,6 @@ Below are pie charts that break down the number of failure detections by column.
 <img src="3_harmonize/out/sdd_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/>
 
 <br>
-
-<!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
-
-<!-- <br> -->
 
 `r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
@@ -630,7 +626,7 @@ Additionally we provide a set of histograms of harmonized measurements by `Chara
 
 <br>
 
-<img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/>
+<img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of SDD values by CharacteristicName" width="650"/>
 
 <br>
 

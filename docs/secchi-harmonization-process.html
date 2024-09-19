@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-18" />
+<meta name="date" content="2024-09-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -265,8 +265,8 @@ raw Secchi disk depth dataset and then delves into the specifics of the
 harmonization process.</p>
 <div id="pre-harmonization-of-the-raw-secchi-wqp-dataset" class="section level2 hasAnchor" number="7.1">
 <h2><span class="header-section-number">7.1</span> Pre-harmonization of the raw Secchi WQP dataset<a href="secchi-harmonization-process.html#pre-harmonization-of-the-raw-secchi-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>At the start of the pre-harmonization process the raw chlorophyll WQP
-dataset contains 3.1 million rows.</p>
+<p>At the start of the pre-harmonization process the raw Secchi disk depth
+WQP dataset contains 3.1 million rows.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 <div id="missing-results-2" class="section level3 hasAnchor" number="7.1.1">
@@ -322,7 +322,7 @@ that pertain to Secchi disk depth measurements.</p>
 <p><br></p>
 <div id="filter-for-water-media-1" class="section level3 hasAnchor" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> Filter for water media<a href="secchi-harmonization-process.html#filter-for-water-media-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>We next ensure that the media type for all chlorophyll data is
+<p>We next ensure that the media type for all SDD data is
 <code>"Surface Water"</code>, <code>"Water"</code>, <code>"Estuary"</code>, or <code>NA</code>. 2075 rows are
 removed. The final row count after this is 3.1 million.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
@@ -363,8 +363,6 @@ failure phrases are not mutually exclusive.</p>
 <h4><span class="header-section-number">7.2.2.3</span> ResultMeasureValue_original fail detects<a href="secchi-harmonization-process.html#resultmeasurevalue_original-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/sdd_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/></p>
 <p><br></p>
-<!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
-<!-- <br> -->
 <p>9.8 thousand rows are removed after detecting failure-related phrases
 and 3.1 million rows remain.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
@@ -574,7 +572,7 @@ lost with each code.</p>
 <p>Additionally we provide a set of histograms of harmonized measurements
 by <code>CharacteristicName</code>:</p>
 <p><br></p>
-<p><img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of chl *a* values by CharacteristicName" width="650"/></p>
+<p><img src="3_harmonize/out/sdd_charname_dists.png" alt="Distribution of SDD values by CharacteristicName" width="650"/></p>
 <p><br></p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>

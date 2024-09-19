@@ -271,18 +271,11 @@ WQP dataset contains 3.1 million rows.</p>
 <p><br></p>
 <div id="missing-results-2" class="section level3 hasAnchor" number="7.1.1">
 <h3><span class="header-section-number">7.1.1</span> Missing results<a href="secchi-harmonization-process.html#missing-results-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Next, records that have missing data are dropped from the dataset.
-Several criteria are used when checking for missing data. If any of the
-below criteria are met the row is flagged as missing:</p>
-<ol style="list-style-type: decimal">
-<li>Both the result column and detection limit column had <code>NA</code> data</li>
-<li>Result, result unit, activity comment, laboratory comment, and
-result comment columns are all <code>NA</code></li>
-<li>The result comment column contains any user-provided text indicating
-a missing value, currently including: <code>analysis lost</code>,
-<code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
-<code>no measurement taken</code></li>
-</ol>
+<p>Next, records that have missing data are dropped from the dataset. The
+row is flagged as missing if the result comment column contains any
+user-provided text indicating a missing value, currently including:
+<code>analysis lost</code>, <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
+<code>no measurement taken</code>.</p>
 <p>0.7 thousand rows are dropped, resulting in a final count of 3.1
 million.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
@@ -620,13 +613,9 @@ thousand rows are removed and 3 million rows remain.</p>
 we proceed to filter the analytical methods used.</p>
 <p>We check the <code>ResultAnalyticalMethod.MethodName</code> column for names that
 indicate non-Secchi disk depth measurements. Phrases used to flag and
-remove unrelated methods for Secchi disk depth data are: “10200G”,
-“2320”, “2540”, “2550”, “alkalin”, “calculation”, “chemical”,
-“chlorophyll”, “coliform”, “conductance”, “laboratory calculation”,
-“meteorological”, “nephelometry”, “nitrate”, “no information exists for
-method”, “not available”, “other or unknown procedure”, “qa”,
-“temperature”, “total suspended solids”, “unknown”, “unkown”,
-“unspecified”.</p>
+remove unrelated methods for Secchi disk depth data are: “analysis
+lost”, “not analyzed”, “not recorded”, “not collected”, “no measurement
+taken”.</p>
 <p>This process drops 11.6 thousand rows leaving 3 million remaining.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>

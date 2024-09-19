@@ -164,12 +164,11 @@ clean_wqp_data <- function(wqp_data,
 #' @title Clean WQP data (Secchi specific)
 #' 
 #' @description 
-#' Function to harmonize WQP data in preparation for further analysis. Included
-#' in this function are steps to unite diverse characteristic names by assigning
-#' them to more commonly-used water quality parameter names; to flag missing
-#' records as well as duplicate records; and to carry out parameter-specific
-#' harmonization steps for temperature and conductivity data, including
-#' harmonizing units where possible. 
+#' This is a modified function based on the general clean_wqp_data() function,
+#' with some processes adjusted to reflect the differences in how we process
+#' and tier SDD data in our harmonization pipeline. This function retains
+#' more WQP entries for harmonizing than the clean_wqp_data(), which is oriented
+#' more to laboratory analyses than field measurements.
 #' 
 #' @param wqp_data data frame containing the data downloaded from the WQP, 
 #' where each row represents a data record. 

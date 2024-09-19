@@ -25,6 +25,7 @@ required_pkgs <- c(
   "scales",
   "sf",
   "sfheaders",
+  "snakecase",
   "targets", 
   "tarchetypes",
   "tidyverse",

@@ -26,7 +26,8 @@ harmonize_doc <- function(raw_doc, p_codes){
     filter(
       # Filter out non-target media types
       ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
-        is.na(ActivityMediaSubdivisionName)) %>%
+        is.na(ActivityMediaSubdivisionName)
+    ) %>%
     # Dissolved organic carbon is not a CharacteristicName, so we must identify
     # the fractions of the carbon pool reported that match our needs:
     semi_join(x = .,
@@ -37,12 +38,18 @@ harmonize_doc <- function(raw_doc, p_codes){
                 "Organic carbon",                      "Filtered, field",           
                 "Organic carbon",                      "Filterable",                 
                 "Total carbon",                        "Filterable",
-                "Organic carbon",                     "Total", 
-                "Total carbon",                      NA,    
-                "Total carbon",                     "Total",     
-                "Total carbon",                   "Organic",      
-                "Organic carbon",                   "Organic"       
-              ))  %>%
+                "Organic carbon",                      "Total", 
+                "Total carbon",                        NA,    
+                "Total carbon",                        "Total",     
+                "Total carbon",                        "Organic",      
+                "Organic carbon",                      "Organic",
+                "Non-purgeable Organic Carbon (NPOC)", "Dissolved",
+                "Non-purgeable Organic Carbon (NPOC)", "Filtered, lab",
+                "Non-purgeable Organic Carbon (NPOC)", "None",
+                "Non-purgeable Organic Carbon (NPOC)", "Total",
+                "Non-purgeable Organic Carbon (NPOC)", NA
+              )
+    ) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
     rowid_to_column(., "index")
@@ -52,14 +59,26 @@ harmonize_doc <- function(raw_doc, p_codes){
   reduced_fraction_count <- doc %>%
     count(ResultSampleFractionText, name = "record_count")
   
-  # Which fraction types got dropped, and how many counts did they have? Plot it.
+  # Plot which fraction types got dropped, and how many records they had
   anti_join(x = raw_doc,
             y = doc) %>%
-    count(ResultSampleFractionText, name = "record_count") %>%
-    plot_fraction_pie() %>%
-    ggsave(filename = "3_harmonize/out/doc_fraction_drop_pie.png",
-           plot = .,
-           width = 6, height = 6, units = "in", device = "png")
+    # Separate plot for each of the CharacteristicNames
+    split(f = .$CharacteristicName) %>%
+    walk(.f = ~ {
+      # Grab CharacteristicName for plotting
+      char_name <- unique(.x$CharacteristicName)
+      
+      drop_plot <- .x %>%
+        count(ResultSampleFractionText, name = "record_count") %>%
+        plot_fraction_pie() +
+        ggtitle(paste0(char_name, ":\nFraction types dropped from dataset"))
+      
+      ggsave(filename = paste0("3_harmonize/out/doc_",
+                               to_snake_case(char_name),
+                               "_fraction_drop_pie.png"),
+             plot = drop_plot, units = "in", device = "png",
+             width = 6, height = 6)
+    })
   
   # Record info on any dropped rows  
   dropped_media <- tibble(

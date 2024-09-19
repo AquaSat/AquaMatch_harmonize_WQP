@@ -24,6 +24,9 @@ p3_targets_list <- list(
       # chla
       p3_wqp_data_aoi_ready_chl$compiled_drops_path,
       p3_chla_harmonized$compiled_drops_path,
+      # SDD
+      p3_wqp_data_aoi_ready_sdd$compiled_drops_path,
+      p3_sdd_harmonized$compiled_drops_path,
       # DOC
       p3_wqp_data_aoi_ready_doc$compiled_drops_path,
       p3_doc_harmonized$compiled_drops_path

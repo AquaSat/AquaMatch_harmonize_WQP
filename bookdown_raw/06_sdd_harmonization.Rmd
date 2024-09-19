@@ -117,11 +117,7 @@ step_2_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Next, records that have missing data are dropped from the dataset. Several criteria are used when checking for missing data. If any of the below criteria are met the row is flagged as missing:
-
-1. Both the result column and detection limit column had `NA` data
-2. Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
-3. The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+Next, records that have missing data are dropped from the dataset. The row is flagged as missing if the result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`.
 
 `r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
 
@@ -737,7 +733,7 @@ step_13_dropped <- filter(step_data,
 
 After cleaning and standardizing the Secchi bottom depth measurements, we proceed to filter the analytical methods used. 
 
-We check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-Secchi disk depth measurements. Phrases used to flag and remove unrelated methods for Secchi disk depth data are: "10200G", "2320", "2540", "2550", "alkalin", "calculation",  "chemical", "chlorophyll", "coliform", "conductance", "laboratory calculation", "meteorological", "nephelometry", "nitrate", "no information exists for method", "not available", "other or unknown procedure", "qa", "temperature",  "total suspended solids", "unknown", "unkown", "unspecified".
+We check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-Secchi disk depth measurements. Phrases used to flag and remove unrelated methods for Secchi disk depth data are: "analysis lost", "not analyzed", "not recorded", "not collected", "no measurement taken".
 
 This process drops `r step_13_dropped` rows leaving `r step_13_rows` remaining.
 

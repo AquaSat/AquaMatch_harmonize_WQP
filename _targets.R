@@ -411,7 +411,7 @@ config_targets <- list(
     packages = c("tidyverse", "googledrive")
   ),
   
-  # DOC
+  # SDD
   tar_target(
     name = p2_site_counts_sdd,
     command = retrieve_data(target = "p2_site_counts_sdd",

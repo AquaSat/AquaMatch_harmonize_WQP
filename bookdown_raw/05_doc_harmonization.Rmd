@@ -26,7 +26,7 @@ doc_chars <- params$doc_chars
 
 Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
 
-The text below first walks through the pre-harmonization steps for the raw DOC dataset and then delves into the specifics of the harmonization process.
+The text below first walks through the pre-harmonization steps for the raw dissolved organic carbon (DOC) dataset and then delves into the specifics of the harmonization process.
 
 ```{r echo = FALSE}
 # Redo the ordering of the steps, conceptualizing the pre-harmonization and
@@ -65,7 +65,7 @@ step_1_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 ```
 
@@ -106,14 +106,14 @@ step_2_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_2_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_row = number_dropped / 1000) %>%
   pull(thou_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -159,25 +159,23 @@ step_3_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_3_dropped <- filter(step_data,
                          reorder == step_counter) %>%
-  mutate(thou_row = number_dropped / 1000) %>%
-  pull(thou_row) %>%
-  round(digits = 2) %>%
-  paste0(., " thousand")
+  pull(number_dropped) %>%
+  round(digits = 1)
 ```
 
 The final step in pre-harmonization is to filter the `ResultStatusIdentifier` column to include only the following statuses:
 
--   `"Accepted"`
--   `"Final"`
--   `"Historical"`
--   `"Validated"`
--   `"Preliminary"`
--   `NA`
++ `"Accepted"`
++ `"Final"`
++ `"Historical"`
++ `"Validated"`
++ `"Preliminary"`
++ `NA`
 
 These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
 
@@ -212,6 +210,8 @@ step_data %>%
 
 Once ready for harmonization, the DOC WQP dataset contains the following user-defined `characteristicNames`: `r doc_chars`.
 
+These names are chosen in order to select for only those measurements that pertain to DOC.
+
 <br>
 
 ### Filter media and fractions
@@ -223,14 +223,14 @@ step_4_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_4_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_row = number_dropped / 1000) %>%
   pull(thou_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -238,34 +238,36 @@ We next ensure that the media type for all DOC data is `"Surface Water"`, `"Wate
 
 <br>
 
-| CharacteristicName | ResultSampleFractionText |
-|:------------------:|:------------------------:|
-|  "Organic carbon"  |       "Dissolved"        |
-|  "Organic carbon"  |     "Filtered, lab"      |
-|  "Organic carbon"  |    "Filtered, field"     |
-|  "Organic carbon"  |       "Filterable"       |
-|   "Total carbon"   |       "Filterable"       |
-|  "Organic carbon"  |         "Total"          |
-|   "Total carbon"   |            NA            |
-|   "Total carbon"   |         "Total"          |
-|   "Total carbon"   |        "Organic"         |
-|  "Organic carbon"  |        "Organic"         |
-|"Non-purgeable Organic Carbon (NPOC)" | "Dissolved" |
-|"Non-purgeable Organic Carbon (NPOC)" | "Filtered, lab" |
-|"Non-purgeable Organic Carbon (NPOC)" | "Total" |
-|"Non-purgeable Organic Carbon (NPOC)" | NA |
+| CharacteristicName                  | ResultSampleFractionText |
+|-------------------------------------|--------------------------|
+| Non-purgeable Organic Carbon (NPOC) | Dissolved                |
+| Non-purgeable Organic Carbon (NPOC) | Filtered, lab            |
+| Non-purgeable Organic Carbon (NPOC) | None                     |
+| Non-purgeable Organic Carbon (NPOC) | Total                    |
+| Non-purgeable Organic Carbon (NPOC) | NA                       |
+| Organic carbon                      | Dissolved                |
+| Organic carbon                      | Filtered, lab            |
+| Organic carbon                      | Filtered, field          |
+| Organic carbon                      | Filterable               |
+| Organic carbon                      | Total                    |
+| Organic carbon                      | Organic                  |
+| Total carbon                        | Filterable               |
+| Total carbon                        | NA                       |
+| Total carbon                        | Total                    |
+| Total carbon                        | Organic                  |
 
 <br>
 
-<img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
+Below are pie charts that break down the type of fractions dropped for each CharacteristicName, including record counts:
 
-<br>
+#### Non-purgeable organic carbon (NPOC) fractions dropped
+<img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="Non-purgeable organic carbon (NPOC) ResultSampleFractionText types dropped" width="600"/>
 
-<img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
+#### Organic carbon fractions dropped
+<img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="Organic carbon ResultSampleFractionText types dropped" width="600"/>
 
-<br>
-
-<img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/>
+#### Total carbon fractions dropped
+<img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="Total carbon ResultSampleFractionText types dropped" width="600"/>
 
 <br>
 
@@ -305,20 +307,20 @@ step_5_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_5_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
 In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures").
 
-After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "instrument down", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", "questionable", "suspect", "unable", "violation", "reject", "no data", "time exceed".
+After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. (Note: `ResultMeasureValue_original` is a duplicate, character version of the `ResultMeasureValue` column that we use as a reference for the column's contents before it was converted to a numeric type.) We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "questionable", "suspect", "unable", "violation", "reject", "no data", "time exceed", "value extrapolated", "exceeds", "biased", "parameter not required", "not visited".
 
 Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
 
@@ -338,9 +340,15 @@ Below are pie charts that break down the number of failure detections by column.
 
 <br>
 
-<!-- <img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
+#### ResultDetectionConditionText fail detects
 
-<!-- <br> -->
+<img src="3_harmonize/out/doc_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/>
+
+#### ResultMeasureValue_original fail detects
+
+<img src="3_harmonize/out/doc_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/>
+
+<br>
 
 `r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
@@ -378,24 +386,24 @@ step_6_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_6_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or `"below"`.
 
 If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
 
-We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward. Once the process is complete we filter out any negative values in the dataset.
+We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
 
 We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
-Most of this step should not result in a change in rows, but we do drop records with negative measurement values. This results in `r step_6_dropped` rows being removed. The final row count after this is `r step_6_rows`.
+This should not result in a change in rows but we still check: `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -431,13 +439,13 @@ step_7_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_7_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 Cleaning approximate values involves a similar process as for MDL cleaning. We flag "approximated" values in the dataset. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
@@ -448,7 +456,7 @@ Cleaning approximate values involves a similar process as for MDL cleaning. We f
 
 We then use the approximate value as the record's value moving forward.
 
-Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column.
+Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column. Note, however, that occasionally approximate language will be used in a record but not changed or flagged. This occurs when the language is used in a comment-related column and **not** the result column itself, meaning that there is a usable numeric value provided (and thus doesn't need correction).
 
 This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
@@ -486,13 +494,13 @@ step_8_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_8_dropped <- filter(step_data,
                          reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 The next step is similar to the MDL and approximate value cleaning processes, and follows the approximate cleaning process most closely. The goal is to clean up values that were entered as "greater than" some value. The `ResultMeasureValue` column gets checked for **all** three of the following conditions:
@@ -541,18 +549,16 @@ step_9_rows <- filter(step_data,
                       reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_9_dropped <- filter(step_data,
                          reorder == step_counter) %>%
-  # mutate(thou_dropped = number_dropped / 1000) %>%
   pull(number_dropped) %>%
-  round(digits = 2) #%>%
-# paste0(., " thousand")
+  round(digits = 1)
 ```
 
-The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped.
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point.
 
 `r step_9_dropped` rows are removed. The final row count after this is `r step_9_rows`.
 
@@ -590,14 +596,14 @@ step_10_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_10_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
@@ -664,13 +670,13 @@ step_11_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_11_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
 The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
@@ -702,7 +708,7 @@ step_data %>%
 
 <br>
 
-### Filter and tier analytical methods
+### Filter and tier methods
 
 ```{r echo = FALSE}
 step_counter <- 12
@@ -711,18 +717,18 @@ step_12_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_12_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(thou_dropped = number_dropped / 1000) %>%
   pull(thou_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " thousand")
 ```
 
-We next review the analytical methods used in measuring DOC, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Analytical method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
+We next review the analytical methods used in measuring DOC, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
 However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-DOC measurements. Phrases used to flag and remove unrelated methods from DOC data are: "Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity", "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids", "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)", "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water".
 
@@ -730,11 +736,12 @@ This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
 The next step towards creating tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: Combustion + infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods, Wet Oxidation+Persulfate+IR methods, Elemental Analyzer methods, or Carbonaceous Analyzer methods. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
 
--   **Combustion+IR:** Detection of "5310 B", "5310B", "415.1", "combustion" but only without "5310 C" or "5310C", "0.45u silver, persulfate IR", "0.7 um GFF, combust IR", "Laboratory Procedures for Water Quality Chemical Analysis", "CO2 formation", "Qian & Mopper 1996", or "Shimadzu TOC Analyzer" in `ResultAnalyticalMethod.MethodName`
--   **Persulfate-UV/Heated Persulfate Oxidation+IR:** Detection of "5310 C", "5310C", "persulfate oxid", "415.2", "Ultraviolet", "Heated-Persulfate", or "UV" in `ResultAnalyticalMethod.MethodName`
--   **Wet Oxidation+Persulfate+IR detection:** Detection of "0.45 ?um cap", "0.45um cap", "wet oxidation", "5310 D", "5310D", "415.3", "O-3100 \~ Total Organic Carbon in Water" in `ResultAnalyticalMethod.MethodName`
--   **Elemental Analyzer:** Detection of "440" in `ResultAnalyticalMethod.MethodName`
--   **Carbonaceous Analyzer:** Detection of "9060 A" in `ResultAnalyticalMethod.MethodName`
++ **Combustion+IR:** Detection of "5310 B", "5310B", "415.1", "combustion" but only without "5310 C" or "5310C", "0.45u silver, persulfate IR", "0.7 um GFF, combust IR", "Laboratory Procedures for Water Quality Chemical Analysis", "CO2 formation", "Qian & Mopper 1996", or "Shimadzu TOC Analyzer" in `ResultAnalyticalMethod.MethodName`
++ **Persulfate-UV/Heated Persulfate Oxidation+IR:** Detection of "5310 C", "5310C", "persulfate oxid", "415.2", "Ultraviolet", "Heated-Persulfate", or "UV" in `ResultAnalyticalMethod.MethodName`
++ **Wet Oxidation+Persulfate+IR detection:** Detection of "0.45 ?um cap", "0.45um cap", "wet oxidation", "5310 D", "5310D", "415.3", "O-3100 \~ Total Organic Carbon in Water" in `ResultAnalyticalMethod.MethodName`
++ **Elemental Analyzer:** Detection of "440" in `ResultAnalyticalMethod.MethodName`
++ **Carbonaceous Analyzer:** Detection of "9060 A" in `ResultAnalyticalMethod.MethodName`
+
 
 Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
 
@@ -744,9 +751,9 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 | Tier | Name        | Description                                                                                                                                                                                                                                                                                            | DOC details                                                                                                |     |
 |-------------|-------------|---------------------|-------------|-------------|
-| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using Wet Oxidation+Persulfate+IR or Persulfate-UV/Heated Persulfate Oxidation+IR methods |     |
-| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Includes records using combustion+IR or elemental analyzer methods                                         |     |
-| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | Carbonaceous and all other records by default, including `NA` methods                                      |     |
+| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using Wet Oxidation+Persulfate+IR (EPA 415.3, SM 5310D) or Persulfate-UV/Heated Persulfate Oxidation+IR (EPA 415.2, SM 5310C) methods |     |
+| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Includes records using combustion+IR (EPA 415.1, SM 5310B) or elemental analyzer methods (EPA 440)                                      |     |
+| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | Carbonaceous (EPA 9060A) and all other records by default, including `NA` methods                                      |     |
 
 <br>
 
@@ -788,18 +795,114 @@ step_13_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
 step_13_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   pull(number_dropped) %>%
-  round(digits = 2)
+  round(digits = 1)
 ```
 
-DOC doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with "not applicable" for DOC.
+DOC doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with `NA` for "not applicable" for DOC.
 
 No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized DOC dataset.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Miscellaneous flag
+
+```{r echo = FALSE}
+step_counter <- 14
+
+step_14_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_14_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
+```
+
+Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
+
+Similarly to the `field_flag` column, this will be filled with `NA`. Some parameters will have additional flagging requirements that DOC does not, so we include this placeholder to maintain the same columns across all parameter data products.
+
+No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized DOC dataset.
+
+```{r echo = FALSE}
+step_data %>%
+  filter(reorder %in% 1:step_counter) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder, y = scaled, fill = reorder),
+           stat = "identity")  +
+  geom_text_repel(aes(x = reorder, y = 0.1, label = rows_label),
+                  bg.color = "white", bg.r = 0.15,
+                  point.size = NA,
+                  xlim = c(-Inf, Inf),
+                  ylim =  c(-Inf, Inf),
+                  nudge_x = 0.1,
+                  hjust = "left") +
+  xlab("Step number") +
+  ylab(NULL) +
+  scale_fill_manual(values = viridis(n = max_steps, direction = -1)[step_counter:1]) +
+  scale_x_discrete(drop = F) +
+  coord_flip() +
+  theme_bw() +
+  theme(axis.text.x = element_blank(),
+        legend.position = "none")
+```
+
+<br>
+
+### Remove unrealistic values
+
+```{r echo = FALSE}
+step_counter <- 15
+
+step_15_rows <- filter(step_data,
+                       reorder == step_counter) %>%
+  mutate(mil_row = n_rows / 1000000) %>%
+  pull(mil_row) %>%
+  round(digits = 1) %>%
+  paste0(., " million")
+
+step_15_dropped <- filter(step_data,
+                          reorder == step_counter) %>%
+  pull(number_dropped) %>%
+  round(digits = 1)
+```
+
+Before finalizing the dataset we remove DOC values that are beyond a realistic threshold. We use 200 mg/L as our cutoff for removal [citation needed].
+
+`r step_15_dropped` rows are removed. The final row count after this is `r step_15_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -829,30 +932,30 @@ step_data %>%
 ### Aggregate simultaneous records
 
 ```{r echo = FALSE}
-step_counter <- 14
+step_counter <- 16
 
-step_14_rows <- filter(step_data,
+step_16_rows <- filter(step_data,
                        reorder == step_counter) %>%
   mutate(mil_row = n_rows / 1000000) %>%
   pull(mil_row) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 
-step_14_dropped <- filter(step_data,
+step_16_dropped <- filter(step_data,
                           reorder == step_counter) %>%
   mutate(mil_dropped = number_dropped / 1000000) %>%
   pull(mil_dropped) %>%
-  round(digits = 2) %>%
+  round(digits = 1) %>%
   paste0(., " million")
 ```
 
-The final step of DOC harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
+The final step of DOC harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `ActivityStartDateTime`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and including the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and include the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
-`r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated doc dataset.
+`r step_16_dropped` rows dropped leaving `r step_16_rows` remaining in the final harmonized and aggregated doc dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -888,5 +991,8 @@ Below is a final set of histograms showing the distribution of harmonized measur
 <br>
 
 <img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by tier" width="650"/>
+
+
+<img src="3_harmonize/out/doc_tier_cv_dists_postagg.png" alt="Distribution of DOC CVs by tier" width="650"/>
 
 <br>

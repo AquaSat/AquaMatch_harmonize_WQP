@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-11" />
+<meta name="date" content="2024-10-02" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -201,10 +201,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
-<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
+<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#miscellaneous-flag-1"><i class="fa fa-check"></i><b>6.2.11</b> Miscellaneous flag</a></li>
+<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>6.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="6.2.13" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="6.2.14" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.14</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html"><i class="fa fa-check"></i><b>7</b> Secchi harmonization process</a>
@@ -228,7 +230,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7.2.10" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-methods"><i class="fa fa-check"></i><b>7.2.10</b> Filter methods</a></li>
 <li class="chapter" data-level="7.2.11" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#tier-methods"><i class="fa fa-check"></i><b>7.2.11</b> Tier methods</a></li>
 <li class="chapter" data-level="7.2.12" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#flag"><i class="fa fa-check"></i><b>7.2.12</b> Flag</a></li>
-<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-2"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
 <li class="chapter" data-level="7.2.14" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#aggregate-simultaneous-records-2"><i class="fa fa-check"></i><b>7.2.14</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="7.2.15" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#harmonized-secchi-disk-depth"><i class="fa fa-check"></i><b>7.2.15</b> Harmonized Secchi disk depth</a></li>
 </ul></li>
@@ -261,12 +263,12 @@ a series of universal “pre-harmonization” steps, which ensure that the
 datasets are appropriately formatted when entering their harmonization
 routines.</p>
 <p>The text below first walks through the pre-harmonization steps for the
-raw DOC dataset and then delves into the specifics of the harmonization
-process.</p>
+raw dissolved organic carbon (DOC) dataset and then delves into the
+specifics of the harmonization process.</p>
 <div id="pre-harmonization-of-the-raw-doc-wqp-dataset" class="section level2 hasAnchor" number="6.1">
 <h2><span class="header-section-number">6.1</span> Pre-harmonization of the raw doc WQP dataset<a href="doc-harmonization-process.html#pre-harmonization-of-the-raw-doc-wqp-dataset" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>At the start of the pre-harmonization process the raw DOC WQP dataset
-contains 2.73 million rows.</p>
+contains 2.7 million rows.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-4-1.png" /><!-- --></p>
 <p><br></p>
 <div id="missing-results-1" class="section level3 hasAnchor" number="6.1.1">
@@ -283,7 +285,7 @@ a missing value, currently including: <code>analysis lost</code>,
 <code>not analyzed</code>, <code>not recorded</code>, <code>not collected</code>, or
 <code>no measurement taken</code></li>
 </ol>
-<p>94.23 thousand rows are dropped, resulting in a final count of 2.64
+<p>94.7 thousand rows are dropped, resulting in a final count of 2.7
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-6-1.png" /><!-- --></p>
 <p><br></p>
@@ -305,8 +307,8 @@ however we also include <code>NA</code> in an effort to be conservative. More
 specifically, when making decisions for this and other columns we
 occasionally retain <code>NA</code> values if removing the records would otherwise
 drop 10% or more of the available data.</p>
-<p>This step removes 2.04 thousand rows of data, leaving it with 2.64
-million rows remaining.</p>
+<p>This step removes 2037 rows of data, leaving it with 2.6 million rows
+remaining.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-8-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -316,6 +318,8 @@ million rows remaining.</p>
 <p>Once ready for harmonization, the DOC WQP dataset contains the following
 user-defined <code>characteristicNames</code>: Organic carbon, Total carbon,
 Non-purgeable Organic Carbon (NPOC).</p>
+<p>These names are chosen in order to select for only those measurements
+that pertain to DOC.</p>
 <p><br></p>
 <div id="filter-media-and-fractions" class="section level3 hasAnchor" number="6.2.1">
 <h3><span class="header-section-number">6.2.1</span> Filter media and fractions<a href="doc-harmonization-process.html#filter-media-and-fractions" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -328,80 +332,93 @@ are:</p>
 <table>
 <thead>
 <tr class="header">
-<th align="center">CharacteristicName</th>
-<th align="center">ResultSampleFractionText</th>
+<th>CharacteristicName</th>
+<th>ResultSampleFractionText</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Dissolved”</td>
+<td>Non-purgeable Organic Carbon (NPOC)</td>
+<td>Dissolved</td>
 </tr>
 <tr class="even">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Filtered, lab”</td>
+<td>Non-purgeable Organic Carbon (NPOC)</td>
+<td>Filtered, lab</td>
 </tr>
 <tr class="odd">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Filtered, field”</td>
+<td>Non-purgeable Organic Carbon (NPOC)</td>
+<td>None</td>
 </tr>
 <tr class="even">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Filterable”</td>
+<td>Non-purgeable Organic Carbon (NPOC)</td>
+<td>Total</td>
 </tr>
 <tr class="odd">
-<td align="center">“Total carbon”</td>
-<td align="center">“Filterable”</td>
+<td>Non-purgeable Organic Carbon (NPOC)</td>
+<td>NA</td>
 </tr>
 <tr class="even">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Total”</td>
+<td>Organic carbon</td>
+<td>Dissolved</td>
 </tr>
 <tr class="odd">
-<td align="center">“Total carbon”</td>
-<td align="center">NA</td>
+<td>Organic carbon</td>
+<td>Filtered, lab</td>
 </tr>
 <tr class="even">
-<td align="center">“Total carbon”</td>
-<td align="center">“Total”</td>
+<td>Organic carbon</td>
+<td>Filtered, field</td>
 </tr>
 <tr class="odd">
-<td align="center">“Total carbon”</td>
-<td align="center">“Organic”</td>
+<td>Organic carbon</td>
+<td>Filterable</td>
 </tr>
 <tr class="even">
-<td align="center">“Organic carbon”</td>
-<td align="center">“Organic”</td>
+<td>Organic carbon</td>
+<td>Total</td>
 </tr>
 <tr class="odd">
-<td align="center">“Non-purgeable Organic Carbon (NPOC)”</td>
-<td align="center">“Dissolved”</td>
+<td>Organic carbon</td>
+<td>Organic</td>
 </tr>
 <tr class="even">
-<td align="center">“Non-purgeable Organic Carbon (NPOC)”</td>
-<td align="center">“Filtered, lab”</td>
+<td>Total carbon</td>
+<td>Filterable</td>
 </tr>
 <tr class="odd">
-<td align="center">“Non-purgeable Organic Carbon (NPOC)”</td>
-<td align="center">“Total”</td>
+<td>Total carbon</td>
+<td>NA</td>
 </tr>
 <tr class="even">
-<td align="center">“Non-purgeable Organic Carbon (NPOC)”</td>
-<td align="center">NA</td>
+<td>Total carbon</td>
+<td>Total</td>
+</tr>
+<tr class="odd">
+<td>Total carbon</td>
+<td>Organic</td>
 </tr>
 </tbody>
 </table>
 <p><br></p>
-<p><img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/></p>
+<p>Below are pie charts that break down the type of fractions dropped for
+each CharacteristicName, including record counts:</p>
+<div id="non-purgeable-organic-carbon-npoc-fractions-dropped" class="section level4 hasAnchor" number="6.2.1.1">
+<h4><span class="header-section-number">6.2.1.1</span> Non-purgeable organic carbon (NPOC) fractions dropped<a href="doc-harmonization-process.html#non-purgeable-organic-carbon-npoc-fractions-dropped" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="Non-purgeable organic carbon (NPOC) ResultSampleFractionText types dropped" width="600"/></p>
+</div>
+<div id="organic-carbon-fractions-dropped" class="section level4 hasAnchor" number="6.2.1.2">
+<h4><span class="header-section-number">6.2.1.2</span> Organic carbon fractions dropped<a href="doc-harmonization-process.html#organic-carbon-fractions-dropped" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="Organic carbon ResultSampleFractionText types dropped" width="600"/></p>
+</div>
+<div id="total-carbon-fractions-dropped" class="section level4 hasAnchor" number="6.2.1.3">
+<h4><span class="header-section-number">6.2.1.3</span> Total carbon fractions dropped<a href="doc-harmonization-process.html#total-carbon-fractions-dropped" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="Total carbon ResultSampleFractionText types dropped" width="600"/></p>
 <p><br></p>
-<p><img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/></p>
-<p><br></p>
-<p><img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="ResultSampleFractionText types dropped" width="600"/></p>
-<p><br></p>
-<p>302.29 thousand rows are removed. The final row count after this is 2.34
+<p>303 thousand rows are removed. The final row count after this is 2.3
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-10-1.png" /><!-- --></p>
 <p><br></p>
+</div>
 </div>
 <div id="document-and-remove-fails-1" class="section level3 hasAnchor" number="6.2.2">
 <h3><span class="header-section-number">6.2.2</span> Document and remove fails<a href="doc-harmonization-process.html#document-and-remove-fails-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
@@ -413,14 +430,17 @@ by the data provider (these instances are referred to here as
 <code>ResultLaboratoryCommentText</code>, <code>ResultCommentText</code>,
 <code>ResultDetectionConditionText</code>, and <code>ResultMeasureValue_original</code>
 columns, we developed a list of terms that captured the majority of
-instances where records had failures or unacceptable measurements. We
-found the phrasing to be consistent across columns and so we searched
-for the same (case agnostic) terms in all four locations. The terms are:
-“beyond accept”, “cancelled”, “contaminat”, “error”, “fail”, “improper”,
-“instrument down”, “interference”, “invalid”, “no result”, “no test”,
-“not accept”, “outside of accept”, “problem”, “QC EXCEEDED”,
-“questionable”, “suspect”, “unable”, “violation”, “reject”, “no data”,
-“time exceed”.</p>
+instances where records had failures or unacceptable measurements.
+(Note: <code>ResultMeasureValue_original</code> is a duplicate, character version
+of the <code>ResultMeasureValue</code> column that we use as a reference for the
+column’s contents before it was converted to a numeric type.) We found
+the phrasing to be consistent across columns and so we searched for the
+same (case agnostic) terms in all four locations. The terms are: “beyond
+accept”, “cancelled”, “contaminat”, “error”, “fail”, “improper”,
+“interference”, “invalid”, “no result”, “no test”, “not accept”,
+“outside of accept”, “problem”, “questionable”, “suspect”, “unable”,
+“violation”, “reject”, “no data”, “time exceed”, “value extrapolated”,
+“exceeds”, “biased”, “parameter not required”, “not visited”.</p>
 <p>Below are pie charts that break down the number of failure detections by
 column. Note that the plotting below is automated so if one or more of
 the columns listed above are not plotted, this indicates that the
@@ -432,18 +452,25 @@ failure phrases are not mutually exclusive.</p>
 <h4><span class="header-section-number">6.2.2.1</span> ActivityCommentText fail detects<a href="doc-harmonization-process.html#activitycommenttext-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/doc_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/></p>
 </div>
-<div id="resultcommenttext-fail-detects-1" class="section level4 hasAnchor" number="6.2.2.2">
-<h4><span class="header-section-number">6.2.2.2</span> ResultCommentText fail detects<a href="doc-harmonization-process.html#resultcommenttext-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="resultcommenttext-fail-detects-2" class="section level4 hasAnchor" number="6.2.2.2">
+<h4><span class="header-section-number">6.2.2.2</span> ResultCommentText fail detects<a href="doc-harmonization-process.html#resultcommenttext-fail-detects-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/></p>
 </div>
 <div id="resultlaboratorycommenttext-fail-detects-1" class="section level4 hasAnchor" number="6.2.2.3">
 <h4><span class="header-section-number">6.2.2.3</span> ResultLaboratoryCommentText fail detects<a href="doc-harmonization-process.html#resultlaboratorycommenttext-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/doc_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/></p>
 <p><br></p>
-<!-- <img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
-<!-- <br> -->
-<p>25.05 thousand rows are removed after detecting failure-related phrases
-and 2.31 million rows remain.</p>
+</div>
+<div id="resultdetectionconditiontext-fail-detects" class="section level4 hasAnchor" number="6.2.2.4">
+<h4><span class="header-section-number">6.2.2.4</span> ResultDetectionConditionText fail detects<a href="doc-harmonization-process.html#resultdetectionconditiontext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/doc_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/></p>
+</div>
+<div id="resultmeasurevalue_original-fail-detects" class="section level4 hasAnchor" number="6.2.2.5">
+<h4><span class="header-section-number">6.2.2.5</span> ResultMeasureValue_original fail detects<a href="doc-harmonization-process.html#resultmeasurevalue_original-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/doc_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/></p>
+<p><br></p>
+<p>58.5 thousand rows are removed after detecting failure-related phrases
+and 2.3 million rows remain.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -462,17 +489,15 @@ check for non-detect language in the <code>ResultLaboratoryCommentText</code>,
 otherwise if there is a <code>&lt;</code> and a number in the <code>ResultMeasureValue</code>
 column we use that number instead.</p>
 <p>We then use a random number between 0 and <code>0.5 * MDL</code> as the record’s
-value moving forward. Once the process is complete we filter out any
-negative values in the dataset.</p>
+value moving forward.</p>
 <p>We produce a new column, <code>mdl_flag</code>, from the MDL cleaning process.
 Records where no MDL-based adjustment was made and which are at or above
 the MDL are assigned a 0. Records with corrected values based on the MDL
 method are assigned a 1. Finally, records where no MDL-based adjustment
 was made and which contain a numeric value below the provided MDL are
 assigned a 2.</p>
-<p>Most of this step should not result in a change in rows, but we do drop
-records with negative measurement values. This results in 0 rows being
-removed. The final row count after this is 2.31 million.</p>
+<p>This should not result in a change in rows but we still check: 0 rows
+are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-14-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -491,9 +516,13 @@ ignoring case: <code>"result approx|RESULT IS APPROX|value approx"</code></li>
 </ol>
 <p>We then use the approximate value as the record’s value moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
-1 in the <code>approx_flag</code> column.</p>
+1 in the <code>approx_flag</code> column. Note, however, that occasionally
+approximate language will be used in a record but not changed or
+flagged. This occurs when the language is used in a comment-related
+column and <strong>not</strong> the result column itself, meaning that there is a
+usable numeric value provided (and thus doesn’t need correction).</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.31 million.</p>
+are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-16-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -515,7 +544,7 @@ moving forward.</p>
 <p>Records with corrected values based on the above method are noted with a
 1 in the <code>greater_flag</code> column.</p>
 <p>This should not result in a change in rows but we still check: 0 rows
-are removed. The final row count after this is 2.31 million.</p>
+are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-18-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -526,8 +555,9 @@ seemingly missing measurement data from being dropped if there was still
 a chance of recovering a usable value. At this point we’ve finished with
 that process and we proceed to check for remaining records with <code>NA</code>
 values in their <code>harmonized_value</code> column. If they exist, they are
-dropped.</p>
-<p>4301 rows are removed. The final row count after this is 2.31 million.</p>
+dropped. We also filter out any negative values in the dataset at this
+point.</p>
+<p>3920 rows are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-20-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -553,7 +583,7 @@ conversion
 mg/L
 </td>
 <td style="text-align:right;">
-1.000e+00
+1.00000e+00
 </td>
 </tr>
 <tr>
@@ -561,7 +591,7 @@ mg/L
 mg/l
 </td>
 <td style="text-align:right;">
-1.000e+00
+1.00000e+00
 </td>
 </tr>
 <tr>
@@ -569,7 +599,7 @@ mg/l
 ppm
 </td>
 <td style="text-align:right;">
-1.000e+00
+1.00000e+00
 </td>
 </tr>
 <tr>
@@ -577,7 +607,7 @@ ppm
 ug/l
 </td>
 <td style="text-align:right;">
-1.000e-03
+1.00000e-03
 </td>
 </tr>
 <tr>
@@ -585,7 +615,7 @@ ug/l
 ug/L
 </td>
 <td style="text-align:right;">
-1.000e-03
+1.00000e-03
 </td>
 </tr>
 <tr>
@@ -593,7 +623,7 @@ ug/L
 mg/m3
 </td>
 <td style="text-align:right;">
-1.000e-03
+1.00000e-03
 </td>
 </tr>
 <tr>
@@ -601,7 +631,7 @@ mg/m3
 ppb
 </td>
 <td style="text-align:right;">
-1.000e-03
+1.00000e-03
 </td>
 </tr>
 <tr>
@@ -609,7 +639,7 @@ ppb
 mg/cm3
 </td>
 <td style="text-align:right;">
-1.000e+03
+1.00000e+03
 </td>
 </tr>
 <tr>
@@ -617,7 +647,15 @@ mg/cm3
 ug/ml
 </td>
 <td style="text-align:right;">
-1.000e+00
+1.00000e+00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ug/mL
+</td>
+<td style="text-align:right;">
+1.00000e+00
 </td>
 </tr>
 <tr>
@@ -625,7 +663,7 @@ ug/ml
 mg/ml
 </td>
 <td style="text-align:right;">
-1.000e+03
+1.00000e+03
 </td>
 </tr>
 <tr>
@@ -633,7 +671,7 @@ mg/ml
 ppt
 </td>
 <td style="text-align:right;">
-0.000e+00
+1.00000e+03
 </td>
 </tr>
 <tr>
@@ -641,7 +679,7 @@ ppt
 umol/L
 </td>
 <td style="text-align:right;">
-6.008e-02
+1.20107e-02
 </td>
 </tr>
 </tbody>
@@ -658,7 +696,7 @@ by <code>CharacteristicName</code>:</p>
 <p><br></p>
 <p><img src="3_harmonize/out/doc_charname_dists.png" alt="Distribution of DOC values by CharacteristicName" width="650"/></p>
 <p><br></p>
-<p>8.23 thousand rows are removed. The final row count after this is 2.3
+<p>8.2 thousand rows are removed. The final row count after this is 2.3
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-23-1.png" /><!-- --></p>
 <p><br></p>
@@ -674,13 +712,13 @@ are removed. The final row count after this is 2.3 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-25-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="filter-and-tier-analytical-methods" class="section level3 hasAnchor" number="6.2.9">
-<h3><span class="header-section-number">6.2.9</span> Filter and tier analytical methods<a href="doc-harmonization-process.html#filter-and-tier-analytical-methods" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="filter-and-tier-methods-1" class="section level3 hasAnchor" number="6.2.9">
+<h3><span class="header-section-number">6.2.9</span> Filter and tier methods<a href="doc-harmonization-process.html#filter-and-tier-methods-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We next review the analytical methods used in measuring DOC, primarily
 by classifying the text provided with each record in
 <code>ResultAnalyticalMethod.MethodName</code>. Once these methods are classified
-we arrange them into hierarchical tiers as described in the <em>Analytical
-method tiering</em> section of the <em>Tiering, flagging, and quality control
+we arrange them into hierarchical tiers as described in the <em>Method
+tiering</em> section of the <em>Tiering, flagging, and quality control
 philosophy</em> chapter.</p>
 <p>However, prior to classification we check the
 <code>ResultAnalyticalMethod.MethodName</code> column for names that indicate
@@ -691,7 +729,7 @@ from DOC data are: “Oxygen”, “Nitrogen”, “Ammonia”, “Metals”, �
 “Solids”, “Temperature”, “Color in Water”, “Coliform”, “PARTICULATE
 CARBON (inorg+org)”, “5210”, “bed sed”, “bs, calc”, “5220”,
 “Suspended-Sediment in Water”.</p>
-<p>This process drops 85.57 thousand rows leaving 2.21 million remaining.</p>
+<p>This process drops 82.9 thousand rows leaving 2.2 million remaining.</p>
 <p>The next step towards creating tiers is to then classify the methods in
 <code>ResultAnalyticalMethod.MethodName</code> into either: Combustion + infrared
 methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods,
@@ -722,12 +760,12 @@ cap”, “0.45um cap”, “wet oxidation”, “5310 D”, “5310D”, “415
 flagging, and quality control philosophy</em>. These tiers are:</p>
 <p><br></p>
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
-<table>
+<table style="width:100%;">
 <colgroup>
 <col width="1%" />
-<col width="3%" />
-<col width="69%" />
-<col width="25%" />
+<col width="2%" />
+<col width="62%" />
+<col width="32%" />
 <col width="1%" />
 </colgroup>
 <thead>
@@ -744,21 +782,21 @@ flagging, and quality control philosophy</em>. These tiers are:</p>
 <td>0</td>
 <td>Restrictive</td>
 <td>Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable</td>
-<td>Includes records using Wet Oxidation+Persulfate+IR or Persulfate-UV/Heated Persulfate Oxidation+IR methods</td>
+<td>Includes records using Wet Oxidation+Persulfate+IR (EPA 415.3, SM 5310D) or Persulfate-UV/Heated Persulfate Oxidation+IR (EPA 415.2, SM 5310C) methods</td>
 <td></td>
 </tr>
 <tr class="even">
 <td>1</td>
 <td>Narrowed</td>
 <td>Data that we have good reason to believe are self-similar, but for which we can’t verify full interoperability across data providers</td>
-<td>Includes records using combustion+IR or elemental analyzer methods</td>
+<td>Includes records using combustion+IR (EPA 415.1, SM 5310B) or elemental analyzer methods (EPA 440)</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td>2</td>
 <td>Inclusive</td>
 <td>Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes <code>NA</code> or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter</td>
-<td>Carbonaceous and all other records by default, including <code>NA</code> methods</td>
+<td>Carbonaceous (EPA 9060A) and all other records by default, including <code>NA</code> methods</td>
 <td></td>
 </tr>
 </tbody>
@@ -776,15 +814,38 @@ each method.</p>
 <h3><span class="header-section-number">6.2.10</span> Flag based on field methods<a href="doc-harmonization-process.html#flag-based-on-field-methods-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>DOC doesn’t have field sampling methods that lend themselves well to
 comparing with analytical methods and assigning flags, unlike variables
-like chlorophyll <em>a</em>. We fill the <code>field_flag</code> column with “not
+like chlorophyll <em>a</em>. We fill the <code>field_flag</code> column with <code>NA</code> for “not
 applicable” for DOC.</p>
 <p>No records should be removed by this process and so there are 0 rows
-dropped leaving 2.21 million remaining in the harmonized DOC dataset.</p>
+dropped leaving 2.2 million remaining in the harmonized DOC dataset.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="aggregate-simultaneous-records-1" class="section level3 hasAnchor" number="6.2.11">
-<h3><span class="header-section-number">6.2.11</span> Aggregate simultaneous records<a href="doc-harmonization-process.html#aggregate-simultaneous-records-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="miscellaneous-flag-1" class="section level3 hasAnchor" number="6.2.11">
+<h3><span class="header-section-number">6.2.11</span> Miscellaneous flag<a href="doc-harmonization-process.html#miscellaneous-flag-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Next we add a placeholder for the miscellaneous flag column,
+<code>misc_flag</code>.</p>
+<p>Similarly to the <code>field_flag</code> column, this will be filled with <code>NA</code>.
+Some parameters will have additional flagging requirements that DOC does
+not, so we include this placeholder to maintain the same columns across
+all parameter data products.</p>
+<p>No records should be removed by this process and so there are 0 rows
+dropped leaving 2.2 million remaining in the harmonized DOC dataset.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="remove-unrealistic-values-1" class="section level3 hasAnchor" number="6.2.12">
+<h3><span class="header-section-number">6.2.12</span> Remove unrealistic values<a href="doc-harmonization-process.html#remove-unrealistic-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Before finalizing the dataset we remove DOC values that are beyond a
+realistic threshold. We use 200 mg/L as our cutoff for removal
+<span class="math display">\[citation needed\]</span>.</p>
+<p>1.9152^{4} rows are removed. The final row count after this is 2.2
+million.</p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
+<p><br></p>
+</div>
+<div id="aggregate-simultaneous-records-1" class="section level3 hasAnchor" number="6.2.13">
+<h3><span class="header-section-number">6.2.13</span> Aggregate simultaneous records<a href="doc-harmonization-process.html#aggregate-simultaneous-records-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The final step of DOC harmonization is to aggregate simultaneous
 observations. Any group of samples determined to be simultaneous are
 simplified into a single record containing the mean and coefficient of
@@ -794,31 +855,34 @@ time and place and by the same organization (field and/or lab
 replicates/duplicates). The CV can be used to filter the dataset based
 on the amount of variability that is tolerable to specific use cases.
 Note, however, that many entries will have a CV that is <code>NA</code> because
-there are no duplicates or 0 because the records are duplicates and all
-entries have the same <code>harmonized_value</code>.</p>
+there are no simultaneous records or 0 because the records are
+duplicates and all entries have the same <code>harmonized_value</code>.</p>
 <p>We identify simultaneous records to aggregate by creating identical
 subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter</code>,
 <code>OrganizationIdentifier</code>, <code>MonitoringLocationIdentifier</code>,
-<code>ActivityStartDateTime</code>, <code>harmonized_top_depth_value</code>,
-<code>harmonized_top_depth_unit</code>, <code>harmonized_bottom_depth_value</code>,
-<code>harmonized_bottom_depth_unit</code>, <code>harmonized_discrete_depth_value</code>,
-<code>harmonized_discrete_depth_unit</code>, <code>depth_flag</code>, <code>mdl_flag</code>,
-<code>approx_flag</code>, <code>greater_flag</code>, <code>tier</code>, <code>field_flag</code>, <code>harmonized_units</code>.
-This selection limits the columns included in the final dataset, but we
-also provide a copy of the AquaMatch dataset prior to its aggregation
-(pipeline target <code>p3_doc_preagg_grouped</code>), and including the
-<code>subgroup_id</code> column, so that users can use the disaggregated data as
-well and match make joins between dataset versions.</p>
+<code>MonitoringLocationTypeName</code>, <code>ResolvedMonitoringLocationTypeName</code>,
+<code>ActivityStartDate</code>, <code>ActivityStartDateTime</code>,
+<code>ActivityStartTime.TimeZoneCode</code>, <code>harmonized_tz</code>, <code>harmonized_utc</code>,
+<code>harmonized_top_depth_value</code>, <code>harmonized_top_depth_unit</code>,
+<code>harmonized_bottom_depth_value</code>, <code>harmonized_bottom_depth_unit</code>,
+<code>harmonized_discrete_depth_value</code>, <code>harmonized_discrete_depth_unit</code>,
+<code>depth_flag</code>, <code>mdl_flag</code>, <code>approx_flag</code>, <code>greater_flag</code>, <code>tier</code>,
+<code>field_flag</code>, <code>misc_flag</code>, <code>harmonized_units</code>. This selection limits the
+columns included in the final dataset, but we also provide a copy of the
+AquaMatch dataset prior to its aggregation (pipeline target
+<code>p3_doc_preagg_grouped</code>), and include the <code>subgroup_id</code> column, so that
+users can use the disaggregated data as well and match make joins
+between dataset versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
 <code>harmonized_value_cv</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
-<p>0 million rows dropped leaving 2.21 million remaining in the final
+<p>0.3 million rows dropped leaving 1.8 million remaining in the final
 harmonized and aggregated doc dataset.</p>
-<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-31-1.png" /><!-- --></p>
+<p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="harmonized-doc" class="section level3 hasAnchor" number="6.2.12">
-<h3><span class="header-section-number">6.2.12</span> Harmonized DOC<a href="doc-harmonization-process.html#harmonized-doc" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="harmonized-doc" class="section level3 hasAnchor" number="6.2.14">
+<h3><span class="header-section-number">6.2.14</span> Harmonized DOC<a href="doc-harmonization-process.html#harmonized-doc" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>At this point the harmonization of the DOC data from the WQP is complete
 and we export the final dataset for use later in the workflow.</p>
 <p>Below is a final set of histograms showing the distribution of
@@ -826,6 +890,7 @@ harmonized measurements broken down by <code>tier</code> <strong><em>after</em><
 simultaneous records.</p>
 <p><br></p>
 <p><img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by tier" width="650"/></p>
+<p><img src="3_harmonize/out/doc_tier_cv_dists_postagg.png" alt="Distribution of DOC CVs by tier" width="650"/></p>
 <p><br></p>
 
 <!-- Image settings -->
@@ -892,6 +957,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

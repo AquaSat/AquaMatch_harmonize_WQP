@@ -841,11 +841,11 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # DOC doesn't have field sampling methods that lend themselves well to
   # comparing with analytical methods and assigning flags, unlike variables
-  # like chlorophyll a. We fill this field_flag column with "not applicable"
+  # like chlorophyll a. We fill this field_flag column with NA for "not applicable"
   # for DOC
   
   field_flagged_doc <- cleaned_tiered_methods_doc %>%
-    mutate(field_flag = "not applicable")
+    mutate(field_flag = NA_character_)
   
   # How many records removed while assigning field flags?
   print(
@@ -867,7 +867,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Miscellaneous flag ------------------------------------------------------
   
-  # This is a flag that isn't currently needed for doc, but other parameters
+  # This is a flag that isn't currently needed for DOC, but other parameters
   # will use it.
   
   misc_flagged_doc <- field_flagged_doc %>%
@@ -915,7 +915,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    xlab("Harmonized doc (ug/L, log~10~ transformed)") +
+    xlab(expression("Harmonized DOC (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized DOC values by CharacteristicName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +

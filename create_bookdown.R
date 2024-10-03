@@ -150,6 +150,7 @@ bookdown_targets_list <- list(
                               download_report,
                               tiering_overview,
                               chla_harmonization_report,
+                              doc_harmonization_report,
                               sdd_harmonization_report,
                               notes,
                               references)),

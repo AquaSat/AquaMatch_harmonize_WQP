@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-19" />
+<meta name="date" content="2024-10-02" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -201,10 +201,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
-<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
+<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#miscellaneous-flag-1"><i class="fa fa-check"></i><b>6.2.11</b> Miscellaneous flag</a></li>
+<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>6.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="6.2.13" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="6.2.14" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.14</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html"><i class="fa fa-check"></i><b>7</b> Secchi harmonization process</a>
@@ -228,7 +230,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7.2.10" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-methods"><i class="fa fa-check"></i><b>7.2.10</b> Filter methods</a></li>
 <li class="chapter" data-level="7.2.11" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#tier-methods"><i class="fa fa-check"></i><b>7.2.11</b> Tier methods</a></li>
 <li class="chapter" data-level="7.2.12" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#flag"><i class="fa fa-check"></i><b>7.2.12</b> Flag</a></li>
-<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-2"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
 <li class="chapter" data-level="7.2.14" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#aggregate-simultaneous-records-2"><i class="fa fa-check"></i><b>7.2.14</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="7.2.15" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#harmonized-secchi-disk-depth"><i class="fa fa-check"></i><b>7.2.15</b> Harmonized Secchi disk depth</a></li>
 </ul></li>
@@ -329,6 +331,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

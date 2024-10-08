@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-11" />
+<meta name="date" content="2024-10-08" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -201,10 +201,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
-<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
+<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#miscellaneous-flag-1"><i class="fa fa-check"></i><b>6.2.11</b> Miscellaneous flag</a></li>
+<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>6.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="6.2.13" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="6.2.14" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.14</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html"><i class="fa fa-check"></i><b>7</b> Secchi harmonization process</a>
@@ -228,7 +230,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7.2.10" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-methods"><i class="fa fa-check"></i><b>7.2.10</b> Filter methods</a></li>
 <li class="chapter" data-level="7.2.11" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#tier-methods"><i class="fa fa-check"></i><b>7.2.11</b> Tier methods</a></li>
 <li class="chapter" data-level="7.2.12" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#flag"><i class="fa fa-check"></i><b>7.2.12</b> Flag</a></li>
-<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-2"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
 <li class="chapter" data-level="7.2.14" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#aggregate-simultaneous-records-2"><i class="fa fa-check"></i><b>7.2.14</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="7.2.15" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#harmonized-secchi-disk-depth"><i class="fa fa-check"></i><b>7.2.15</b> Harmonized Secchi disk depth</a></li>
 </ul></li>
@@ -365,9 +367,11 @@ failure phrases are not mutually exclusive.</p>
 <div id="resultlaboratorycommenttext-fail-detects" class="section level4 hasAnchor" number="5.2.2.3">
 <h4><span class="header-section-number">5.2.2.3</span> ResultLaboratoryCommentText fail detects<a href="chlorophyll-a-chla-harmonization-process.html#resultlaboratorycommenttext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/chla_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/></p>
+</div>
+<div id="resultcommenttext-fail-detects-1" class="section level4 hasAnchor" number="5.2.2.4">
+<h4><span class="header-section-number">5.2.2.4</span> ResultCommentText fail detects<a href="chlorophyll-a-chla-harmonization-process.html#resultcommenttext-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<p><img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/></p>
 <p><br></p>
-<!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
-<!-- <br> -->
 <p>89 thousand rows are removed after detecting failure-related phrases and
 4.5 million rows remain.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-12-1.png" /><!-- --></p>
@@ -783,8 +787,8 @@ recorded at the same time and place and by the same organization (field
 and/or lab replicates/duplicates). The CV can be used to filter the
 dataset based on the amount of variability that is tolerable to specific
 use cases. Note, however, that many entries will have a CV that is <code>NA</code>
-because there are no duplicates or 0 because the records are duplicates
-and all entries have the same <code>harmonized_value</code>.</p>
+because there are no simultaneous records or 0 because the records are
+duplicates and all entries have the same <code>harmonized_value</code>.</p>
 <p>We identify simultaneous records to aggregate by creating identical
 subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter</code>,
 <code>OrganizationIdentifier</code>, <code>MonitoringLocationIdentifier</code>,
@@ -795,17 +799,17 @@ subgroups (<code>subgroup_id</code>) from the following columns: <code>parameter
 <code>harmonized_bottom_depth_value</code>, <code>harmonized_bottom_depth_unit</code>,
 <code>harmonized_discrete_depth_value</code>, <code>harmonized_discrete_depth_unit</code>,
 <code>depth_flag</code>, <code>mdl_flag</code>, <code>approx_flag</code>, <code>greater_flag</code>, <code>tier</code>,
-<code>field_flag</code>, <code>misc_flag</code>, <code>harmonized_units.</code> This selection limits the
+<code>field_flag</code>, <code>misc_flag</code>, <code>harmonized_units</code>. This selection limits the
 columns included in the final dataset, but we also provide a copy of the
 AquaMatch dataset prior to its aggregation (pipeline target
-<code>p3_chla_preagg_grouped</code>), and including the <code>subgroup_id</code> column, so
-that users can use the non-aggregated data as well and match make joins
+<code>p3_chla_preagg_grouped</code>), and include the <code>subgroup_id</code> column, so that
+users can use the non-aggregated data as well and match make joins
 between dataset versions.</p>
 <p>The final, aggregated values are presented in the <code>harmonized_value</code> and
 <code>harmonized_value_cv</code> columns. The number of rows used per group is
 recorded in the <code>harmonized_row_count</code> column.</p>
-<p>0 rows dropped leaving 4.2 million remaining in the final harmonized and
-aggregated chlorophyll <em>a</em> dataset.</p>
+<p>0.8 million rows dropped leaving 3.4 million remaining in the final
+harmonized and aggregated chlorophyll <em>a</em> dataset.</p>
 <p><img src="chapters/04_chla_harmonization_files/figure-gfm/unnamed-chunk-35-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -886,6 +890,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

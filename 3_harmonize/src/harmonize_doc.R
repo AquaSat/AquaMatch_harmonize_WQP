@@ -20,14 +20,16 @@ harmonize_doc <- function(raw_doc, p_codes){
   full_fraction_count <- raw_doc %>%
     count(ResultSampleFractionText, name = "record_count")
   
-  doc <- raw_doc %>% 
+  doc_media <- raw_doc %>% 
     # Link up USGS p-codes. Their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
     filter(
       # Filter out non-target media types
       ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
         is.na(ActivityMediaSubdivisionName)
-    ) %>%
+    )
+  
+  doc_fraction <- doc_media %>%
     # Dissolved organic carbon is not a CharacteristicName, so we must identify
     # the fractions of the carbon pool reported that match our needs:
     semi_join(x = .,
@@ -56,12 +58,12 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Count the number of rows in each fraction of the carbon pool now that we've
   # filtered some out:
-  reduced_fraction_count <- doc %>%
+  reduced_fraction_count <- doc_fraction %>%
     count(ResultSampleFractionText, name = "record_count")
   
   # Plot which fraction types got dropped, and how many records they had
-  anti_join(x = raw_doc,
-            y = doc) %>%
+  anti_join(x = doc_media,
+            y = doc_fraction) %>%
     # Separate plot for each of the CharacteristicNames
     split(f = .$CharacteristicName) %>%
     walk(.f = ~ {
@@ -85,8 +87,8 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Filtered for only water media & doc fraction",
     short_reason = "Target water media & doc",
-    number_dropped = nrow(raw_doc) - nrow(doc),
-    n_rows = nrow(doc),
+    number_dropped = nrow(raw_doc) - nrow(doc_fraction),
+    n_rows = nrow(doc_fraction),
     order = 1
   )
   
@@ -122,7 +124,7 @@ harmonize_doc <- function(raw_doc, p_codes){
         # Check each string pattern separately and count instances
         map_df(.x = fail_text,
                .f = ~{
-                 hit_count <- doc %>%
+                 hit_count <- doc_fraction %>%
                    filter(grepl(pattern = .x,
                                 x = !!sym(col_name),
                                 ignore.case = TRUE)) %>%
@@ -153,7 +155,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   
   # Now that the fails have been documented, remove them:
-  doc_fails_removed <- doc %>%
+  doc_fails_removed <- doc_fraction %>%
     filter(
       if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
                        ResultCommentText, ResultMeasureValue_original),
@@ -168,7 +170,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   print(
     paste0(
       "Rows removed due to fail-related language: ",
-      nrow(doc) - nrow(doc_fails_removed)
+      nrow(doc_fraction) - nrow(doc_fails_removed)
     )
   )
   
@@ -176,7 +178,7 @@ harmonize_doc <- function(raw_doc, p_codes){
     step = "doc harmonization",
     reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
-    number_dropped = nrow(doc) - nrow(doc_fails_removed),
+    number_dropped = nrow(doc_fraction) - nrow(doc_fails_removed),
     n_rows = nrow(doc_fails_removed),
     order = 2)
   
@@ -363,7 +365,7 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   
   # Free up memory
-  rm(doc)
+  rm(doc_media, doc_fraction)
   gc()
   
   

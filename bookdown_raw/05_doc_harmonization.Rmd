@@ -896,8 +896,10 @@ step_15_rows <- filter(step_data,
 
 step_15_dropped <- filter(step_data,
                           reorder == step_counter) %>%
-  pull(number_dropped) %>%
-  round(digits = 1)
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
 ```
 
 Before finalizing the dataset we remove DOC values that are beyond a realistic threshold. We use 200 mg/L as our cutoff for removal [citation needed].

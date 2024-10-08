@@ -294,7 +294,6 @@ Below are pie charts that break down the number of failure detections by column.
 <br>
 
 #### ActivityCommentText fail detects
-
 <img src="3_harmonize/out/chla_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/>
 
 #### ResultCommentText fail detects
@@ -303,11 +302,10 @@ Below are pie charts that break down the number of failure detections by column.
 #### ResultLaboratoryCommentText fail detects
 <img src="3_harmonize/out/chla_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/>
 
+#### ResultCommentText fail detects
+<img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
+
 <br>
-
-<!-- <img src="3_harmonize/out/chla_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/> -->
-
-<!-- <br> -->
 
 `r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
@@ -927,13 +925,13 @@ step_16_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no duplicates or 0 because the records are duplicates and all entries have the same `harmonized_value`.
+The final step of chlorophyll *a* harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units.` This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and including the `subgroup_id` column, so that users can use the non-aggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_chla_preagg_grouped`), and include the `subgroup_id` column, so that users can use the non-aggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
-`r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
+`r step_16_dropped` rows dropped leaving `r step_16_rows` remaining in the final harmonized and aggregated chlorophyll *a* dataset.
 
 ```{r echo = FALSE}
 step_data %>%

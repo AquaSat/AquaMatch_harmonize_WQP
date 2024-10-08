@@ -8,6 +8,7 @@ mg/m3,0.001
 ppb,0.001
 mg/cm3,1000
 ug/ml,1
+ug/mL,1
 mg/ml,1000
-ppt,1e-9
-umol/L,0.06008
+ppt,1000
+umol/L,0.0120107

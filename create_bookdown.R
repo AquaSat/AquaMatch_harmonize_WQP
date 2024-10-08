@@ -49,10 +49,13 @@ bookdown_targets_list <- list(
     render(
       download_rmd,
       params = list(
-        site_counts = bind_rows(p2_site_counts_chl, p2_site_counts_doc),
+        site_counts = bind_rows(p2_site_counts_chl,
+                                p2_site_counts_doc,
+                                p2_site_counts_sdd),
         global_grid = p1_global_grid,
         yaml_contents = list(chlorophyll = p1_wqp_params_chl$chlorophyll,
-                             doc = p1_wqp_params_doc$doc)),
+                             doc = p1_wqp_params_doc$doc,
+                             sdd = p1_wqp_params_sdd$sdd)),
       output_file = "02_download",
       output_dir = "chapters") %>%
       change_ext(inext = "md", outext = "Rmd"),
@@ -147,6 +150,8 @@ bookdown_targets_list <- list(
                               download_report,
                               tiering_overview,
                               chla_harmonization_report,
+                              doc_harmonization_report,
+                              sdd_harmonization_report,
                               notes,
                               references)),
     cue = tar_cue("always")

@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-09-19" />
+<meta name="date" content="2024-10-08" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -201,10 +201,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6.2.6" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#drop-unresolved-na-measurements-1"><i class="fa fa-check"></i><b>6.2.6</b> Drop unresolved NA measurements</a></li>
 <li class="chapter" data-level="6.2.7" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonize-record-units-1"><i class="fa fa-check"></i><b>6.2.7</b> Harmonize record units</a></li>
 <li class="chapter" data-level="6.2.8" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#clean-depth-data-1"><i class="fa fa-check"></i><b>6.2.8</b> Clean depth data</a></li>
-<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-analytical-methods"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier analytical methods</a></li>
+<li class="chapter" data-level="6.2.9" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#filter-and-tier-methods-1"><i class="fa fa-check"></i><b>6.2.9</b> Filter and tier methods</a></li>
 <li class="chapter" data-level="6.2.10" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#flag-based-on-field-methods-1"><i class="fa fa-check"></i><b>6.2.10</b> Flag based on field methods</a></li>
-<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.11</b> Aggregate simultaneous records</a></li>
-<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.12</b> Harmonized DOC</a></li>
+<li class="chapter" data-level="6.2.11" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#miscellaneous-flag-1"><i class="fa fa-check"></i><b>6.2.11</b> Miscellaneous flag</a></li>
+<li class="chapter" data-level="6.2.12" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>6.2.12</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="6.2.13" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#aggregate-simultaneous-records-1"><i class="fa fa-check"></i><b>6.2.13</b> Aggregate simultaneous records</a></li>
+<li class="chapter" data-level="6.2.14" data-path="doc-harmonization-process.html"><a href="doc-harmonization-process.html#harmonized-doc"><i class="fa fa-check"></i><b>6.2.14</b> Harmonized DOC</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html"><i class="fa fa-check"></i><b>7</b> Secchi harmonization process</a>
@@ -228,7 +230,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="7.2.10" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#filter-methods"><i class="fa fa-check"></i><b>7.2.10</b> Filter methods</a></li>
 <li class="chapter" data-level="7.2.11" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#tier-methods"><i class="fa fa-check"></i><b>7.2.11</b> Tier methods</a></li>
 <li class="chapter" data-level="7.2.12" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#flag"><i class="fa fa-check"></i><b>7.2.12</b> Flag</a></li>
-<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-1"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
+<li class="chapter" data-level="7.2.13" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#remove-unrealistic-values-2"><i class="fa fa-check"></i><b>7.2.13</b> Remove unrealistic values</a></li>
 <li class="chapter" data-level="7.2.14" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#aggregate-simultaneous-records-2"><i class="fa fa-check"></i><b>7.2.14</b> Aggregate simultaneous records</a></li>
 <li class="chapter" data-level="7.2.15" data-path="secchi-harmonization-process.html"><a href="secchi-harmonization-process.html#harmonized-secchi-disk-depth"><i class="fa fa-check"></i><b>7.2.15</b> Harmonized Secchi disk depth</a></li>
 </ul></li>
@@ -344,16 +346,16 @@ column(s) did not return any matches for the failure phrases. Also note
 that a single record can contain multiple failure phrases; therefore,
 failure phrases are not mutually exclusive.</p>
 <p><br></p>
-<div id="resultcommenttext-fail-detects-2" class="section level4 hasAnchor" number="7.2.2.1">
-<h4><span class="header-section-number">7.2.2.1</span> ResultCommentText fail detects<a href="secchi-harmonization-process.html#resultcommenttext-fail-detects-2" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="resultcommenttext-fail-detects-3" class="section level4 hasAnchor" number="7.2.2.1">
+<h4><span class="header-section-number">7.2.2.1</span> ResultCommentText fail detects<a href="secchi-harmonization-process.html#resultcommenttext-fail-detects-3" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/sdd_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/></p>
 </div>
-<div id="resultdetectionconditiontext-fail-detects" class="section level4 hasAnchor" number="7.2.2.2">
-<h4><span class="header-section-number">7.2.2.2</span> ResultDetectionConditionText fail detects<a href="secchi-harmonization-process.html#resultdetectionconditiontext-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="resultdetectionconditiontext-fail-detects-1" class="section level4 hasAnchor" number="7.2.2.2">
+<h4><span class="header-section-number">7.2.2.2</span> ResultDetectionConditionText fail detects<a href="secchi-harmonization-process.html#resultdetectionconditiontext-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/sdd_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/></p>
 </div>
-<div id="resultmeasurevalue_original-fail-detects" class="section level4 hasAnchor" number="7.2.2.3">
-<h4><span class="header-section-number">7.2.2.3</span> ResultMeasureValue_original fail detects<a href="secchi-harmonization-process.html#resultmeasurevalue_original-fail-detects" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="resultmeasurevalue_original-fail-detects-1" class="section level4 hasAnchor" number="7.2.2.3">
+<h4><span class="header-section-number">7.2.2.3</span> ResultMeasureValue_original fail detects<a href="secchi-harmonization-process.html#resultmeasurevalue_original-fail-detects-1" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p><img src="3_harmonize/out/sdd_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/></p>
 <p><br></p>
 <p>9.8 thousand rows are removed after detecting failure-related phrases
@@ -616,7 +618,7 @@ indicate non-Secchi disk depth measurements. Phrases used to flag and
 remove unrelated methods for Secchi disk depth data are: “analysis
 lost”, “not analyzed”, “not recorded”, “not collected”, “no measurement
 taken”.</p>
-<p>This process drops 11.6 thousand rows leaving 3 million remaining.</p>
+<p>This process drops 11.3 thousand rows leaving 3 million remaining.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-29-1.png" /><!-- --></p>
 <p><br></p>
 </div>
@@ -742,8 +744,8 @@ are removed and 3 million rows remain.</p>
 <p><img src="chapters/05_sdd_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>
 <p><br></p>
 </div>
-<div id="remove-unrealistic-values-1" class="section level3 hasAnchor" number="7.2.13">
-<h3><span class="header-section-number">7.2.13</span> Remove unrealistic values<a href="secchi-harmonization-process.html#remove-unrealistic-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="remove-unrealistic-values-2" class="section level3 hasAnchor" number="7.2.13">
+<h3><span class="header-section-number">7.2.13</span> Remove unrealistic values<a href="secchi-harmonization-process.html#remove-unrealistic-values-2" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Before finalizing the dataset we removed Secchi disk depth values that
 were beyond a realistic threshold because they were likely erroneous. We
 used 80m as our cutoff for removal based on Gieskes et al. (1987).</p>
@@ -870,6 +872,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

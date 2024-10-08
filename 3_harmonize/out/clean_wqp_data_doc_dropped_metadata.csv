@@ -1,4 +1,4 @@
 reason,short_reason,number_dropped,n_rows,order,step
-Starting dataset,Start,0,2734511,0,doc pre-harmonization
-Removed missing results,Remove missing,94234,2640277,1,doc pre-harmonization
-Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,2037,2638240,2,doc pre-harmonization
+Starting dataset,Start,0,2744878,0,doc pre-harmonization
+Removed missing results,Remove missing,94693,2650185,1,doc pre-harmonization
+Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,2037,2648148,2,doc pre-harmonization

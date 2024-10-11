@@ -70,7 +70,8 @@ p3_doc_targets_list <- list(
     name = p3_doc_harmonized,
     command = harmonize_doc(raw_doc = p3_cleaned_wqp_data_doc,
                             p_codes = p3_p_codes),
-    packages = c("tidyverse", "feather", "ggrepel", "scales", "snakecase")
+    packages = c("tidyverse", "feather", "ggrepel", "scales", "snakecase",
+                 "sf", "sfheaders")
   ),
   
   tar_file_read(

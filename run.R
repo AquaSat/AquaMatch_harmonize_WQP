@@ -13,6 +13,7 @@ required_pkgs <- c(
   "dataRetrieval",
   "devtools",
   "feather",
+  "hexbin",
   "janitor",
   "kableExtra",
   "lubridate",

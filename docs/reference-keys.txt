@@ -38,6 +38,12 @@ miscellaneous-flag
 remove-unrealistic-values
 aggregate-simultaneous-records
 harmonized-chlorophyll-a
+conterminous-us
+alaska
+hawaii
+american-samoa
+guam-and-the-commonwealth-of-the-northern-mariana-islands
+puerto-rico-and-the-united-states-virgin-islands
 doc-harmonization-process
 pre-harmonization-of-the-raw-doc-wqp-dataset
 missing-results-1
@@ -65,6 +71,12 @@ miscellaneous-flag-1
 remove-unrealistic-values-1
 aggregate-simultaneous-records-1
 harmonized-doc
+conterminous-us-1
+alaska-1
+hawaii-1
+american-samoa-1
+guam-and-the-commonwealth-of-the-northern-mariana-islands-1
+puerto-rico-and-the-united-states-virgin-islands-1
 secchi-harmonization-process
 pre-harmonization-of-the-raw-secchi-wqp-dataset
 missing-results-2
@@ -88,5 +100,11 @@ flag
 remove-unrealistic-values-2
 aggregate-simultaneous-records-2
 harmonized-secchi-disk-depth
+conterminous-us-2
+alaska-2
+hawaii-2
+american-samoa-2
+guam-and-the-commonwealth-of-the-northern-mariana-islands-2
+puerto-rico-and-the-united-states-virgin-islands-2
 notes
 references

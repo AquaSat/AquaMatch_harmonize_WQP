@@ -1001,6 +1001,8 @@ harmonize_chla <- function(raw_chla, p_codes){
          plot = tier_cv_dists,
          width = 6, height = 4, units = "in", device = "png")
   
+  # Similarly, create maps of records counts by tier
+  plot_tier_maps(dataset = no_simul_chla, parameter = "chla")
   
   # How many records removed in aggregating simultaneous records?
   print(

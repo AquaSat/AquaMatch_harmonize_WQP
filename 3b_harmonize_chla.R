@@ -68,7 +68,8 @@ p3_chla_targets_list <- list(
     name = p3_chla_harmonized,
     command = harmonize_chla(raw_chla = p3_cleaned_wqp_data_chl,
                              p_codes = p3_p_codes),
-    packages = c("tidyverse", "feather", "ggrepel", "scales")
+    packages = c("tidyverse", "feather", "ggrepel", "scales", "snakecase",
+                 "sf", "sfheaders")
   ),
   
   tar_file_read(

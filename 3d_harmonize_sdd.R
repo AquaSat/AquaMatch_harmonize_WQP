@@ -68,7 +68,8 @@ p3_sdd_targets_list <- list(
     name = p3_sdd_harmonized,
     command = harmonize_sdd(raw_sdd = p3_cleaned_wqp_data_sdd,
                             p_codes = p3_p_codes),
-    packages = c("tidyverse", "feather", "ggrepel", "scales")
+    packages = c("tidyverse", "feather", "ggrepel", "scales", "snakecase",
+                 "sf", "sfheaders")
   ),
   
   tar_file_read(

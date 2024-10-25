@@ -98,10 +98,23 @@ plot_tier_maps <- function(dataset, parameter, map_crs = 9311,
                                  labels = label_number(big.mark = ",")) +
             xlab(NULL) +
             ylab(NULL) +
-            coord_sf(xlim = c(min(st_coordinates(.x)[,"X"]),
-                              max(st_coordinates(.x)[,"X"])),
-                     ylim = c(min(st_coordinates(.x)[,"Y"]),
-                              max(st_coordinates(.x)[,"Y"]))) +
+            coord_sf(
+              xlim = case_when(
+                .y == "american_samoa" ~ c(-8150000, -7650000),
+                .y == "hawaii" ~ c(-6800000, -5200000),
+                .y == "guam_marianas" ~ c(-8600000, -7700000),
+                .default = c(min(st_coordinates(.x)[,"X"]),
+                             max(st_coordinates(.x)[,"X"]))
+              ),
+              ylim = case_when(
+                .y == "american_samoa" ~ c(-3800000, -3000000),
+                .y == "hawaii" ~ c(-1100000, 1700000),
+                .y == "guam_marianas" ~ c(4300000, 4900000),
+                .default = c(min(st_coordinates(.x)[,"Y"]),
+                             max(st_coordinates(.x)[,"Y"]))
+              ),
+              expand = FALSE
+            ) +
             facet_wrap(vars(tier_label), ncol = 1) +
             guides(x = guide_axis(check.overlap = TRUE),
                    y = guide_axis(check.overlap = TRUE)) +

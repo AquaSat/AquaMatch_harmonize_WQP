@@ -999,18 +999,8 @@ Below is a final set of histograms showing the distribution of harmonized measur
 
 <br>
 
-Lastly, a series of maps showing the geographic distribution of records by tier:
+Lastly, maps showing the geographic distribution of records by tier within the US:
 
-#### Conterminous US <img src="3_harmonize/out/doc_conterminous_us_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in the Conterminous US" width="650"/>
-
-#### Alaska <img src="3_harmonize/out/doc_alaska_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in Alaska" width="650"/>
-
-#### Hawaii <img src="3_harmonize/out/doc_hawaii_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in Hawaii" width="650"/>
-
-#### American Samoa <img src="3_harmonize/out/doc_american_samoa_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in American Samoa" width="650"/>
-
-#### Guam and the Commonwealth of the Northern Mariana Islands <img src="3_harmonize/out/doc_guam_marianas_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in Guam and the Commonwealth of the Northern Mariana Islands" width="650"/>
-
-#### Puerto Rico and the United States Virgin Islands <img src="3_harmonize/out/doc_puerto_rico_virgin_islands_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in Puerto Rico and the United States Virgin Islands" width="650"/>
+<img src="3_harmonize/out/doc_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in the Conterminous US" width="650"/>
 
 <br>

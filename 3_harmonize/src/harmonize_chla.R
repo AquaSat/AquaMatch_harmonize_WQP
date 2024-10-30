@@ -1004,6 +1004,9 @@ harmonize_chla <- function(raw_chla, p_codes){
   # Similarly, create maps of records counts by tier
   plot_tier_maps(dataset = no_simul_chla, parameter = "chla")
   
+  # And year, month, day of week
+  plot_time_charts(dataset = no_simul_doc, parameter = "chla")
+  
   # How many records removed in aggregating simultaneous records?
   print(
     paste0(

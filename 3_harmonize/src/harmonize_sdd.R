@@ -1055,7 +1055,7 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   plot_tier_maps(dataset = no_simul_sdd, parameter = "sdd")
   
   # And year, month, day of week
-  plot_time_charts(dataset = no_simul_doc, parameter = "sdd")
+  plot_time_charts(dataset = no_simul_sdd, parameter = "sdd")
   
   # How many records removed in aggregating simultaneous records?
   print(

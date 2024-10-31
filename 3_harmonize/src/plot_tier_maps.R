@@ -1,6 +1,18 @@
-# A function that creates hex maps of record counts for each tier of a selected
-# parameter's harmonized dataset
-
+#' @title Create hex maps of record counts by data tier
+#' 
+#' @description
+#' A function that creates hex maps of record counts for each tier of a selected
+#' parameter's harmonized dataset. The maps are created as a single paneled ggplot
+#' object and then exported as a single PNG file.
+#' 
+#' @param dataset A data frame of the harmonized parameter's dataset containing
+#' the columns `tier`, `MonitoringLocationIdentifier`, `lat`, `lon`, and `datum`.
+#' Intended to be the version of the dataset with simultaneous observations removed. 
+#' @param parameter A string containing the abbreviated name of the parameter:
+#' e.g., "chla", "doc", etc.
+#' @param map_crs The epsg code that should be used when creating the maps.
+#' @param custom_width The desired output PNG width in inches.
+#' @param custom_height The desired output PNG height in inches.
 plot_tier_maps <- function(dataset, parameter, map_crs = 9311,
                            custom_width = 6.5, custom_height = 8){
   

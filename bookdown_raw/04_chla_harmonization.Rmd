@@ -962,7 +962,9 @@ step_data %>%
 
 At this point the harmonization of the chlorophyll *a* data from the WQP is complete and we export the final dataset for use later in the workflow.
 
-Below is a set of histograms showing the distribution of harmonized measurements (top) and CVs (bottom) broken down by `tier` ***after*** aggregating simultaneous records.
+Below are several sets of figures illustrating different qualities of the dataset: 
+
+1. Histograms showing the distribution of harmonized measurements (top) and CVs (bottom) broken down by `tier` ***after*** aggregating simultaneous records.
 
 <br>
 
@@ -973,8 +975,18 @@ Below is a set of histograms showing the distribution of harmonized measurements
 
 <br>
 
-Lastly, maps showing the geographic distribution of records by tier within the US:
+2. Maps showing the geographic distribution of records by tier within the US:
 
-<img src="3_harmonize/out/chla_tier_hex_map.png" alt="Geographic distribution of chl *a* records by tier in the Conterminous US" width="650"/>
+<img src="3_harmonize/out/chla_tier_hex_map.png" alt="Geographic distribution of chl *a* records by tier in the conterminous US" width="650"/>
+
+<br>
+
+3. Lastly, bar charts showing the distribution of values by tier across years, months, and days of the week:
+
+<img src="3_harmonize/out/chla_year_tier_chart.png" alt="Temporal distribution of chl *a* records by tier across years" width="650"/>
+
+<img src="3_harmonize/out/chla_month_tier_chart.png" alt="Temporal distribution of chl *a* records by tier across months" width="650"/>
+
+<img src="3_harmonize/out/chla_wday_tier_chart.png" alt="Temporal distribution of chl *a* records by tier across days of the week" width="650"/>
 
 <br>

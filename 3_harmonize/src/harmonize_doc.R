@@ -888,10 +888,10 @@ harmonize_doc <- function(raw_doc, p_codes){
   # Unrealistic values ------------------------------------------------------
   
   # We remove unrealistically high values prior to the final data export
-  # This value is based on communication with Mike Pace
+  # This value is based on Hotchkiss and DelSontro (2024) and Mulholland (2003).
 
   realistic_doc <- misc_flagged_doc %>%
-    filter(harmonized_value <= 200)
+    filter(harmonized_value <= 300)
   
   dropped_unreal <- tibble(
     step = "doc harmonization",

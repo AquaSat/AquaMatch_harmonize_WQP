@@ -23,7 +23,7 @@
 <meta name="author" content="ROSSyndicate" />
 
 
-<meta name="date" content="2024-10-31" />
+<meta name="date" content="2024-11-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -837,8 +837,11 @@ dropped leaving 2.2 million remaining in the harmonized DOC dataset.</p>
 <div id="remove-unrealistic-values-1" class="section level3 hasAnchor" number="6.2.12">
 <h3><span class="header-section-number">6.2.12</span> Remove unrealistic values<a href="doc-harmonization-process.html#remove-unrealistic-values-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Before finalizing the dataset we remove DOC values that are beyond a
-realistic threshold. We use 200 mg/L as our cutoff for removal
-<span class="math display">\[citation needed\]</span>.</p>
+realistic threshold. We use 300 mg/L as our cutoff for removal as
+typical values are often less than 120 mg/L (Hotchkiss and DelSontro,
+2024) but values of 300 mg/L occur in some climates (Mulholland, 2003).</p>
+<p>We also remove any depths &gt; 592m, the deepest point in a lake in the
+U.S.</p>
 <p>19.2 thousand rows are removed. The final row count after this is 2.2
 million.</p>
 <p><img src="chapters/05_doc_harmonization_files/figure-gfm/unnamed-chunk-33-1.png" /><!-- --></p>

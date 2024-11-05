@@ -904,6 +904,8 @@ step_15_dropped <- filter(step_data,
 
 Before finalizing the dataset we remove DOC values that are beyond a realistic threshold. We use 300 mg/L as our cutoff for removal as typical values are often less than 120 mg/L (Hotchkiss and DelSontro, 2024) but values of 300 mg/L occur in some climates (Mulholland, 2003).
 
+We also remove any depths > 592m, the deepest point in a lake in the U.S.
+
 `r step_15_dropped` rows are removed. The final row count after this is `r step_15_rows`.
 
 ```{r echo = FALSE}

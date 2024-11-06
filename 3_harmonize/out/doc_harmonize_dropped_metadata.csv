@@ -11,5 +11,5 @@ doc harmonization,Dropped rows while cleaning depths,Clean depths,0,2274568,8
 doc harmonization,Dropped rows while tiering analytical methods,Analytical methods,82923,2191645,9
 doc harmonization,Dropped rows while assigning field flags,Field flagging,0,2191645,10
 doc harmonization,Dropped rows while assigning misc flags,Misc flagging,0,2191645,11
-doc harmonization,Dropped rows with unrealistic values,Unrealistic values,19152,2172493,12
-doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,333277,1839216,12
+doc harmonization,Dropped rows with unrealistic values,Unrealistic values,19600,2172045,12
+doc harmonization,Dropped rows while aggregating simultaneous records,Simultaneous records,333285,1838760,12

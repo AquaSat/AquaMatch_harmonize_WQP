@@ -887,11 +887,16 @@ harmonize_doc <- function(raw_doc, p_codes){
   
   # Unrealistic values ------------------------------------------------------
   
-  # We remove unrealistically high values prior to the final data export
-  # This value is based on communication with Mike Pace
-
+  # We remove unrealistically high DOC values prior to the final data export
+  # This value is based on Hotchkiss and DelSontro (2024) and Mulholland (2003).
+  # We also remove any depths > 592m, the deepest point in a lake in the U.S.
   realistic_doc <- misc_flagged_doc %>%
-    filter(harmonized_value <= 200)
+    filter(
+      harmonized_value <= 300,
+      harmonized_top_depth_value <= 592 | is.na(harmonized_top_depth_value),
+      harmonized_bottom_depth_value <= 592 | is.na(harmonized_bottom_depth_value),
+      harmonized_discrete_depth_value <= 592 | is.na(harmonized_discrete_depth_value)
+    )
   
   dropped_unreal <- tibble(
     step = "doc harmonization",

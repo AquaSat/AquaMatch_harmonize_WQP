@@ -15,5 +15,5 @@ change_ext <- function(file, inext, outext) {
 render_with_deps <- function(index, deps) {
   render_book(index,
               # This is how you introduce code folding in gitbook
-              output_format = gitbook(code_folding = "hide"))
+              output_format = gitbook(code_folding = "hide", self_contained = TRUE))
 }

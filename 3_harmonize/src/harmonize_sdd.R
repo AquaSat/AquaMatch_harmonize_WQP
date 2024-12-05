@@ -690,21 +690,27 @@ harmonize_sdd <- function(raw_sdd, p_codes){
   
   # Tier for SDD
   tiered_methods_sdd <- sdd_scope_tag %>%
-    mutate(tier = case_when(
-      # tier: 0 = Restrictive. Time reported within the allotted window and
-      #           method indicates use of viewscope.
-      #       1 = Narrowed. Either time reported within the allotted window or
-      #           method indicates use of viewscope, but not both.
-      #       2 = Inclusive. Time not reported/time reported outside of window,
-      #           and no indication of viewscope used.
-      #       3 = Inclusive. `harmonized_value` gap filled with depth column.
-      (time_tag == 0) & (scope_tag == 0) ~ 0,
-      xor((time_tag == 0), (scope_tag == 0)) ~ 1,
-      (time_tag != 0) & (scope_tag != 0) ~ 2,
-      .default = 2
-    ),
-    tier = if_else(approx_flag != 0, 3, tier)
+    mutate(
+      tier = case_when(
+        # tier: 0 = Restrictive. Time reported within the allotted window and
+        #           method indicates use of viewscope.
+        #       1 = Narrowed. Either time reported within the allotted window or
+        #           method indicates use of viewscope, but not both.
+        #       2 = Inclusive. Time not reported/time reported outside of window,
+        #           and no indication of viewscope used.
+        #       3 = Inclusive. `harmonized_value` gap filled with depth column.
+        (time_tag == 0) & (scope_tag == 0) ~ 0,
+        xor((time_tag == 0), (scope_tag == 0)) ~ 1,
+        (time_tag != 0) & (scope_tag != 0) ~ 2,
+        .default = 2
+      ),
+      tier = if_else(approx_flag != 0, 3, tier),
+      # Additional condition: if harmonized_bottom_depth is <= 0 then tier 2
+      tier = if_else(
+        (harmonized_bottom_depth_value <= 0) & !is.na(harmonized_bottom_depth_value),
+        true = 2, false = tier)
     )
+  
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_sdd %>%

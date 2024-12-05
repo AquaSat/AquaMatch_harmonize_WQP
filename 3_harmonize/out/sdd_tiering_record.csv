@@ -1,26 +1,26 @@
 CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_tag,approx_flag,tier,n
-"Depth, Secchi disk depth",NA,NA,0,1,0,1,542648
-"Depth, Secchi disk depth",NA,NA,1,1,0,2,403445
+"Depth, Secchi disk depth",NA,NA,0,1,0,1,542145
+"Depth, Secchi disk depth",NA,NA,1,1,0,2,403196
 "Depth, Secchi disk depth","Field measurement/observation, generic method",NA,1,1,0,2,337618
 "Depth, Secchi disk depth","Field measurement/observation, generic method",NA,0,1,0,1,332823
-"Depth, Secchi disk depth",NA,NA,2,1,0,2,258156
+"Depth, Secchi disk depth",NA,NA,2,1,0,2,258214
 "Depth, Secchi disk depth",FDEP FT1700,NA,0,1,0,1,138549
 "Depth, Secchi disk depth",eventSecchi,NA,0,1,0,1,80192
 "Depth, Secchi disk depth",FDEP FT1700,NA,1,1,0,2,76542
 "Depth, Secchi disk depth",eventSecchi,NA,1,1,0,2,59115
 "Depth, Secchi disk depth",eventSecchi,NA,2,1,0,2,55990
-"Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,0,1,0,1,53523
+"Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,0,1,0,1,53503
 "Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,1,1,0,2,43228
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (Secchi Depth and Transparency),NA,0,1,0,1,30664
 "Depth, Secchi disk depth",NA,00078,0,1,0,1,28620
 "Depth, Secchi disk depth","Depth, Secchi disk in meters",NA,2,1,0,2,28373
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (SECCHI Depth and Transparency),NA,0,1,0,1,24791
-"Depth, Secchi disk depth","Tyler, John. 1968. The secchi disk, Limnology and Oceanograpy, 13(1):1-6.",NA,0,1,0,1,23259
+"Depth, Secchi disk depth","Tyler, John. 1968. The secchi disk, Limnology and Oceanograpy, 13(1):1-6.",NA,0,1,0,1,23251
 "Depth, Secchi disk depth",Other or Unknown Procedure,NA,0,1,0,1,20806
 "Depth, Secchi disk depth",NA,00078,1,1,0,2,20664
 "Depth, Secchi disk depth","Seechi depth, field",NA,0,1,0,1,16673
 "Depth, Secchi disk depth",Field Measurements performed by Utah DWQ,NA,0,1,0,1,15730
-"Depth, Secchi disk depth","Tyler, John. 1968. The secchi disk, Limnology and Oceanograpy, 13(1):1-6.",NA,1,1,0,2,13816
+"Depth, Secchi disk depth","Tyler, John. 1968. The secchi disk, Limnology and Oceanograpy, 13(1):1-6.",NA,1,1,0,2,13815
 "Depth, Secchi disk depth",EPA/620/R-01/003 Secchi Depth,NA,1,1,0,2,13717
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (Secchi Depth and Transparency),NA,1,1,0,2,13424
 "Depth, Secchi disk depth",NA,00077,0,1,0,1,12941
@@ -36,8 +36,8 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (SECCHI Depth and Transparency),NA,1,1,0,2,6928
 "Depth, Secchi disk depth",Secchi disk,NA,0,1,0,1,6596
 "Depth, Secchi disk depth",SFWMD FSQM,NA,0,1,0,1,6563
-"Depth, Secchi disk depth",Secchi,NA,0,1,0,1,6382
-"Depth, Secchi disk depth",Secchi,NA,1,1,0,2,6107
+"Depth, Secchi disk depth",Secchi,NA,0,1,0,1,6373
+"Depth, Secchi disk depth",Secchi,NA,1,1,0,2,6087
 "Depth, Secchi disk depth",Secchi disk method,49701,0,1,0,1,5942
 "Depth, Secchi disk depth",SECCHI DEPTH,NA,0,1,0,1,5938
 "Depth, Secchi disk depth",Determination of Secchi Disk Transparency,NA,0,1,0,1,5487
@@ -56,7 +56,6 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",UNKOWN,NA,1,1,0,2,4597
 "Depth, Secchi disk depth",Secchi Disk Depth,NA,2,1,0,2,4547
 "Depth, Secchi disk depth (choice list)",NA,NA,0,1,1,3,4278
-"Depth, Secchi disk depth",Secchi in m,NA,0,1,0,1,4209
 "Depth, Secchi disk depth",Secchi disk method,00077,0,1,0,1,3889
 "Depth, Secchi disk depth",Unknown or Unspecified Procedure,NA,0,1,0,1,3852
 "Depth, Secchi disk depth",General Listing of Field and Lab Analytical Procedures for Manatee County,NA,0,1,0,1,3820
@@ -75,7 +74,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Secchi disk depth,NA,0,1,0,1,2676
 "Depth, Secchi disk depth",Field measurement of Light Penetration (Secchi Depth and Transparency),NA,1,1,0,2,2571
 "Depth, Secchi disk depth",FIELD,NA,0,1,0,1,2550
-"Depth, Secchi disk depth",OWRB Lakes Field Data Collection,NA,0,1,0,1,2546
+"Depth, Secchi disk depth",OWRB Lakes Field Data Collection,NA,0,1,0,1,2545
 "Depth, Secchi disk depth",Light Penetration,NA,2,1,0,2,2533
 "Depth, Secchi disk depth",SFWMD FSQM,NA,1,1,0,2,2502
 "Depth, Secchi disk depth",SFWMD-FSM,NA,0,1,0,1,2485
@@ -103,6 +102,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",2012 National Lakes Assessment Field Operations Manual,NA,0,1,0,1,1424
 "Depth, Secchi disk depth",In Situ Profile,NA,0,1,0,1,1419
 "Depth, Secchi disk depth",Secchi Depth,NA,1,1,0,2,1391
+"Depth, Secchi disk depth",Secchi in m,NA,0,1,0,1,1322
 "Depth, Secchi disk depth",Secchi Depth Protocol,NA,0,1,0,1,1277
 "Depth, Secchi disk depth",Field Measurements and Observations,NA,1,1,0,2,1258
 "Depth, Secchi disk depth",Unknown or Unspecified Procedure,NA,1,1,0,2,1253
@@ -128,7 +128,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",WSSSOP,NA,1,1,0,2,884
 "Depth, Secchi disk depth",DEP STANDARD OPERATING PROCEDURES FOR FIELD ACTIVITIES,NA,0,1,0,1,881
 "Depth, Secchi disk depth",FDEP General Field Procedures,NA,0,1,0,1,878
-"Depth, Secchi disk depth","DEPTH, SECCHI DISK DEPTH",NA,0,1,0,1,870
+"Depth, Secchi disk depth","DEPTH, SECCHI DISK DEPTH",NA,0,1,0,1,869
 "Depth, Secchi disk depth",Field Office procedures,NA,2,1,0,2,869
 "Depth, Secchi disk depth",Secchi,NA,2,1,0,2,848
 "Depth, Secchi disk depth",SECCHI DISK TRANSPARENCY USING A SCOPE,NA,1,0,0,1,802
@@ -165,7 +165,6 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",NA,NA,0,1,1,3,448
 "Depth, Secchi disk depth",NA,00077,2,1,0,2,444
 "Depth, Secchi disk depth",FDEP Field Sampling Protocols,NA,0,1,0,1,427
-"Depth, Secchi disk depth",F01,NA,0,1,0,1,418
 "Depth, Secchi disk depth",Determination of Secchi Disk Transparency,NA,1,1,0,2,416
 "Depth, Secchi disk depth",Secchi Depth,NA,2,1,0,2,411
 "Depth, Secchi disk depth",SOP-1 VCEH Lab Surface Water SOP,NA,0,1,0,1,409
@@ -180,7 +179,6 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Other of Unknown Procedure,NA,1,1,0,2,335
 "Depth, Secchi disk depth",FDEP SOP Secchi Disk depth,NA,0,1,0,1,321
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (Secchi depth and Transparency),NA,0,1,0,1,316
-"Depth, Secchi disk depth",Secchi in m,NA,1,1,0,2,314
 "Depth, Secchi disk depth",Section 5.1: Non-Wadeable Rivers-Water Quality of National Rivers and Streams Assessment: Field Operations Manual (2009),NA,1,1,0,2,308
 "Depth, Secchi disk depth",DEP Field Analytical Procedures,NA,2,1,0,2,302
 "Depth, Secchi disk depth",DEP STANDARD OPERATING PROCEDURES FOR FIELD ACTIVITIES,NA,1,1,0,2,297
@@ -189,6 +187,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (Secchi depth and Transparency),NA,1,1,0,2,281
 "Depth, Secchi disk depth",NA,NA,1,0,0,1,280
 "Depth, Secchi disk depth",Field Office procedures,NA,0,1,0,1,278
+"Depth, Secchi disk depth",F01,NA,0,1,0,1,274
 "Depth, Secchi disk depth",Standard Operation Procedure,NA,0,1,0,1,272
 "Depth, Secchi disk depth",FDEP FT1700,NA,2,1,0,2,271
 "Depth, Secchi disk depth",Field Office procedures,NA,1,1,0,2,269
@@ -196,6 +195,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",NA,NA,1,1,1,3,251
 "Depth, Secchi disk depth",FIELD MEASUREMENT OF LIGHT PENETRATION ( SECCHI DEPTH AND TRANSPERENCY),NA,0,1,0,1,250
 "Depth, Secchi disk depth",FDEP SOP Secchi Disk depth,NA,1,1,0,2,249
+"Depth, Secchi disk depth",PIIC_QAPP,NA,0,1,0,1,227
 "Depth, Secchi disk depth",Section 5.1: Non-Wadeable Rivers-Water Quality of National Rivers and Streams Assessment: Field Operations Manual (2009),NA,0,1,0,1,226
 "Depth, Secchi disk depth",Field Measurement Of Light Penetratino (Secchi Depth and Transparency),NA,0,1,0,1,223
 "Depth, Secchi disk depth",Field Light Penetration,NA,0,1,0,1,217
@@ -203,14 +203,14 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth","Texas Commission on Environmental Quality, Secchi Depth",NA,1,1,0,2,203
 "Depth, Secchi disk depth","Texas Commission on Environmental Quality, Secchi Depth",NA,0,1,0,1,202
 "Depth, Secchi disk depth",Unknown Method or Procedure,NA,1,1,0,2,190
-"Depth, Secchi disk depth",FIELD PARAMETERS,NA,0,1,0,1,188
 "Depth, Secchi disk depth","Field measurement/observation, generic method",NA,2,1,0,2,184
 "Depth, Secchi disk depth",Secchi Disk-20 cm,NA,1,1,0,2,181
 "Depth, Secchi disk depth",CN_QAPP,NA,0,1,0,1,180
-"Depth, Secchi disk depth",PIIC_QAPP,NA,0,1,0,1,169
 "Depth, Secchi disk depth",Unknown Method or Procedure,NA,0,1,0,1,166
+"Depth, Secchi disk depth",FIELD PARAMETERS,NA,0,1,0,2,161
 "Depth, Secchi disk depth",NA,90077,0,1,0,1,159
 "Depth, Secchi disk depth",Secchi Disk-100 cm,NA,0,1,0,1,146
+"Depth, Secchi disk depth",F01,NA,0,1,0,2,144
 "Depth, Secchi disk depth",NA,00078,0,1,1,3,144
 "Depth, Secchi disk depth",MOM-Siuslaw,NA,2,1,0,2,143
 "Depth, Secchi disk depth",F02,NA,1,1,0,2,139
@@ -223,6 +223,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Not Available,NA,2,1,0,2,114
 "Depth, Secchi disk depth",LIM-USGS,NA,0,1,0,1,110
 "Depth, Secchi disk depth",LEGACY,NA,0,1,0,1,107
+"Depth, Secchi disk depth",Secchi in m,NA,1,1,0,2,101
 "Depth, Secchi disk depth",Estero Bay Aquatic Preserve tributary sampling,NA,0,1,0,1,96
 "Depth, Secchi disk depth",Field methods for DEQ Water sampling,NA,1,1,0,2,90
 "Depth, Secchi disk depth",U.S. Geological Survey National Field Manual 7.4.1B Collecting Ancillary Data,NA,0,1,0,1,87
@@ -235,6 +236,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",Unknown,NA,2,1,0,2,67
 "Depth, Secchi disk depth",Hawaii historic procedures for Legacy STORET,NA,1,1,0,2,62
 "Depth, Secchi disk depth",LEGACY,NA,1,1,0,2,59
+"Depth, Secchi disk depth",PIIC_QAPP,NA,1,1,0,2,55
 "Depth, Secchi disk depth",No information exists for method,00077,0,1,0,1,49
 "Depth, Secchi disk depth",SOP-1 VCEH Lab Surface Water SOP,NA,1,1,0,2,49
 "Depth, Secchi disk depth",Procedure is unknown,NA,2,1,0,2,48
@@ -244,13 +246,13 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",FIELD MEASUREMENT OF LIGHT PENETRATION ( SECCHI DEPTH AND TRANSPERENCY),NA,1,1,0,2,41
 "Depth, Secchi disk depth",QAPP,NA,1,1,0,2,41
 "Depth, Secchi disk depth",Field Measurement of Light Penetration (Secchi Depth and Transparency),NA,2,1,0,2,40
-"Depth, Secchi disk depth",PIIC_QAPP,NA,1,1,0,2,40
 "Depth, Secchi disk depth",Hawaii historic procedures for Legacy STORET,NA,0,1,0,1,39
 "Depth, Secchi disk depth",U.S. Geological Survey National Field Manual 7.4.1B Collecting Ancillary Data,NA,1,1,0,2,38
 "Depth, Secchi disk depth",No information exists for method,00077,1,1,0,2,36
 "Depth, Secchi disk depth",Division of Marine Fisheries Marine Field Instrument Data,NA,1,1,0,2,29
 "Depth, Secchi disk depth",Unknown Method or Procedure,NA,2,1,0,2,29
 "Depth, Secchi disk depth",eventSecchi,NA,1,0,0,1,29
+"Depth, Secchi disk depth",FIELD PARAMETERS,NA,0,1,0,1,27
 "Depth, Secchi disk depth",Secchi Disk Depth Readings-Unspecified Details,NA,2,1,0,2,27
 "Depth, Secchi disk depth",NA,NA,2,1,1,3,27
 "Depth, Secchi disk depth",Secchi disk method,49701,0,1,1,3,26
@@ -260,6 +262,7 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",OWRB Lakes Field Data Collection,NA,0,1,1,3,22
 "Depth, Secchi disk depth",Secchi Depth Measurement,NA,1,1,0,2,22
 "Depth, Secchi disk depth",eventSecchi,NA,0,0,0,0,22
+"Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,0,1,0,2,20
 "Depth, Secchi disk depth",CSU,NA,2,1,0,2,20
 "Depth, Secchi disk depth",Estero Bay Aquatic Preserve tributary sampling,NA,1,1,0,2,18
 "Depth, Secchi disk depth",Secchi depth in meters,NA,1,1,0,2,18
@@ -289,7 +292,6 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth (choice list)",NA,NA,0,1,2,3,6
 "Depth, Secchi disk depth",FT_1700,NA,0,1,0,1,5
 "Depth, Secchi disk depth",No Field/Lab Analysis Performed,NA,1,1,0,2,5
-"Depth, Secchi disk depth",Secchi in m,NA,2,1,0,2,5
 "Depth, Secchi disk depth",Section 5.1: Non-Wadeable Rivers-Water Quality of National Rivers and Streams Assessment: Field Operations Manual (2009),NA,2,1,0,2,5
 "Depth, Secchi disk depth",Visibility/Clarity of Water,NA,2,1,0,2,5
 "Depth, Secchi disk depth",eventSecchi,NA,2,1,1,3,5
@@ -306,27 +308,32 @@ CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,time_tag,scope_ta
 "Depth, Secchi disk depth",UNKOWN,NA,1,1,1,3,3
 "Depth, Secchi disk depth",eventSecchi,NA,0,1,1,3,3
 "Depth, Secchi disk depth",eventSecchi,NA,1,1,1,3,3
+"Depth, Secchi disk depth",NA,NA,0,1,0,2,3
 "Depth, Secchi disk depth",NA,NA,1,1,2,3,3
 "Depth, Secchi disk depth","Depth, Secchi disk depth",NA,1,1,1,3,2
 "Depth, Secchi disk depth",Division of Marine Fisheries Marine Field Instrument Data,NA,0,1,0,1,2
 "Depth, Secchi disk depth",FIELD MEASUREMENT OF LIGHT PENETRATION (SECCHI DEPTH AND TRANSPARENCY),NA,2,1,0,2,2
 "Depth, Secchi disk depth",No information exists for method,00078,1,1,1,3,2
 "Depth, Secchi disk depth",Northeast Temperate Network Secchi Depth Measurement with Viewscope,NA,2,1,0,2,2
+"Depth, Secchi disk depth",PIIC_QAPP,NA,0,1,1,3,2
 "Depth, Secchi disk depth",SECCHI DISK TRANSPARENCY USING A SCOPE,NA,1,1,0,2,2
 "Depth, Secchi disk depth",SOP Measuring Secchi Disk Depth,NA,2,1,0,2,2
 "Depth, Secchi disk depth",Secchi Disk,NA,2,1,0,2,2
 "Depth, Secchi disk depth",Secchi Disk-Unspecified cm,NA,2,1,0,2,2
+"Depth, Secchi disk depth",Secchi in m,NA,2,1,0,2,2
 "Depth, Secchi disk depth","Texas Commission on Environmental Quality, Secchi Depth",NA,2,1,0,2,2
 "Depth, Secchi disk depth",NA,49701,1,1,1,3,2
 "Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,1,1,1,3,1
 "Depth, Secchi disk depth",20 CM SECCHI DEPTH,NA,2,1,0,2,1
 "Depth, Secchi disk depth",DEP Field Analytical Procedures,NA,0,1,1,3,1
+"Depth, Secchi disk depth","DEPTH, SECCHI DISK DEPTH",NA,0,1,0,2,1
 "Depth, Secchi disk depth",FDEP SOP Secchi Disk depth,NA,2,1,0,2,1
 "Depth, Secchi disk depth",Field Measurements and Observations,NA,2,1,0,2,1
 "Depth, Secchi disk depth",Field methods for DEQ Water sampling,NA,2,1,0,2,1
 "Depth, Secchi disk depth",General Field Test,NA,2,1,0,2,1
 "Depth, Secchi disk depth",LEGACY,NA,2,1,0,2,1
 "Depth, Secchi disk depth",MEASURED IN FIELD,NA,2,1,0,2,1
+"Depth, Secchi disk depth",OWRB Lakes Field Data Collection,NA,0,1,0,2,1
 "Depth, Secchi disk depth",OWRB Lakes Field Data Collection,NA,2,1,0,2,1
 "Depth, Secchi disk depth",SECCHI DISK TRANSPARENCY,NA,2,1,1,3,1
 "Depth, Secchi disk depth","Secchi Transparency Tube, 100 cm",NA,0,1,0,1,1

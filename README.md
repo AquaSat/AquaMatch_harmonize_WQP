@@ -18,6 +18,8 @@ AquaSat v2 uses the {targets} workflow management R package to reimagine the [or
 
 Technical details on {targets} workflows are available in the [{targets} User Manual](https://books.ropensci.org/targets/). {targets} workflows are built upon lists of "targets", which can be thought of as analytical steps written out in code. This workflow uses a targets list spread across multiple scripts in an effort to facilitate organization of the code. `_targets.R` serves as the main list of targets and references the other lists of targets, which are defined inside `3a_harmonize.R`, `3b_harmonize_chla.R`, `3c_harmonize_doc.R`, and `create_bookdown.R`. Note that the prefix `3_` is in reference to scripts `1_inventory.R` and `2_download.R` from [AquaMatch_download_WQP](https://github.com/AquaSat/AquaMatch_download_WQP). The pipeline should be run using the `run.R` script, which helps ensure that all the necessary packages are installed. To run a single parameter's component of the pipeline (e.g., chlorophyll *a*) you can use `tar_make(*parameter name*_harmonization_report)`. This will knit the bookdown document associated with that parameter and all upstream harmonization steps.
 
+We recommend using the latest version of R for the best performance when running the pipeline. Additionally, this pipeline relies on .RDS files, for which a significant vulnerability fix was instituted in version 4.4.0 of R. Details about this vulnerability are documented in [NIST's National Vulnerability Database](https://nvd.nist.gov/vuln/detail/CVE-2024-27322).
+
 #### Setup
 
 There are a couple aspects of the workflow that users will need to edit for their use case:

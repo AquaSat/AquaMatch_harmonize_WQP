@@ -1,3 +1,4 @@
+
 harmonize_tss <- function(raw_tss, p_codes){
   
   # Starting values for dataset
@@ -9,23 +10,28 @@ harmonize_tss <- function(raw_tss, p_codes){
     n_rows = nrow(raw_tss),
     order = 0
   )
+  
   # Minor data prep ---------------------------------------------------------
   
-  tss <- raw_tss %>% 
+  # Grab the column names of the dataset coming in
+  raw_names <- names(raw_tss)
+  
+  # First step is to read in the data and do basic formatting and filtering
+  tss <- raw_tss %>%
     # Link up USGS p-codes. and their common names can be useful for method lumping:
     left_join(x = ., y = p_codes, by = c("USGSPCode" = "parm_cd")) %>%
-    filter(
-      # Water only
-      ActivityMediaName %in% c("Water","water"))  %>%
+    # Filter out non-target media types
+    filter(ActivityMediaSubdivisionName %in% c("Surface Water", "Water", "Estuary") |
+             is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
-    rowid_to_column(.,"index")
+    rowid_to_column(., "index")
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
     step = "tss harmonization",
-    reason = "Filtered for only water media",
-    short_reason = "Water media",
+    reason = "Filtered for only specific water media",
+    short_reason = "Target water media",
     number_dropped = nrow(raw_tss) - nrow(tss),
     n_rows = nrow(tss),
     order = 1
@@ -35,83 +41,85 @@ harmonize_tss <- function(raw_tss, p_codes){
   gc()
   
   
-  # Remove fails ------------------------------------------------------------
+  # Document and remove fail language ---------------------------------------
   
+  # The values that will be considered fails for each column:
+  fail_text <- c(
+    "beyond accept", "cancelled", "contaminat", "error", "fail", 
+    "improper", "instrument down", "interference", "invalid", "no result", 
+    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
+    "questionable", "suspect", "unable", "violation", "reject", "no data"
+  )
+  
+  # Now get counts of fail-related string detections for each column: 
+  fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
+                      "ResultCommentText", "ResultMeasureValue_original") %>%
+    # Set list item names equal to each item in the list so that map will return
+    # a named list
+    set_names() %>%
+    map(
+      .x = .,
+      .f = ~ {
+        # Pass column name into the next map()
+        col_name <- .x
+        
+        # Check each string pattern separately and count instances
+        map_df(.x = fail_text,
+               .f = ~{
+                 hit_count <- tss %>%
+                   filter(grepl(pattern = .x,
+                                x = !!sym(col_name),
+                                ignore.case = TRUE)) %>%
+                   nrow()
+                 
+                 # Return two-col df
+                 tibble(
+                   word = .x,
+                   record_count = hit_count
+                 )
+               }) %>%
+          # Ignore patterns that weren't detected
+          filter(record_count > 0)
+      }) %>%
+    # If there's any data frames with 0 rows (i.e., no fails detected) then
+    # drop them to avoid errors in the next step. This has happened with
+    # ResultMeasureValue in the past
+    keep(~nrow(.) > 0)
+  
+  
+  # Plot and export the plots as png files
+  walk2(.x = fail_counts,
+        .y = names(fail_counts),
+        .f = ~ ggsave(filename = paste0("3_harmonize/out/tss_",
+                                        .y,
+                                        "_fail_pie.png"),
+                      plot = plot_fail_pie(dataset = .x, col_name = .y),
+                      width = 6, height = 6, units = "in", device = "png"))
+  
+  
+  # Now that the fails have been documented, remove them:
   tss_fails_removed <- tss %>%
-    # No failure-related field comments, slightly different list of words than
-    # lab and result list (not including things that could be used to describe
-    # field conditions like "warm", "ice", etc.):
-    filter(!grepl(pattern = paste0(c(
-      "fail", "suspect", "error", "beyond accept", "interference",
-      "questionable", "outside of accept", "problem", "contaminat",
-      "improper", "violation", "invalid", "unable", "no test", "cancelled",
-      "instrument down", "no result", "time exceed", "not accept",
-      "QC EXCEEDED"),
-      collapse = "|"),
-      x = ActivityCommentText,
-      ignore.case = T) |
-        is.na(ActivityCommentText),
-      # No failure-related lab comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "beyond", "exceeded", "failed", "exceededs"),
-        collapse = "|"),
-        ResultLaboratoryCommentText,
-        ignore.case = T) |
-        is.na(ResultLaboratoryCommentText),
-      # no failure-related result comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "null", "unavailable", "exceeded", "rejected"),
-        collapse = "|"),
-        ResultCommentText,
-        ignore.case = T) |
-        is.na(ResultCommentText),
-      # no failure-related value comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME", "not done", "no reading", 
-          "not reported", "no data"),
-        collapse = "|"),
-        ResultMeasureValue_original,
-        ignore.case = T) |
-        is.na(ResultMeasureValue_original),
-      # no failure-related detection comments:
-      !grepl(paste0(
-        c("fail", "suspect", "error", "beyond accept", "interference",
-          "questionable", "outside of accept", "problem", "contaminat",
-          "improper", "warm", "violation", "invalid", "unable", "no test",
-          "cancelled", "instrument down", "no result", "time exceed",
-          "not accept", "QC EXCEEDED", "not ice", "ice melt",
-          "PAST HOLDING TIME"),
-        collapse = "|"),
-        ResultDetectionConditionText,
-        ignore.case = T) |
-        is.na(ResultDetectionConditionText))
+    filter(
+      if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
+                       ResultCommentText, ResultMeasureValue_original),
+             .fns = ~
+               !grepl(
+                 pattern = paste0(fail_text, collapse = "|"),
+                 x = .x,
+                 ignore.case = T
+               )))
   
-  # How many records removed due to fails, missing data, etc.?
+  # How many records removed due to fails language?
   print(
     paste0(
-      "Rows removed due to fails, missing data, etc.: ",
+      "Rows removed due to fail-related language: ",
       nrow(tss) - nrow(tss_fails_removed)
     )
   )
   
   dropped_fails <- tibble(
     step = "tss harmonization",
-    reason = "Dropped rows indicating fails, missing data, etc.",
+    reason = "Dropped rows containing fail-related language",
     short_reason = "Fails, etc.",
     number_dropped = nrow(tss) - nrow(tss_fails_removed),
     n_rows = nrow(tss_fails_removed),
@@ -126,7 +134,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   mdl_updates <- tss_fails_removed %>%
     # only want NAs and character value data:
     filter(is.na(ResultMeasureValue)) %>%
-    # if the value is na BUT there is non detect language in the comments...  
+    # if the value is NA BUT there is non detect language in the comments...  
     mutate(
       mdl_vals = ifelse(
         test = (is.na(ResultMeasureValue_original) & 
@@ -138,14 +146,17 @@ harmonize_tss <- function(raw_tss, p_codes){
         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
         yes = DetectionQuantitationLimitMeasure.MeasureValue,
         # if there is a `<` and a number in the values column...
-        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) & grepl("<", ResultMeasureValue_original),
+        no = ifelse(test = grepl("[0-9]", ResultMeasureValue_original) &
+                      grepl("<", ResultMeasureValue_original),
                     # ... use that number as the MDL
-                    yes = str_replace_all(ResultMeasureValue_original, c("\\<"="", "\\*" = "", "\\=" = "" )),
+                    yes = str_replace_all(string = ResultMeasureValue_original,
+                                          pattern = c("\\<"="", "\\*" = "", "\\=" = "" )),
                     no = NA)
       ),
       # preserve the units if they are provided:
-      mdl_units = ifelse(!is.na(mdl_vals), DetectionQuantitationLimitMeasure.MeasureUnitCode, ResultMeasure.MeasureUnitCode),
-      # zero = 0,
+      mdl_units = ifelse(!is.na(mdl_vals), 
+                         DetectionQuantitationLimitMeasure.MeasureUnitCode, 
+                         ResultMeasure.MeasureUnitCode),
       half = as.numeric(mdl_vals) / 2)
   
   # Using the EPA standard for non-detects, select a random number between zero and HALF the MDL:
@@ -170,8 +181,16 @@ harmonize_tss <- function(raw_tss, p_codes){
     left_join(x = ., y = mdl_updates, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% mdl_updates$index, std_value, ResultMeasureValue),
            harmonized_units = ifelse(index %in% mdl_updates$index, mdl_units, ResultMeasure.MeasureUnitCode),
-           harmonized_comments = ifelse(index %in% mdl_updates$index,
-                                        "Approximated using the EPA's MDL method.", NA))
+           # Flag: 0 = value not adjusted and MDL not a concern
+           #       1 = original NA value adjusted using MDL method
+           #       2 = provided value below provided MDL; not adjusted
+           mdl_flag = case_when(
+             index %in% mdl_updates$index ~ 1,
+             (!(index %in% mdl_updates$index) & DetectionQuantitationLimitMeasure.MeasureValue <= ResultMeasureValue) |
+               (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
+             DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
+             .default = NA_integer_
+           ))
   
   dropped_mdls <- tibble(
     step = "tss harmonization",
@@ -212,7 +231,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   print(
     paste(
-      round((nrow(tss_approx)) / nrow(tss) * 100, 3),
+      round((nrow(tss_approx)) / nrow(tss_mdls_added) * 100, 3),
       "% of samples had values listed as approximated"
     )
   )
@@ -223,9 +242,8 @@ harmonize_tss <- function(raw_tss, p_codes){
     mutate(harmonized_value = ifelse(index %in% tss_approx$index,
                                      approx_value,
                                      harmonized_value),
-           harmonized_comments = ifelse(index %in% tss_approx$index,
-                                        "Value identified as 'approximated' by organization.",
-                                        harmonized_comments))
+           # Flag: 1 = used approximate adjustment, 0 = value not adjusted
+           approx_flag = ifelse(index %in% tss_approx$index, 1, 0))
   
   dropped_approximates <- tibble(
     step = "tss harmonization",
@@ -239,7 +257,12 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Clean up "greater than" values ------------------------------------------
   
+  # Next step, incorporating and flagging "greater than" values. Using a similar
+  # approach to the previous two flags, we can identify results that 
+  # contain values greater than some amount
+  
   greater_vals <- tss_approx_added %>%
+    # First, remove the samples that we've already approximated:
     filter((!index %in% mdl_updates$index) & (!index %in% tss_approx$index)) %>%
     # Then select fields where the NUMERIC value column is NA....
     filter(is.na(ResultMeasureValue) & 
@@ -260,7 +283,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   print(
     paste(
-      round((nrow(greater_vals)) / nrow(tss) * 100, 9),
+      round((nrow(greater_vals)) / nrow(tss_approx_added) * 100, 9),
       "% of samples had values listed as being above a detection limit//greater than"
     )
   )
@@ -270,9 +293,8 @@ harmonize_tss <- function(raw_tss, p_codes){
     left_join(x = ., y = greater_vals, by = "index") %>%
     mutate(harmonized_value = ifelse(index %in% greater_vals$index,
                                      greater_value, harmonized_value),
-           harmonized_comments = ifelse(index %in% greater_vals$index,
-                                        "Value identified as being greater than listed value.",
-                                        harmonized_comments))
+           # Flag: 1 = used greater than adjustment, 0 = value not adjusted
+           greater_flag = ifelse(index %in% greater_vals$index, 1, 0))
   
   dropped_greater_than <- tibble(
     step = "tss harmonization",
@@ -288,29 +310,72 @@ harmonize_tss <- function(raw_tss, p_codes){
   gc()
   
   
-  # Harmonize value units ---------------------------------------------------
+  # Remove remaining NAs ----------------------------------------------------
   
-  # Set up a lookup table so that final units are all in ug/L... 
-  unit_conversion_table <- tibble(
-    ResultMeasure.MeasureUnitCode = c("mg/L", "mg/l", "ppm", "ug/l", "ug/L", "mg/m3",
-                                      "ppb", "mg/cm3", "ug/ml", "mg/ml", "ppt", "umol/L",
-                                      "g/l"),
-    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000,
-                   1000, 1000000, 0.000001, 60.080000, 1000000)
+  # At this point we've processed MDLs, approximate values, and values containing
+  # symbols like ">". If there are still remaining NAs in the numeric measurement
+  # column then it's time to drop them.
+  
+  tss_no_na <- tss_harmonized_values %>%
+    filter(
+      !is.na(harmonized_value),
+      # Some negative values can be introduced by the previous NA parsing steps:
+      harmonized_value >= 0
+    )
+  
+  dropped_na <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped unresolved NAs",
+    short_reason = "Unresolved NAs",
+    number_dropped = nrow(tss_harmonized_values) - nrow(tss_no_na),
+    n_rows = nrow(tss_no_na),
+    order = 6
   )
   
-  tss_harmonized_units <- tss_harmonized_values %>%
-    # Drop unlikely units using an inner join
-    inner_join(unit_conversion_table, by = "ResultMeasure.MeasureUnitCode") %>%
-    # To avoid editing the tss_lookup, we convert ug/l to mg/l here:
-    mutate(harmonized_value = (harmonized_value * conversion) / 1000,
-           harmonized_units = "mg/L")
+  # Free up memory
+  rm(tss_harmonized_values, tss_approx_added, tss_mdls_added,
+     tss_fails_removed)
+  gc()
   
-  # How many records removed due to values?
+  
+  # Harmonize value units ---------------------------------------------------
+  
+  # Matchup table for expected tss units in the dataset
+  unit_conversion_table <- tibble(
+    ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
+                                      "mg/m3", "ppb", "mg/cm3", "ug/ml",
+                                      "mg/ml", "ppt", "ug/mL", "mg/mL"),
+    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
+                   1000000, 1000000, 1000, 1000000))
+  
+  unit_table_out_path <- "3_harmonize/out/tss_unit_table.csv"
+  
+  write_csv(x = unit_conversion_table,
+            file = unit_table_out_path)
+  
+  converted_units_tss <- tss_no_na %>%
+    inner_join(x = .,
+               y = unit_conversion_table,
+               by = "ResultMeasure.MeasureUnitCode") %>%
+    mutate(harmonized_value = harmonized_value * conversion,
+           harmonized_units = "ug/L")
+  
+  # Plot and export unit codes that didn't make through joining
+  tss_no_na %>%
+    anti_join(x = .,
+              y = unit_conversion_table,
+              by = "ResultMeasure.MeasureUnitCode")  %>%
+    count(ResultMeasure.MeasureUnitCode, name = "record_count") %>%
+    plot_unit_pie() %>%
+    ggsave(filename = "3_harmonize/out/tss_unit_drop_pie.png",
+           plot = .,
+           width = 6, height = 6, units = "in", device = "png")
+  
+  # How many records removed due to limits on values?
   print(
     paste0(
       "Rows removed while harmonizing units: ",
-      nrow(tss_harmonized_values) - nrow(tss_harmonized_units)
+      nrow(tss_no_na) - nrow(converted_units_tss)
     )
   )
   
@@ -318,186 +383,683 @@ harmonize_tss <- function(raw_tss, p_codes){
     step = "tss harmonization",
     reason = "Dropped rows while harmonizing units",
     short_reason = "Harmonize units",
-    number_dropped = nrow(tss_harmonized_values) - nrow(tss_harmonized_units),
-    n_rows = nrow(tss_harmonized_units),
-    order = 6
+    number_dropped = nrow(tss_no_na) - nrow(converted_units_tss),
+    n_rows = nrow(converted_units_tss),
+    order = 7
   )
   
   
-  # Investigate depth -------------------------------------------------------
+  # Clean and flag depth data -----------------------------------------------
   
-  # Define a depth lookup table to convert all depth data to meters. 
-  depth_conversion_table <- tibble(ActivityDepthHeightMeasure.MeasureUnitCode = c("cm", "feet", "ft", "in",
-                                                                                  "m", "meters"),
-                                   depth_conversion = c(1 / 100, 0.3048, 0.3048,
-                                                        0.0254, 1, 1)) 
-  # Join depth lookup table to tss data
-  tss_harmonized_depth <- inner_join(x = tss_harmonized_units,
-                                     y = depth_conversion_table,
-                                     by = c("ActivityDepthHeightMeasure.MeasureUnitCode")) %>%
-    # Some depth measurements have negative values (assume that is just preference)
-    # I also added .01 meters because many samples have depth of zero assuming they were
-    # taken directly at the surface
-    mutate(harmonized_depth = abs(as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion) + .01)
+  # Recode any error-related character values to NAs
+  recode_depth_na_tss <- converted_units_tss %>%
+    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                            ResultDepthHeightMeasure.MeasureValue,
+                            ActivityTopDepthHeightMeasure.MeasureValue,
+                            ActivityBottomDepthHeightMeasure.MeasureValue),
+                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                        "9999", "-9999", "-99",
+                                                        "99", "NaN"),
+                                  true = NA_character_,
+                                  false = .x)))
   
-  # We lose lots of data by keeping only data with depth measurements
+  # Reference table for unit conversion
+  depth_unit_conversion_table <- tibble(
+    depth_units = c("in", "ft", "feet", "cm", "m", "meters"),
+    depth_conversion = c(0.0254, 0.3048, 0.3048, 0.01, 1, 1)
+  )
+  
+  # There are four columns with potential depth data that we need to convert
+  # into meters:
+  converted_depth_units_tss <- recode_depth_na_tss %>%
+    # 1. Activity depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_activity_depth_value = as.numeric(ActivityDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    # Drop conversion col to avoid interfering with next join
+    select(-depth_conversion) %>%
+    # 2. Result depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ResultDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_result_depth_value = as.numeric(ResultDepthHeightMeasure.MeasureValue) * depth_conversion
+    ) %>%
+    select(-depth_conversion) %>%
+    # 3. Activity top depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityTopDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_top_depth_value = as.numeric(ActivityTopDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_top_depth_unit = "m"
+    ) %>%
+    select(-depth_conversion) %>%
+    # 4. Activity bottom depth col
+    left_join(x = .,
+              y = depth_unit_conversion_table,
+              by = c("ActivityBottomDepthHeightMeasure.MeasureUnitCode" = "depth_units")) %>%
+    mutate(
+      harmonized_bottom_depth_value = as.numeric(ActivityBottomDepthHeightMeasure.MeasureValue) * depth_conversion,
+      harmonized_bottom_depth_unit = "m"
+    )
+  
+  # Now combine the two columns with single point depth data into one and clean
+  # up values generally:
+  harmonized_depth_tss <- converted_depth_units_tss %>%
+    rowwise() %>%
+    mutate(
+      # New harmonized discrete column:
+      harmonized_discrete_depth_value = case_when(
+        # Use activity depth mainly
+        !is.na(harmonized_activity_depth_value) &
+          is.na(harmonized_result_depth_value) ~ harmonized_activity_depth_value,
+        # Missing activity depth but not result depth
+        is.na(harmonized_activity_depth_value) &
+          !is.na(harmonized_result_depth_value) ~ harmonized_result_depth_value,
+        # Disagreeing activity and result depths
+        (!is.na(harmonized_activity_depth_value) &
+           !is.na(harmonized_result_depth_value)) &
+          harmonized_activity_depth_value != harmonized_result_depth_value ~ mean(
+            c(harmonized_activity_depth_value, harmonized_result_depth_value)),
+        # Both agree
+        harmonized_activity_depth_value == harmonized_result_depth_value ~ harmonized_activity_depth_value,
+        # Defaults to NA otherwise
+        .default = NA_real_
+      ),
+      # Indicate depth unit going along with this column
+      harmonized_discrete_depth_unit = "m"
+    ) %>%
+    ungroup()
+  
+  # Create a flag system based on depth data presence/completion
+  flagged_depth_tss <- harmonized_depth_tss %>%
+    mutate(
+      depth_flag = case_when(
+        # No depths (including because of recoding above)
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 0,
+        # All columns present
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value) ~ 3,
+        # Integrated depths
+        (!is.na(harmonized_top_depth_value) |
+           !is.na(harmonized_bottom_depth_value)) &
+          is.na(harmonized_discrete_depth_value) ~ 2,
+        # Discrete depths
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value) ~ 1,
+        # Discrete and integrated present
+        # Note that here using the non-combined discrete col since part of
+        # the combination process above was to create NAs when the discrete
+        # values disagree
+        ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+           !is.na(harmonized_top_depth_value)) |
+          ((!is.na(harmonized_activity_depth_value) | !is.na(harmonized_result_depth_value)) &
+             !is.na(harmonized_bottom_depth_value)) ~ 3,
+        .default = NA_real_
+      )) %>%
+    # These columns are no longer necessary since the harmonization is done
+    select(-c(harmonized_activity_depth_value, harmonized_result_depth_value,
+              depth_conversion))
+  
+  # Sanity check that flags are matching up with their intended qualities:
+  depth_check_table <- flagged_depth_tss %>%
+    mutate(
+      # Everything present
+      three_cols_present = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only discrete present
+      only_discrete = if_else(
+        !is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only top present
+      only_top = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Only bottom present
+      only_bottom = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Full integrated present
+      fully_integrated = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          !is.na(harmonized_top_depth_value) &
+          !is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # No depths present
+      no_depths = if_else(
+        is.na(harmonized_discrete_depth_value) &
+          is.na(harmonized_top_depth_value) &
+          is.na(harmonized_bottom_depth_value),
+        true = 1, false = 0),
+      # Discrete and one of the integrated
+      discrete_partial_integ = if_else(
+        (!is.na(harmonized_discrete_depth_value) &
+           !is.na(harmonized_top_depth_value) &
+           is.na(harmonized_bottom_depth_value)) |
+          (!is.na(harmonized_discrete_depth_value) &
+             is.na(harmonized_top_depth_value) &
+             !is.na(harmonized_bottom_depth_value)),
+        true = 1, false = 0)
+    ) %>%
+    count(three_cols_present, only_discrete, discrete_partial_integ,
+          only_top, only_bottom, fully_integrated, no_depths, depth_flag) %>%
+    arrange(depth_flag)
+  
+  depth_check_out_path <- "3_harmonize/out/tss_depth_check_table.csv"
+  
+  write_csv(x = depth_check_table,
+            file = depth_check_out_path)
+  
+  # Depth category counts:
+  depth_counts <- flagged_depth_tss %>%
+    # Using a temporary flag to aggregate depth values for count output
+    mutate(depth_agg_flag = case_when(
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 1 ~ "<=1m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value <= 5 ~ "<=5m",
+      depth_flag == 1 &
+        harmonized_discrete_depth_value > 5 ~ ">5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 1 ~ "<=1m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value <= 5 ~ "<=5m",
+      depth_flag == 2 &
+        harmonized_bottom_depth_value > 5 ~ ">5m",
+      .default = "No or inconsistent depth"
+    )) %>%
+    count(depth_agg_flag)
+  
+  depth_counts_out_path <- "3_harmonize/out/tss_depth_counts.csv"
+  
+  write_csv(x = depth_counts, file = depth_counts_out_path)
+  
+  # Have any records been removed while processing depths?
   print(
-    paste(
-      "If we only kept samples that had depth information we would lose",
-      round((nrow(tss_harmonized_units) - nrow(tss_harmonized_depth)) / nrow(tss_harmonized_units) * 100, 1),
-      "% of samples"))
+    paste0(
+      "Rows removed due to non-target depths: ",
+      nrow(converted_units_tss) - nrow(flagged_depth_tss)
+    )
+  )
   
-  rm(tss_harmonized_depth)
-  gc()
+  dropped_depths <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while cleaning depths",
+    short_reason = "Clean depths",
+    number_dropped = nrow(converted_units_tss) - nrow(flagged_depth_tss),
+    n_rows = nrow(flagged_depth_tss),
+    order = 8
+  )
   
   
-  # Aggregate analytical methods --------------------------------------------
+  # Aggregate and tier analytical methods -----------------------------------
   
   # Get an idea of how many analytical methods exist:
   print(
     paste0(
       "Number of tss analytical methods present: ",
-      length(unique(tss_harmonized_units$ResultAnalyticalMethod.MethodName))
+      length(unique(flagged_depth_tss$ResultAnalyticalMethod.MethodName))
     )
   )
   
-  # Group together TSS methods into useful categories
-  tss_aggregated_methods <- tss_harmonized_units %>%
-    mutate(method_status = case_when(
-      # "Gold standard" method mostly via analytical method field:
-      grepl("2540D|2540 D|105|103|160.2",
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) |
-        # ... also use USGS p-codes to identify the data performed with "gold standard" method:
-        grepl(paste0(c("Suspended solids, water, unfiltered, milligrams per liter",
-                       "Suspended solids, dried at 105 degrees Celsius, water",
-                       "Suspended solids dried at 105 degrees Celsius, water, unfiltered"),
-                     collapse = "|"), 
-              parameter_name_description,
-              ignore.case = T) ~ "SM 2540 B/EPA 160.2",
-      # This one seems appropriate but is heated at 110 deg Celsius:
-      grepl("Suspended solids dried at 110 degrees Celsius, water, unfiltered", 
-            parameter_name_description,
-            ignore.case = T) ~ "TSS USGS 110",
-      # This one may be appropriate to still consider:
-      grepl("2540 F|Settlable Solids|Settleable",
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Settleable Solids ",
-      grepl("2540C|2540 C|Total Dissolved|160.1|TDS|TOTAL FILTRATABLE RESIDUE",
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Unlikely",
-      grepl("160.4|2540 E|Ashing|Volatile Residue",
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Unlikely", 
-      grepl("Percent Solids|Total Solids|2540B|Total, Fixed and Volatile",
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Unlikely",
-      # Clearly TSS, but not exactly sure how it was performed
-      grepl(paste0(c("Nonfilterable Solids", "Non-filterable Residue by Filtration and Drying",
-                     "Total Nonfilterable Residue", "RESIDUE, TOTAL NONFILTRABLE",
-                     "Non-Filterable Residue - TSS", "Total Suspended Solids in Water",
-                     "Total Suspended Solids", "TOTAL NONFILTRATABLE RESIDUE",
-                     "Suspended-Sediment in Water", "Residue Non- filterable (TSS)", "TSS",
-                     "Residue by Evaporation and Gravimetric"),
-                   collapse = "|"),
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Ambiguous TSS",
-      grepl(paste0(c("Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Coliform",
-                     "Carbon", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS",
-                     "Nutrient", "Turbidity", "Temperature", "Nitrate", "Conductance",
-                     "Conductivity", "Alkalinity", "Chlorophyll", "SM ", "EPA ", "2540 G"),
-                   collapse = "|"),
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Unlikely",
-      grepl(paste0(c("UNKOWN", "SSC by filtration (D3977;WI WSC)",
-                     "Sediment conc by evaporation", "Historic", "Filterable Residue - TDS",
-                     "Cheyenne River Sioux Tribe Quality Assurance Procedures"),
-                   collapse = "|"),
-            ResultAnalyticalMethod.MethodName,
-            ignore.case = T) ~ "Unlikely",
-      # This fills the rest as ambiguous. Should include things like local
-      # SOPs, not known, etc.
-      TRUE ~ "Ambiguous")) 
+  # Before creating tiers remove any records that have unrelated
+  # data based on their method:
+  unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
+                             "plasma", "turbidity", "coliform", "carbon",
+                             "2540", "conductance", "nitrate", "nitrite",
+                             "nitrogen", "alkalin", "zooplankton",
+                             "phosphorus", "periphyton", "peri",
+                             "biomass", "temperature", "elemental analyzer",
+                             "2320"),
+                           collapse = "|")
   
-  tss_filter_aggregates <- tss_aggregated_methods %>%
-    filter(!grepl(pattern = "unlikely|ambiguous",
-                  x = method_status,
+  tss_relevant <- flagged_depth_tss %>%
+    filter(!grepl(pattern = unrelated_text,
+                  x = ResultAnalyticalMethod.MethodName,
                   ignore.case = TRUE))
   
-  # How many records removed due to methods?
+  # How many records removed due to irrelevant analytical method?
   print(
     paste0(
-      "Rows removed due to analytical method type: ",
-      nrow(tss_aggregated_methods) - nrow(tss_filter_aggregates)
+      "Rows removed due to unrelated analytical methods: ",
+      nrow(flagged_depth_tss) - nrow(tss_relevant)
     )
   )
+  
+  
+  # 1.1 HPLC detection
+  
+  # Create a new column indicating detection of HPLC-related methods text: T or F
+  hplc_text <- paste0(c("447", "chromatography", "hplc"),
+                      collapse = "|") 
+  
+  tss_tag_hplc <- tss_relevant %>%
+    # TRUE if methods contain HPLC-related text or if the correct USGS p code
+    mutate(hplc_tag = if_else(condition = grepl(pattern = hplc_text,
+                                                x = ResultAnalyticalMethod.MethodName,
+                                                ignore.case = TRUE) |
+                                USGSPCode %in% c(70951, 70953),
+                              true = TRUE,
+                              false = FALSE,
+                              missing = FALSE))
+  
+  # 1.2 Spec/Fluor detection - new column
+  
+  # Create a new column indicating detection of non-HPLC lab-analyzed methods: T or F
+  spec_fluor_text <- paste0(c("445", "fluor", "Welshmeyer", "fld", "10200",
+                              "446", "trichromatic", "spectrophoto", "monochrom",
+                              "monchrom",
+                              # spec not as part of a word
+                              "(?<!\\w)spec"),
+                            collapse = "|")
+  
+  tss_tag_spec_fluor <- tss_tag_hplc %>%
+    mutate(spec_fluor_tag = if_else(
+      condition = grepl(pattern = spec_fluor_text,
+                        x = ResultAnalyticalMethod.MethodName,
+                        ignore.case = TRUE,
+                        perl = TRUE) |
+        parameter_code %in% c(32211, 32230),
+      true = TRUE,
+      false = FALSE,
+      missing = FALSE))
+  
+  # 1.3 Correction for pheo detection - new column
+  
+  # Create a new column indicating whether the lab-analyzed tss data for spec
+  # and fluor have been corrected for pheophytin
+  tss_tag_pheo <- tss_tag_spec_fluor %>%
+    mutate(pheo_corr_tag = 
+             case_when(
+               # If correction or correction-related methods mentioned in
+               # analytical method OR...
+               grepl(pattern = "\\bcorrect|in presence",
+                     x = ResultAnalyticalMethod.MethodName,
+                     ignore.case = TRUE) ~ TRUE,
+               # The characteristic name mentions correction
+               grepl(pattern = "\\bcorrected for pheophytin|free of pheophytin",
+                     x = CharacteristicName,
+                     ignore.case = TRUE) ~ TRUE,
+               .default = FALSE))
+  
+  # 1.4 Create tiers
+  tiered_methods_tss <- tss_tag_pheo %>%
+    mutate(tier = case_when(
+      # Conflicting method info
+      grepl(pattern = "445", x = ResultAnalyticalMethod.MethodName) & hplc_tag ~ 2,
+      # Top tier is HPLC = TRUE
+      hplc_tag ~ 0,
+      # Narrowed tier is non-HPLC lab analyzed AND corrected
+      spec_fluor_tag & pheo_corr_tag ~ 1,
+      USGSPCode == 32209 ~ 1,
+      # No specific method listed but correction mentioned
+      pheo_corr_tag ~ 1,
+      # Everything else is inclusive tier
+      .default = 2
+    ))
+  
+  # Export a record of how methods were tiered and their respective row counts
+  tiering_record <- tiered_methods_tss %>%
+    count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
+          hplc_tag, spec_fluor_tag, pheo_corr_tag, tier) %>%
+    arrange(desc(n)) 
+  
+  tiering_record_out_path <- "3_harmonize/out/tss_tiering_record.csv"
+  
+  write_csv(x = tiering_record, file = tiering_record_out_path)
+  
+  # Slim the tiered product
+  cleaned_tiered_methods_tss <- tiered_methods_tss %>%
+    # Drop tag columns - these are recorded and exported in tiering_record. We
+    # keep only the final tier
+    select(-contains("_tag"))
+  
+  # Confirm that no rows were lost during tiering
+  if(nrow(tss_relevant) != nrow(cleaned_tiered_methods_tss)){
+    stop("Rows were lost during analytical method tiering. This is not expected.")
+  }  
   
   dropped_methods <- tibble(
     step = "tss harmonization",
-    reason = "Dropped rows while aggregating analytical methods",
+    reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(tss_aggregated_methods) - nrow(tss_filter_aggregates),
-    n_rows = nrow(tss_filter_aggregates),
-    order = 7
+    number_dropped = nrow(flagged_depth_tss) - nrow(cleaned_tiered_methods_tss),
+    n_rows = nrow(tss_relevant),
+    order = 9
   )
   
   
-  # Filter fractions --------------------------------------------------------
+  # Flag field methods ------------------------------------------------------
   
-  # Filter out bad fractions
+  # Strings to use in determining sampling procedure
+  in_vitro_pattern <- paste0(
+    c("grab", "bottle", "vessel", "bucket", "jar", "composite",
+      "integrate", "UHL001", "surface", "filter", "filtrat",
+      "1060B", "kemmerer", "collect", "rosette", "equal width",
+      "vertical", "van dorn", "bail", "sample",
+      "sampling",
+      # "lab" not in the middle of another word
+      "\\blab", 
+      # G on its own for "grab"
+      "^g$"),
+    collapse = "|")
   
-  # These fractions don't make sense for TSS, so should be removed. KW feels that
-  # many of the remaining fractions are open to interpretation, and doesn't want to 
-  # filter them out
-  tss_remove_fractions <- tss_filter_aggregates %>%
-    filter(!ResultSampleFractionText %in% c("Fixed", "Volatile", "Dissolved", "Acid Soluble"))
+  in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
+                            collapse = "|")
   
-  # How many records removed due to fraction?
+  # Create a temporary tag column for use when comparing to methods
+  tagged_sampling_tss <- cleaned_tiered_methods_tss %>%
+    mutate(field_tag = case_when(
+      grepl(pattern = in_vitro_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in vitro",
+      grepl(pattern = in_situ_pattern,
+            x = SampleCollectionMethod.MethodName,
+            ignore.case = TRUE,
+            perl = TRUE) ~ "in situ",
+      .default = "unknown"
+    )) 
+  
+  # Now flag whether the sampling method makes sense with the analytical method
+  field_flagged_tss <- tagged_sampling_tss %>% 
+    mutate(field_flag = case_when(
+      # HPLC or other lab analysis + in vitro = expected methods
+      tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
+      # HPLC or other lab analysis + in situ = UNexpected methods
+      tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
+      # The inclusive tier is unknown
+      tier == 2 ~ 2
+    )) %>%
+    select(-field_tag)
+  
+  # How many records removed due to unlikely fraction types?
   print(
     paste0(
-      "Rows removed due to fraction type: ",
-      nrow(tss_filter_aggregates) - nrow(tss_remove_fractions)
+      "Rows removed while assigning field flags: ",
+      nrow(cleaned_tiered_methods_tss) - nrow(field_flagged_tss)
     )
   )
   
-  dropped_fractions <- tibble(
+  dropped_field <- tibble(
     step = "tss harmonization",
-    reason = "Dropped rows while filtering fraction types",
-    short_reason = "Fraction types",
-    number_dropped = nrow(tss_filter_aggregates) - nrow(tss_remove_fractions),
-    n_rows = nrow(tss_remove_fractions),
-    order = 8
+    reason = "Dropped rows while assigning field flags",
+    short_reason = "Field flagging",
+    number_dropped = nrow(cleaned_tiered_methods_tss) - nrow(field_flagged_tss),
+    n_rows = nrow(field_flagged_tss),
+    order = 10
+  )
+  
+  
+  # Miscellaneous flag ------------------------------------------------------
+  
+  # This is a flag that isn't currently needed for tss, but other parameters
+  # will use it.
+  
+  misc_flagged_tss <- field_flagged_tss %>%
+    mutate(misc_flag = NA_character_)
+  
+  dropped_misc <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while assigning misc flags",
+    short_reason = "Misc flagging",
+    number_dropped = nrow(field_flagged_tss) - nrow(misc_flagged_tss),
+    n_rows = nrow(misc_flagged_tss),
+    order = 11
+  )
+  
+  
+  # Unrealistic values ------------------------------------------------------
+  
+  # We remove unrealistically high values prior to the final data export
+  # This is based on Wetzel (2001), Chapter 15, Figure 19
+  
+  realistic_tss <- misc_flagged_tss %>%
+    filter(harmonized_value <= 1000)
+  
+  dropped_unreal <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows with unrealistic values",
+    short_reason = "Unrealistic values",
+    number_dropped = nrow(misc_flagged_tss) - nrow(realistic_tss),
+    n_rows = nrow(realistic_tss),
+    order = 12
+  )
+  
+  # Generate plots with harmonized dataset ----------------------------------
+  
+  # We'll generate plots now before aggregating across simultaneous records
+  # because it won't be possible to use CharacteristicName after that point.
+  
+  # Plot harmonized measurements by CharacteristicName
+  
+  plotting_subset <- realistic_tss %>%
+    select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001)
+  
+  char_dists <- plotting_subset %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/tss_charname_dists.png",
+         plot = char_dists,
+         width = 8, height = 6, units = "in", device = "png")
+  
+  
+  # Aggregate simultaneous records ------------------------------------------
+  
+  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
+  # We take the mean of those values here
+  
+  # First tag aggregate subgroups with group IDs
+  grouped_tss <- realistic_tss %>%
+    group_by(parameter, OrganizationIdentifier, MonitoringLocationIdentifier,
+             MonitoringLocationTypeName, ResolvedMonitoringLocationTypeName,
+             ActivityStartDate, ActivityStartTime.Time,
+             ActivityStartTime.TimeZoneCode, harmonized_tz,
+             harmonized_local_time, harmonized_utc, ActivityStartDateTime,
+             harmonized_top_depth_value, harmonized_top_depth_unit,
+             harmonized_bottom_depth_value, harmonized_bottom_depth_unit,
+             harmonized_discrete_depth_value, harmonized_discrete_depth_unit,
+             depth_flag, mdl_flag, approx_flag, greater_flag, tier, field_flag,
+             misc_flag, harmonized_units) %>%
+    mutate(subgroup_id = cur_group_id())
+  
+  # Export the dataset with subgroup IDs for joining future aggregated product
+  # back to original raw data
+  grouped_tss_out_path <- "3_harmonize/out/tss_harmonized_grouped.feather"
+  
+  grouped_tss %>%
+    select(
+      all_of(c(raw_names,
+               "parameter_code", "group_name", "parameter_name_description",
+               "subgroup_id")),
+      group_cols(),
+      harmonized_value
+    ) %>%
+    write_feather(path = grouped_tss_out_path)
+  
+  # Now aggregate at the subgroup level to take care of simultaneous observations
+  no_simul_tss <- grouped_tss %>%
+    # Make sure we don't drop subgroup ID
+    group_by(subgroup_id, .add = TRUE) %>%
+    summarize(
+      harmonized_row_count = n(),
+      harmonized_value_sd = sd(harmonized_value),
+      harmonized_value = mean(harmonized_value),
+      lon = unique(lon),
+      lat = unique(lat),
+      datum = unique(datum)
+    ) %>%
+    # Calculate coefficient of variation as the standard deviation divided by
+    # the mean value (harmonized_value in this case)
+    mutate(
+      harmonized_value_cv = harmonized_value_sd / harmonized_value
+    ) %>%
+    ungroup() %>%
+    select(
+      # No longer needed
+      -harmonized_value_sd) %>%
+    relocate(
+      c(subgroup_id, harmonized_row_count, harmonized_units,
+        harmonized_value, harmonized_value_cv, lat, lon, datum),
+      .after = misc_flag
+    )
+  
+  rm(grouped_tss)
+  gc()
+  
+  # Plot harmonized measurements by Tier:
+  
+  # 1. Harmonized values
+  tier_dists <- no_simul_tss %>%
+    select(tier, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001,
+           tier_label = case_when(
+             tier == 0 ~ "Restrictive (Tier 0)",
+             tier == 1 ~ "Narrowed (Tier 1)",
+             tier == 2 ~ "Inclusive (Tier 2)"
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a values by tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/tss_tier_dists_postagg.png",
+         plot = tier_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  # 2: Harmonized CVs
+  # Count NA CVs in each tier for plotting:
+  na_labels <- no_simul_tss %>%
+    filter(is.na(harmonized_value_cv)) %>%
+    count(tier)
+  
+  tier_0 <- filter(na_labels, tier == 0)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_1 <- filter(na_labels, tier == 1)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_2 <- filter(na_labels, tier == 2)$n %>%
+    number(scale_cut = cut_short_scale())
+  
+  tier_cv_dists <- no_simul_tss %>%
+    select(tier, harmonized_value_cv) %>%
+    mutate(plot_value = harmonized_value_cv + 0.001,
+           tier_label = case_when(
+             tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
+             tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
+             tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
+           )) %>%
+    ggplot() +
+    geom_histogram(aes(plot_value)) +
+    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
+    ylab("Count") +
+    ggtitle(label = "Distribution of harmonized chl a CVs by tier",
+            subtitle = "0.001 added to each value for the purposes of visualization only") +
+    scale_x_log10(label = label_scientific()) +
+    scale_y_continuous(label = label_scientific()) +
+    theme_bw() +
+    theme(strip.text = element_text(size = 7))
+  
+  ggsave(filename = "3_harmonize/out/tss_tier_cv_dists_postagg.png",
+         plot = tier_cv_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  # Similarly, create maps of records counts by tier
+  plot_tier_maps(dataset = no_simul_tss, parameter = "tss")
+  
+  # And year, month, day of week
+  plot_time_charts(dataset = no_simul_tss, parameter = "tss")
+  
+  # How many records removed in aggregating simultaneous records?
+  print(
+    paste0(
+      "Rows removed while aggregating simultaneous records: ",
+      nrow(realistic_tss) - nrow(no_simul_tss)
+    )
+  )
+  
+  dropped_simul <- tibble(
+    step = "tss harmonization",
+    reason = "Dropped rows while aggregating simultaneous records",
+    short_reason = "Simultaneous records",
+    number_dropped = nrow(realistic_tss) - nrow(no_simul_tss),
+    n_rows = nrow(no_simul_tss),
+    order = 13
   )
   
   
   # Export ------------------------------------------------------------------
   
   # Record of all steps where rows were dropped, why, and how many
-  compiled_dropped <- bind_rows(starting_data, dropped_approximates,
-                                dropped_fails, dropped_fractions, 
-                                dropped_greater_than, dropped_harmonization,
-                                dropped_mdls, dropped_media, dropped_methods)
+  compiled_dropped <- bind_rows(starting_data, dropped_media,
+                                dropped_fails, dropped_mdls,
+                                dropped_approximates, dropped_greater_than,
+                                dropped_na, dropped_harmonization,
+                                dropped_depths, dropped_methods,
+                                dropped_field, dropped_misc, dropped_unreal,
+                                dropped_simul)
   
-  documented_drops_out_path <- "3_harmonize/out/harmonize_tss_dropped_metadata.csv"
+  documented_drops_out_path <- "3_harmonize/out/tss_harmonize_dropped_metadata.csv"
   
   write_csv(x = compiled_dropped,
             file = documented_drops_out_path)
   
-  # Export in memory-friendly way
-  data_out_path <- "3_harmonize/out/harmonized_tss.feather"
   
-  write_feather(tss_remove_fractions,
-                data_out_path)
+  # Export in memory-friendly way
+  data_out_path <- "3_harmonize/out/tss_harmonized_final.csv"
+  
+  write_csv(no_simul_tss,
+            data_out_path)
   
   # Final dataset length:
   print(
     paste0(
       "Final number of records: ",
-      nrow(tss_remove_fractions)
+      nrow(no_simul_tss)
     )
   )
   
   return(list(
-    harmonized_tss_path = data_out_path,
-    compiled_drops_path = documented_drops_out_path))    
+    tss_tiering_record_path = tiering_record_out_path,
+    tss_grouped_preagg_path = grouped_tss_out_path,
+    tss_harmonized_path = data_out_path,
+    compiled_drops_path = documented_drops_out_path
+  ))  
 }

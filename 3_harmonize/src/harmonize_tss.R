@@ -619,16 +619,13 @@ harmonize_tss <- function(raw_tss, p_codes){
     )
   )
   
-  # Before creating tiers remove any records that have unrelated
+  # Before creating tiers remove any records that have unrelated or unreliable
   # data based on their method:
-  unrelated_text <- paste0(c("sulfate", "sediment", "5310", "counting",
-                             "plasma", "turbidity", "coliform", "carbon",
-                             "2540", "conductance", "nitrate", "nitrite",
-                             "nitrogen", "alkalin", "zooplankton",
-                             "phosphorus", "periphyton", "peri",
-                             "biomass", "temperature", "elemental analyzer",
-                             "2320"),
-                           collapse = "|")
+  unrelated_text <- paste0(
+    c("10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", 
+      "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", 
+      "Oxygen", "Phosphorus", "Temperature"),
+    collapse = "|")
   
   tss_relevant <- flagged_depth_tss %>%
     filter(!grepl(pattern = unrelated_text,
@@ -642,6 +639,54 @@ harmonize_tss <- function(raw_tss, p_codes){
       nrow(flagged_depth_tss) - nrow(tss_relevant)
     )
   )
+  
+  # Flag relevant conditions for tiering
+  low_flow_text <- paste0(
+    c("low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low",
+      "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow",
+      "NO DISCERNIBLE FLOW", "Low base flow"),
+    collapse = "|"
+  )
+  tss_relevant_flagged <- tss_relevant %>%
+    mutate(
+      # Taken with a pump?
+      pump_flag = if_else(
+        condition = grepl(x = SampleCollectionEquipmentName,
+                          pattern = "pump",
+                          ignore.case = T),
+        true = 1, false = 0),
+      # Low flow indications?
+      low_flow_flag = if_else(
+        condition = grepl(x = ActivityCommentText,
+                          pattern = low_flow_text,
+                          ignore.case = TRUE) & 
+          !grepl(x = ActivityCommentText,
+                 pattern = "too deep|high flow")
+      )
+    )
+  
+  # NA equipment
+  # Taken at depth?
+  flagged_depth_tss %>%
+    filter(grepl(x = SampleCollectionEquipmentName, pattern = "pump", ignore.case = T)) %>%
+    count(SampleCollectionEquipmentName) %>%
+    arrange(desc(n)) %>%
+    pull(n) %>%
+    sum()
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   # 1.1 HPLC detection

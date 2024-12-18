@@ -640,19 +640,36 @@ harmonize_tss <- function(raw_tss, p_codes){
     )
   )
   
-  # Flag relevant conditions for tiering
+  # Flag relevant conditions for tiering:
+  
+  # Low flow flag
   low_flow_text <- paste0(
     c("low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low",
       "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow",
       "NO DISCERNIBLE FLOW", "Low base flow"),
     collapse = "|"
   )
+  
+  # ~NA methods or equipment flag
+  na_text <- paste0(
+    c("Not Available", "Unkn", "UNKOWN", "Historic",
+      "not specified", "N/A Calculation", "LEGACY", "CALCULATION", "Unspecified",
+      "Calculated", "Lab Method", "See Comments", "Field Office procedures"),
+    collapse = "|"
+  )
+  
+  # Methods expected for TSS
+  correct_text <- paste0(
+    c("2540", "160", "ASTM", "14B", "8006", "108"),
+    collapse = "|")
+  
+  # Add flags
   tss_relevant_flagged <- tss_relevant %>%
     mutate(
-      # Taken with a pump?
+      # Taken with a pump/at depth/etc.?
       pump_flag = if_else(
         condition = grepl(x = SampleCollectionEquipmentName,
-                          pattern = "pump",
+                          pattern = "pump|peristaltic|niskin|van dorn",
                           ignore.case = T),
         true = 1, false = 0),
       # Low flow indications?
@@ -661,19 +678,46 @@ harmonize_tss <- function(raw_tss, p_codes){
                           pattern = low_flow_text,
                           ignore.case = TRUE) & 
           !grepl(x = ActivityCommentText,
-                 pattern = "too deep|high flow")
+                 pattern = "too deep|high flow"),
+        true = 1, false = 0
+      ),
+      # NA methods or equipment
+      na_flag = if_else(
+        condition = is.na(ResultAnalyticalMethod.MethodName) |
+          is.na(SampleCollectionEquipmentName) |
+          grepl(x = ResultAnalyticalMethod.MethodName,
+                pattern = na_text,
+                ignore.case = TRUE) |
+          grepl(x = SampleCollectionEquipmentName,
+                pattern = na_text,
+                ignore.case = TRUE),
+        true = 1, false = 0
+      ),
+      # Flag expected methods
+      common_flag = if_else(
+        condition = grepl(x = ResultAnalyticalMethod.MethodName,
+                          pattern = correct_text,
+                          ignore.case = TRUE),
+        true = 1, false = 0
       )
     )
   
-  # NA equipment
-  # Taken at depth?
-  flagged_depth_tss %>%
-    filter(grepl(x = SampleCollectionEquipmentName, pattern = "pump", ignore.case = T)) %>%
-    count(SampleCollectionEquipmentName) %>%
-    arrange(desc(n)) %>%
-    pull(n) %>%
-    sum()
-  
+  # Tiering process
+  tss_relevant_flagged %>%
+    mutate(
+      tier = case_when(
+        # Has NA method/equip
+        na_flag == 1 |
+          # Has low flow indication
+          low_flow_flag == 1 |
+          # Is non-USGS, labeled as SSC, and has pump/depth flag
+          ( 
+            (ProviderName == "STORET") &
+              (CharacteristicName == "Suspended Sediment Concentration (SSC)") &
+              (pump_flag == 1)
+          ) ~ 2
+      )
+    )
   
   
   

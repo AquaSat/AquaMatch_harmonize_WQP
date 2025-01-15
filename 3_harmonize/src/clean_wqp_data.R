@@ -666,6 +666,7 @@ fill_date_time <- function(dataset, site_data){
     "SPAUL", 4137,
     # Assume WGS84
     "UNKWN", 4326,
+    "Unknown", 4326,
     # Wake-Eniwetok 1960
     "WAKE", 37229,
     # World Geodetic System 1972

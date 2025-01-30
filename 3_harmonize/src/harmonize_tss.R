@@ -345,8 +345,8 @@ harmonize_tss <- function(raw_tss, p_codes){
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
                                       "mg/m3", "ppb", "mg/cm3", "ug/ml",
                                       "mg/ml", "ppt", "ug/mL", "mg/mL"),
-    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                   1000000, 1000000, 1000, 1000000))
+    conversion = c(1, 1, 1, .001, .001, .001, .001, 1000, 1,
+                   1000, 1000, 1, 1000))
   
   unit_table_out_path <- "3_harmonize/out/tss_unit_table.csv"
   
@@ -358,7 +358,7 @@ harmonize_tss <- function(raw_tss, p_codes){
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = harmonized_value * conversion,
-           harmonized_units = "ug/L")
+           harmonized_units = "mg/L")
   
   # Plot and export unit codes that didn't make through joining
   tss_no_na %>%
@@ -828,10 +828,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Unrealistic values ------------------------------------------------------
   
   # We remove unrealistically high values prior to the final data export
-  # This is based on Wetzel (2001), Chapter 15, Figure 19
-  
+
   realistic_tss <- misc_flagged_tss %>%
-    filter(harmonized_value <= 1000)
+    filter(harmonized_value <= 10000)
   
   dropped_unreal <- tibble(
     step = "tss harmonization",

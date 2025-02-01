@@ -849,18 +849,20 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Plot harmonized measurements by CharacteristicName
   
   plotting_subset <- realistic_tss %>%
-    select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
+    select(CharacteristicName, ProviderName, USGSPCode, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
   char_dists <- plotting_subset %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
-    facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
+    # facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName),
+               scales = "free") +
+    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+    ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & Provider",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
-    scale_x_log10(label = label_scientific()) +
+    scale_x_log10(label = comma) +
     scale_y_continuous(label = label_scientific()) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
@@ -872,8 +874,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Aggregate simultaneous records ------------------------------------------
   
-  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
-  # We take the mean of those values here
+  # There are true duplicate entries in the WQP or records with non-identical
+  # values recorded at the same time and place and by the same organization
+  # (field and/or lab replicates/duplicates). We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
   grouped_tss <- realistic_tss %>%
@@ -947,9 +950,9 @@ harmonize_tss <- function(raw_tss, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value)) +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
-    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by tier",
+    ggtitle(label = "Distribution of harmonized TSS values by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +
@@ -988,7 +991,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a CVs by tier",
+    ggtitle(label = "Distribution of harmonized TSS CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_scientific()) +

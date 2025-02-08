@@ -4,6 +4,7 @@ output:
     html_preview: false
 params:
   documented_drops: NA
+  tss_chars: NA
 always_allow_html: true
 ---
 
@@ -48,7 +49,7 @@ step_0_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-After the pre-harmonization process the tss-only WQP dataset contains `r step_0_rows` rows.
+After the pre-harmonization process the TSS-only WQP dataset contains `r step_0_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%

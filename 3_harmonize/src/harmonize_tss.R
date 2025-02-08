@@ -393,15 +393,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Recode any error-related character values to NAs
   recode_depth_na_tss <- converted_units_tss %>%
-    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
-                            ResultDepthHeightMeasure.MeasureValue,
-                            ActivityTopDepthHeightMeasure.MeasureValue,
-                            ActivityBottomDepthHeightMeasure.MeasureValue),
-                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
-                                                        "9999", "-9999", "-99",
-                                                        "99", "NaN"),
-                                  true = NA_character_,
-                                  false = .x)))
+    mutate(
+      across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                       ResultDepthHeightMeasure.MeasureValue,
+                       ActivityTopDepthHeightMeasure.MeasureValue,
+                       ActivityBottomDepthHeightMeasure.MeasureValue),
+             .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                   "9999", "-9999", "-99",
+                                                   "99", "NaN"),
+                             true = NA_character_,
+                             false = .x))
+    )
   
   # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
@@ -663,6 +665,13 @@ harmonize_tss <- function(raw_tss, p_codes){
     c("2540", "160", "ASTM", "14B", "8006", "108"),
     collapse = "|")
   
+  # USGS P codes expected for TSS/SSC
+  correct_pcodes <- paste0(
+    c("00530", "80154", "70299", "70293", "69613", "69586", "69587", 
+      "69588", "69584", "69581", "69582", "69585", "69583", "69580", 
+      "69579", "70292"),
+    collapse = "|")
+  
   # Add tags
   tss_relevant_tagged <- tss_relevant %>%
     mutate(
@@ -698,7 +707,9 @@ harmonize_tss <- function(raw_tss, p_codes){
       common_tag = if_else(
         condition = grepl(x = ResultAnalyticalMethod.MethodName,
                           pattern = correct_text,
-                          ignore.case = TRUE),
+                          ignore.case = TRUE) |
+          grepl(x = USGSPCode,
+                pattern = correct_pcodes),
         true = 1, false = 0
       )
     )
@@ -747,7 +758,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   tiering_record_out_path <- "3_harmonize/out/tss_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
-
+  
   # Confirm that no rows were lost during tiering
   if(nrow(tss_relevant) != nrow(tiered_methods_tss)){
     stop("Rows were lost during analytical method tiering. This is not expected.")
@@ -828,7 +839,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Unrealistic values ------------------------------------------------------
   
   # We remove unrealistically high values prior to the final data export
-
+  
   realistic_tss <- misc_flagged_tss %>%
     filter(harmonized_value <= 10000)
   
@@ -855,15 +866,16 @@ harmonize_tss <- function(raw_tss, p_codes){
   char_dists <- plotting_subset %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    # facet_wrap(vars(CharacteristicName), scales = "free_y") +
+    facet_wrap(vars(CharacteristicName), scales = "free_y") +
     facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName),
-               scales = "free") +
+               # scales = "free"
+               ) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & Provider",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = comma) +
-    scale_y_continuous(label = label_scientific()) +
+    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

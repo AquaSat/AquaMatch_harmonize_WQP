@@ -4,7 +4,7 @@ output:
     html_preview: false
 params:
   documented_drops: NA
-  doc_chars: NA
+  tss_chars: NA
 always_allow_html: true
 ---
 
@@ -15,18 +15,18 @@ knitr::opts_chunk$set(dev = "png",
                       dpi = 300)
 ```
 
-# DOC harmonization process
+# TSS harmonization process
 
 ```{r echo=FALSE}
 documented_drops <- params$documented_drops %>%
-  filter(grepl(pattern = "doc", x = step, ignore.case = TRUE),
-         !((step == "doc harmonization") & short_reason == "Start"))
-doc_chars <- params$doc_chars
+  filter(grepl(pattern = "tss", x = step, ignore.case = TRUE),
+         !((step == "tss harmonization") & short_reason == "Start"))
+tss_chars <- params$tss_chars
 ```
 
 Following the completion of the {dataRetrieval} download process described previously, the pipeline contains raw WQP data for each parameter of interest. Before we harmonize each parameter we run through a series of universal "pre-harmonization" steps, which ensure that the datasets are appropriately formatted when entering their harmonization routines.
 
-The text below first walks through the pre-harmonization steps for the raw dissolved organic carbon (DOC) dataset and then delves into the specifics of the harmonization process.
+The text below first walks through the pre-harmonization steps for the total suspended solids (TSS) dataset and then delves into the specifics of the harmonization process.
 
 ```{r echo = FALSE}
 # Redo the ordering of the steps, conceptualizing the pre-harmonization and
@@ -56,7 +56,7 @@ step_data <- documented_drops %>%
                              " M rows"))
 ```
 
-## Pre-harmonization of the raw doc WQP dataset
+## Pre-harmonization of the raw TSS WQP dataset
 
 ```{r echo=FALSE}
 step_counter <- 1
@@ -69,7 +69,7 @@ step_1_rows <- filter(step_data,
   paste0(., " million")
 ```
 
-At the start of the pre-harmonization process the raw DOC WQP dataset contains `r step_1_rows` rows.
+At the start of the pre-harmonization process the raw TSS WQP dataset contains `r step_1_rows` rows.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -206,11 +206,11 @@ step_data %>%
 
 <br>
 
-## Harmonization-ready DOC dataset
+## Harmonization-ready TSS dataset
 
-Once ready for harmonization, the DOC WQP dataset contains the following user-defined `characteristicNames`: `r doc_chars`.
+Once ready for harmonization, the TSS WQP dataset contains the following user-defined `characteristicNames`: `r tss_chars`.
 
-These names are chosen in order to select for only those measurements that pertain to DOC.
+These names are chosen in order to select for only those measurements that pertain to TSS.
 
 <br>
 
@@ -234,7 +234,7 @@ step_4_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next ensure that the media type for all DOC data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. Additionally at this step we select a subset of `CharacteristicName` and `ResultSampleFractionText` combinations that are relevant to DOC. These are:
+We next ensure that the media type for all TSS data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. Additionally at this step we select a subset of `CharacteristicName` and `ResultSampleFractionText` combinations that are relevant to TSS. These are:
 
 <br>
 
@@ -261,13 +261,13 @@ We next ensure that the media type for all DOC data is `"Surface Water"`, `"Wate
 Below are pie charts that break down the type of fractions dropped for each CharacteristicName, including record counts:
 
 #### Non-purgeable organic carbon (NPOC) fractions dropped
-<img src="3_harmonize/out/doc_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="Non-purgeable organic carbon (NPOC) ResultSampleFractionText types dropped" width="600"/>
+<img src="3_harmonize/out/tss_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="Non-purgeable organic carbon (NPOC) ResultSampleFractionText types dropped" width="600"/>
 
 #### Organic carbon fractions dropped
-<img src="3_harmonize/out/doc_organic_carbon_fraction_drop_pie.png" alt="Organic carbon ResultSampleFractionText types dropped" width="600"/>
+<img src="3_harmonize/out/tss_organic_carbon_fraction_drop_pie.png" alt="Organic carbon ResultSampleFractionText types dropped" width="600"/>
 
 #### Total carbon fractions dropped
-<img src="3_harmonize/out/doc_total_carbon_fraction_drop_pie.png" alt="Total carbon ResultSampleFractionText types dropped" width="600"/>
+<img src="3_harmonize/out/tss_total_carbon_fraction_drop_pie.png" alt="Total carbon ResultSampleFractionText types dropped" width="600"/>
 
 <br>
 
@@ -328,25 +328,25 @@ Below are pie charts that break down the number of failure detections by column.
 
 #### ActivityCommentText fail detects
 
-<img src="3_harmonize/out/doc_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/>
+<img src="3_harmonize/out/tss_ActivityCommentText_fail_pie.png" alt="ActivityCommentText failure detects" width="650"/>
 
 #### ResultCommentText fail detects
 
-<img src="3_harmonize/out/doc_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
+<img src="3_harmonize/out/tss_ResultCommentText_fail_pie.png" alt="ResultCommentText failure detects" width="650"/>
 
 #### ResultLaboratoryCommentText fail detects
 
-<img src="3_harmonize/out/doc_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/>
+<img src="3_harmonize/out/tss_ResultLaboratoryCommentText_fail_pie.png" alt="ResultLaboratoryCommentText failure detects" width="650"/>
 
 <br>
 
 #### ResultDetectionConditionText fail detects
 
-<img src="3_harmonize/out/doc_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/>
+<img src="3_harmonize/out/tss_ResultDetectionConditionText_fail_pie.png" alt="ResultDetectionConditionText failure detects" width="650"/>
 
 #### ResultMeasureValue_original fail detects
 
-<img src="3_harmonize/out/doc_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/>
+<img src="3_harmonize/out/tss_ResultMeasureValue_original_fail_pie.png" alt="ResultMeasureValue_original failure detects" width="650"/>
 
 <br>
 
@@ -607,10 +607,10 @@ step_10_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The next step in doc harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into mg per liter (mg/L):
+The next step in TSS harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into mg per liter (mg/L):
 
 ```{r echo=FALSE, message = FALSE}
-read_csv("../3_harmonize/out/doc_unit_table.csv") %>%
+read_csv("../3_harmonize/out/tss_unit_table.csv") %>%
   kable() %>%
   kable_paper() %>%
   kable_styling(full_width = FALSE)
@@ -622,7 +622,7 @@ Below is a pie chart that breaks down the different unit codes that were dropped
 
 <br>
 
-<img src="3_harmonize/out/doc_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/>
+<img src="3_harmonize/out/tss_unit_drop_pie.png" alt="ResultMeasure.MeasureUnitCode mismatched codes" width="650"/>
 
 <br>
 
@@ -630,7 +630,7 @@ Additionally we provide a set of histograms of harmonized measurements by `Chara
 
 <br>
 
-<img src="3_harmonize/out/doc_charname_dists.png" alt="Distribution of DOC values by CharacteristicName" width="650"/>
+<img src="3_harmonize/out/tss_charname_dists.png" alt="Distribution of TSS values by CharacteristicName" width="650"/>
 
 <br>
 
@@ -728,9 +728,9 @@ step_12_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next review the analytical methods used in measuring DOC, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
+We next review the analytical methods used in measuring TSS, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-DOC measurements. Phrases used to flag and remove unrelated methods from DOC data are: "Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity", "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids", "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)", "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water".
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity", "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids", "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)", "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water".
 
 This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
@@ -749,7 +749,7 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
 
-| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | DOC details                                                                                                |     |
+| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | TSS details                                                                                                |     |
 |-------------|-------------|---------------------|-------------|-------------|
 | 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using Wet Oxidation+Persulfate+IR (EPA 415.3, SM 5310D) or Persulfate-UV/Heated Persulfate Oxidation+IR (EPA 415.2, SM 5310C) methods |     |
 | 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Includes records using combustion+IR (EPA 415.1, SM 5310B) or elemental analyzer methods (EPA 440)                                      |     |
@@ -757,7 +757,7 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 
 <br>
 
-At this point we export a file (`3_harmonize/out/doc_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
+At this point we export a file (`3_harmonize/out/tss_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 
 <br>
 
@@ -804,9 +804,9 @@ step_13_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-DOC doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with `NA` for "not applicable" for DOC.
+TSS doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with `NA` for "not applicable" for TSS.
 
-No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized DOC dataset.
+No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized TSS dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -853,9 +853,9 @@ step_14_dropped <- filter(step_data,
 
 Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
 
-Similarly to the `field_flag` column, this will be filled with `NA`. Some parameters will have additional flagging requirements that DOC does not, so we include this placeholder to maintain the same columns across all parameter data products.
+Similarly to the `field_flag` column, this will be filled with `NA`. Some parameters will have additional flagging requirements that TSS does not, so we include this placeholder to maintain the same columns across all parameter data products.
 
-No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized DOC dataset.
+No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized TSS dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -902,7 +902,7 @@ step_15_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Before finalizing the dataset we remove DOC values that are beyond a realistic threshold. We use 300 mg/L as our cutoff for removal as typical values are often less than 120 mg/L (Hotchkiss and DelSontro, 2024) but values of 300 mg/L occur in some climates (Mulholland, 2003).
+Before finalizing the dataset we remove TSS values that are beyond a realistic threshold. We use 300 mg/L as our cutoff for removal as typical values are often less than 120 mg/L (Hotchkiss and DelSontro, 2024) but values of 300 mg/L occur in some climates (Mulholland, 2003).
 
 We also remove any depths > 592m, the deepest point in a lake in the U.S.
 
@@ -953,13 +953,13 @@ step_16_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of DOC harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
+The final step of TSS harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
-We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_doc_preagg_grouped`), and include the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
+We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_tss_preagg_grouped`), and include the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 
 The final, aggregated values are presented in the `harmonized_value` and `harmonized_value_cv` columns. The number of rows used per group is recorded in the `harmonized_row_count` column.
 
-`r step_16_dropped` rows dropped leaving `r step_16_rows` remaining in the final harmonized and aggregated doc dataset.
+`r step_16_dropped` rows dropped leaving `r step_16_rows` remaining in the final harmonized and aggregated TSS dataset.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -986,9 +986,9 @@ step_data %>%
 
 <br>
 
-### Harmonized DOC
+### Harmonized TSS
 
-At this point the harmonization of the DOC data from the WQP is complete and we export the final dataset for use later in the workflow.
+At this point the harmonization of the TSS data from the WQP is complete and we export the final dataset for use later in the workflow.
 
 Below are several sets of figures illustrating different qualities of the dataset: 
 
@@ -996,25 +996,25 @@ Below are several sets of figures illustrating different qualities of the datase
 
 <br>
 
-<img src="3_harmonize/out/doc_tier_dists_postagg.png" alt="Distribution of DOC values by tier" width="650"/>
+<img src="3_harmonize/out/tss_tier_dists_postagg.png" alt="Distribution of TSS values by tier" width="650"/>
 
 
-<img src="3_harmonize/out/doc_tier_cv_dists_postagg.png" alt="Distribution of DOC CVs by tier" width="650"/>
+<img src="3_harmonize/out/tss_tier_cv_dists_postagg.png" alt="Distribution of TSS CVs by tier" width="650"/>
 
 <br>
 
 2. Maps showing the geographic distribution of records by tier within the US:
 
-<img src="3_harmonize/out/doc_tier_hex_map.png" alt="Geographic distribution of DOC records by tier in the conterminous US" width="650"/>
+<img src="3_harmonize/out/tss_tier_hex_map.png" alt="Geographic distribution of TSS records by tier in the conterminous US" width="650"/>
 
 <br>
 
 3. Lastly, bar charts showing the distribution of values by tier across years, months, and days of the week:
 
-<img src="3_harmonize/out/doc_year_tier_chart.png" alt="Temporal distribution of DOC records by tier across years" width="650"/>
+<img src="3_harmonize/out/tss_year_tier_chart.png" alt="Temporal distribution of TSS records by tier across years" width="650"/>
 
-<img src="3_harmonize/out/doc_month_tier_chart.png" alt="Temporal distribution of DOC records by tier across months" width="650"/>
+<img src="3_harmonize/out/tss_month_tier_chart.png" alt="Temporal distribution of TSS records by tier across months" width="650"/>
 
-<img src="3_harmonize/out/doc_wday_tier_chart.png" alt="Temporal distribution of DOC records by tier across days of the week" width="650"/>
+<img src="3_harmonize/out/tss_wday_tier_chart.png" alt="Temporal distribution of TSS records by tier across days of the week" width="650"/>
 
 <br>

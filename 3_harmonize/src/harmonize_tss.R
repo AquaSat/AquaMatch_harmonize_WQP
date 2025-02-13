@@ -45,15 +45,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # The values that will be considered fails for each column:
   fail_text <- c(
-    "beyond accept", "cancelled", "contaminat", "error", "fail", 
-    "improper", "instrument down", "interference", "invalid", "no result", 
-    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
-    "questionable", "suspect", "unable", "violation", "reject", "no data"
+    "beyond accept", "cancelled", "contaminat", "error", "fail", "improper",
+    "interference", "invalid", "no result", "no test", "not accept",
+    "outside of accept", "problem", "questionable", "suspect", "unable",
+    "violation", "reject", "no data", "time exceed", "value extrapolated",
+    "exceeds", "biased", "parameter not required", "not visited"
   )
   
   # Now get counts of fail-related string detections for each column: 
   fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
-                      "ResultCommentText", "ResultMeasureValue_original") %>%
+                      "ResultCommentText", "ResultMeasureValue_original",
+                      "ResultDetectionConditionText") %>%
     # Set list item names equal to each item in the list so that map will return
     # a named list
     set_names() %>%
@@ -101,7 +103,8 @@ harmonize_tss <- function(raw_tss, p_codes){
   tss_fails_removed <- tss %>%
     filter(
       if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
-                       ResultCommentText, ResultMeasureValue_original),
+                       ResultCommentText, ResultMeasureValue_original,
+                       ResultDetectionConditionText),
              .fns = ~
                !grepl(
                  pattern = paste0(fail_text, collapse = "|"),
@@ -644,6 +647,14 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Flag relevant conditions for tiering:
   
+  # Comment mentions deep depth
+  deep_text <- paste0(
+    c("Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom",
+      "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline",
+      "hypolimnion"),
+    collapse = "|"
+  )
+  
   # Low flow flag
   low_flow_text <- paste0(
     c("low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low",
@@ -678,8 +689,11 @@ harmonize_tss <- function(raw_tss, p_codes){
       # Taken with a pump/at depth/etc.?
       pump_tag = if_else(
         condition = grepl(x = SampleCollectionEquipmentName,
-                          pattern = "pump|peristaltic|niskin|van dorn",
-                          ignore.case = T),
+                          pattern = "pump|peristaltic|niskin|van dorn|Kemmerer",
+                          ignore.case = T) |
+          grepl(x = ActivityCommentText,
+                pattern = deep_text,
+                ignore.case = T),
         true = 1, false = 0),
       # Low flow indications?
       low_flow_tag = if_else(
@@ -869,7 +883,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
     facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName),
                # scales = "free"
-               ) +
+    ) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & Provider",

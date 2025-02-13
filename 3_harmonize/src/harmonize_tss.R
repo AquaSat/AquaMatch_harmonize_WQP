@@ -855,7 +855,12 @@ harmonize_tss <- function(raw_tss, p_codes){
   # We remove unrealistically high values prior to the final data export
   
   realistic_tss <- misc_flagged_tss %>%
-    filter(harmonized_value <= 10000)
+    filter(
+      harmonized_value <= 10000,
+      harmonized_top_depth_value <= 592 | is.na(harmonized_top_depth_value),
+      harmonized_bottom_depth_value <= 592 | is.na(harmonized_bottom_depth_value),
+      harmonized_discrete_depth_value <= 592 | is.na(harmonized_discrete_depth_value)
+    )
   
   dropped_unreal <- tibble(
     step = "tss harmonization",
@@ -871,19 +876,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   # We'll generate plots now before aggregating across simultaneous records
   # because it won't be possible to use CharacteristicName after that point.
   
-  # Plot harmonized measurements by CharacteristicName
+  # Plot harmonized measurements by CharacteristicName and ProviderName
   
   plotting_subset <- realistic_tss %>%
-    select(CharacteristicName, ProviderName, USGSPCode, tier, harmonized_value) %>%
+    select(CharacteristicName, ProviderName, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
   char_dists <- plotting_subset %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName),
-               # scales = "free"
-    ) +
+    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & Provider",
@@ -974,14 +977,14 @@ harmonize_tss <- function(raw_tss, p_codes){
              tier == 2 ~ "Inclusive (Tier 2)"
            )) %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized TSS values by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
+    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
@@ -1013,14 +1016,14 @@ harmonize_tss <- function(raw_tss, p_codes){
              tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
            )) %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized TSS CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
+    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

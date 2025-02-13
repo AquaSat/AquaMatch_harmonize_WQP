@@ -234,44 +234,7 @@ step_4_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-We next ensure that the media type for all TSS data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. Additionally at this step we select a subset of `CharacteristicName` and `ResultSampleFractionText` combinations that are relevant to TSS. These are:
-
-<br>
-
-| CharacteristicName                  | ResultSampleFractionText |
-|-------------------------------------|--------------------------|
-| Non-purgeable Organic Carbon (NPOC) | Dissolved                |
-| Non-purgeable Organic Carbon (NPOC) | Filtered, lab            |
-| Non-purgeable Organic Carbon (NPOC) | None                     |
-| Non-purgeable Organic Carbon (NPOC) | Total                    |
-| Non-purgeable Organic Carbon (NPOC) | NA                       |
-| Organic carbon                      | Dissolved                |
-| Organic carbon                      | Filtered, lab            |
-| Organic carbon                      | Filtered, field          |
-| Organic carbon                      | Filterable               |
-| Organic carbon                      | Total                    |
-| Organic carbon                      | Organic                  |
-| Total carbon                        | Filterable               |
-| Total carbon                        | NA                       |
-| Total carbon                        | Total                    |
-| Total carbon                        | Organic                  |
-
-<br>
-
-Below are pie charts that break down the type of fractions dropped for each CharacteristicName, including record counts:
-
-#### Non-purgeable organic carbon (NPOC) fractions dropped
-<img src="3_harmonize/out/tss_non_purgeable_organic_carbon_npoc_fraction_drop_pie.png" alt="Non-purgeable organic carbon (NPOC) ResultSampleFractionText types dropped" width="600"/>
-
-#### Organic carbon fractions dropped
-<img src="3_harmonize/out/tss_organic_carbon_fraction_drop_pie.png" alt="Organic carbon ResultSampleFractionText types dropped" width="600"/>
-
-#### Total carbon fractions dropped
-<img src="3_harmonize/out/tss_total_carbon_fraction_drop_pie.png" alt="Total carbon ResultSampleFractionText types dropped" width="600"/>
-
-<br>
-
-`r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
+We next ensure that the media type for all TSS data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
 ```{r echo = FALSE}
 step_data %>%
@@ -320,7 +283,7 @@ step_5_dropped <- filter(step_data,
 
 In this step we filter out records based on indications that they have failed data quality assurance or quality control for some reason given by the data provider (these instances are referred to here as "failures").
 
-After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. (Note: `ResultMeasureValue_original` is a duplicate, character version of the `ResultMeasureValue` column that we use as a reference for the column's contents before it was converted to a numeric type.) We found the phrasing to be consistent across columns and so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "questionable", "suspect", "unable", "violation", "reject", "no data", "time exceed", "value extrapolated", "exceeds", "biased", "parameter not required", "not visited".
+After reviewing the contents of the `ActivityCommentText`, `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue_original` columns, we developed a list of terms that captured the majority of instances where records had failures or unacceptable measurements. (Note: `ResultMeasureValue_original` is a duplicate, character version of the `ResultMeasureValue` column that we use as a reference for the column's contents before it was converted to a numeric type.) We found the phrasing to be consistent across columns, so we searched for the same (case agnostic) terms in all four locations. The terms are: "beyond accept", "cancelled", "contaminat", "error", "fail", "improper", "interference", "invalid", "no result", "no test", "not accept", "outside of accept", "problem", "questionable", "suspect", "unable", "violation", "reject", "no data", "time exceed", "value extrapolated", "exceeds", "biased", "parameter not required", "not visited".
 
 Below are pie charts that break down the number of failure detections by column. Note that the plotting below is automated so if one or more of the columns listed above are not plotted, this indicates that the column(s) did not return any matches for the failure phrases. Also note that a single record can contain multiple failure phrases; therefore, failure phrases are not mutually exclusive.
 
@@ -626,14 +589,6 @@ Below is a pie chart that breaks down the different unit codes that were dropped
 
 <br>
 
-Additionally we provide a set of histograms of harmonized measurements by `CharacteristicName`:
-
-<br>
-
-<img src="3_harmonize/out/tss_charname_dists.png" alt="Distribution of TSS values by CharacteristicName" width="650"/>
-
-<br>
-
 `r step_10_dropped` rows are removed. The final row count after this is `r step_10_rows`.
 
 ```{r echo = FALSE}
@@ -730,17 +685,19 @@ step_12_dropped <- filter(step_data,
 
 We next review the analytical methods used in measuring TSS, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "Oxygen", "Nitrogen", "Ammonia", "Metals", "E. coli", "Anion", "Cation", "Phosphorus", "Silica", "PH", "HARDNESS", "Nutrient", "Turbidity", "Nitrate", "Conductance", "Alkalinity", "Chlorophyll", "Solids", "Temperature", "Color in Water", "Coliform", "PARTICULATE CARBON (inorg+org)", "5210", "bed sed", "bs, calc", "5220", "Suspended-Sediment in Water".
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", "Oxygen", "Phosphorus", "Temperature".
 
 This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
-The next step towards creating tiers is to then classify the methods in `ResultAnalyticalMethod.MethodName` into either: Combustion + infrared methods, Persulfate-UV/Heated Persulfate Oxidation+IR detection methods, Wet Oxidation+Persulfate+IR methods, Elemental Analyzer methods, or Carbonaceous Analyzer methods. These classifications are not the final tiers, but they inform the tiering in the final step of this process. The criteria for each of the above classifications are:
+The next step towards creating tiers is to then identify the methods in `ResultAnalyticalMethod.MethodName` that:
 
-+ **Combustion+IR:** Detection of "5310 B", "5310B", "415.1", "combustion" but only without "5310 C" or "5310C", "0.45u silver, persulfate IR", "0.7 um GFF, combust IR", "Laboratory Procedures for Water Quality Chemical Analysis", "CO2 formation", "Qian & Mopper 1996", or "Shimadzu TOC Analyzer" in `ResultAnalyticalMethod.MethodName`
-+ **Persulfate-UV/Heated Persulfate Oxidation+IR:** Detection of "5310 C", "5310C", "persulfate oxid", "415.2", "Ultraviolet", "Heated-Persulfate", or "UV" in `ResultAnalyticalMethod.MethodName`
-+ **Wet Oxidation+Persulfate+IR detection:** Detection of "0.45 ?um cap", "0.45um cap", "wet oxidation", "5310 D", "5310D", "415.3", "O-3100 \~ Total Organic Carbon in Water" in `ResultAnalyticalMethod.MethodName`
-+ **Elemental Analyzer:** Detection of "440" in `ResultAnalyticalMethod.MethodName`
-+ **Carbonaceous Analyzer:** Detection of "9060 A" in `ResultAnalyticalMethod.MethodName`
++ Indicate non-surface sampling: This includes detection of "Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom", "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline", or "hypolimnion" in `ActivityCommentText` or "pump", "peristaltic", "niskin", "van dorn", or "Kemmerer" in `SampleCollectionEquipmentName`.
++ Have `NA` values in `ResultAnalyticalMethod.MethodName` or `SampleCollectionEquipmentName`
++ Indicate low-flow conditions: This includes detection of "low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low", "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow", "NO DISCERNIBLE FLOW", or "Low base flow" in `ActivityCommentText` with **no** detection of "too deep" or "high flow". 
++ Have `USGSPCode` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration): Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
++ Have 15 or fewer records associated with them
+
+These classifications are not the final tiers, but they inform the tiering in the final step of this process.
 
 
 Finally, we group the data into three tiers as described in *Tiering, flagging, and quality control philosophy*. These tiers are:
@@ -748,13 +705,11 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 <br>
 
 <!-- Table created with https://www.tablesgenerator.com/markdown_tables -->
-
-| Tier | Name        | Description                                                                                                                                                                                                                                                                                            | TSS details                                                                                                |     |
-|-------------|-------------|---------------------|-------------|-------------|
-| 0    | Restrictive | Data that are verifiably self-similar across organizations and time-periods and can be considered highly reliable and interoperable                                                                                                                                                                    | Includes records using Wet Oxidation+Persulfate+IR (EPA 415.3, SM 5310D) or Persulfate-UV/Heated Persulfate Oxidation+IR (EPA 415.2, SM 5310C) methods |     |
-| 1    | Narrowed    | Data that we have good reason to believe are self-similar, but for which we can't verify full interoperability across data providers                                                                                                                                                                   | Includes records using combustion+IR (EPA 415.1, SM 5310B) or elemental analyzer methods (EPA 440)                                      |     |
-| 2    | Inclusive   | Data that are assumed to be reliable and are harmonized to our best ability given the information available from the data provider. This tier includes `NA` or non-resolvable descriptions for the analytical method, which often make up the majority of methods descriptions for any given parameter | Carbonaceous (EPA 9060A) and all other records by default, including `NA` methods                                      |     |
-
+| **Tier** | **Name** | **Description** | **TSS Details** |
+|---|---|---|---|
+| 0 | Restrictive | Data that are verifiably self-similar across organizations and  time-periods and can be considered highly reliable and interoperable | Records that don't fall into tiers 1 or 2 |
+| 1 | Narrowed | Data that we have good reason to believe are self-similar, but for which  we can’t verify full interoperability across data providers | Records that do not meet the definition of tier 2, but have a non-NA ResultCommentText value |
+| 2 | Inclusive | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Records that meet one of the following criteria: Have NA values in ResultAnalyticalMethod.MethodName or SampleCollectionEquipmentName; have ActivityCommentText values indicating low-flow conditions; are TSS samples that were taken at depth, with a pump, etc.; are non-USGS, SSC samples that were **not** taken at depth or with a pump, etc.; or have ResultAnalyticalMethod.MethodName values with 15 or fewer total records and which are not clearly standard SSC or TSS methods. |
 <br>
 
 At this point we export a file (`3_harmonize/out/tss_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
@@ -804,7 +759,13 @@ step_13_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-TSS doesn't have field sampling methods that lend themselves well to comparing with analytical methods and assigning flags, unlike variables like chlorophyll *a*. We fill the `field_flag` column with `NA` for "not applicable" for TSS.
+Next, we use the `field_flag` column to flag records that have a qualifier related to sampling depth:
++ `field_flag` = `1` when:
+  + TSS was sampled at depth
+  + non-USGS SSC was **not** sampled at depth
++ In all other cases `field_flag` is 0
+
+Sampling at depth is determined by whether the record was highlighted as indicating non-surface sampling during the previous harmonization step.
 
 No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized TSS dataset.
 
@@ -853,7 +814,7 @@ step_14_dropped <- filter(step_data,
 
 Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
 
-Similarly to the `field_flag` column, this will be filled with `NA`. Some parameters will have additional flagging requirements that TSS does not, so we include this placeholder to maintain the same columns across all parameter data products.
+This will be filled with `NA`. Some parameters will have additional flagging requirements that TSS does not, so we include this placeholder to maintain the same columns across all parameter data products.
 
 No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized TSS dataset.
 
@@ -902,7 +863,7 @@ step_15_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Before finalizing the dataset we remove TSS values that are beyond a realistic threshold. We use 300 mg/L as our cutoff for removal as typical values are often less than 120 mg/L (Hotchkiss and DelSontro, 2024) but values of 300 mg/L occur in some climates (Mulholland, 2003).
+Before finalizing the dataset we remove TSS values that are beyond a realistic threshold. We use 10,000 mg/L as our cutoff for removal.
 
 We also remove any depths > 592m, the deepest point in a lake in the U.S.
 
@@ -953,7 +914,15 @@ step_16_dropped <- filter(step_data,
   paste0(., " million")
 ```
 
-The final step of TSS harmonization is to aggregate simultaneous observations. Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
+The final step of TSS harmonization is to aggregate simultaneous observations. Prior to aggregation, the dataset has the following distribution of values when organized by `CharacteristicName` and `ProviderName`:
+
+<br>
+
+<img src="3_harmonize/out/tss_charname_dists.png" alt="Distribution of TSS values by CharacteristicName and ProviderName" width="650"/>
+
+<br>
+
+**The aggregation process**: Any group of samples determined to be simultaneous are simplified into a single record containing the mean and coefficient of variation (CV) of the group. These can be either true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates). The CV can be used to filter the dataset based on the amount of variability that is tolerable to specific use cases. Note, however, that many entries will have a CV that is `NA` because there are no simultaneous records or 0 because the records are duplicates and all entries have the same `harmonized_value`.
 
 We identify simultaneous records to aggregate by creating identical subgroups (`subgroup_id`) from the following columns: `parameter`, `OrganizationIdentifier`, `MonitoringLocationIdentifier`, `MonitoringLocationTypeName`, `ResolvedMonitoringLocationTypeName`, `ActivityStartDate`, `ActivityStartDateTime`, `ActivityStartTime.TimeZoneCode`, `harmonized_tz`, `harmonized_utc`, `harmonized_top_depth_value`, `harmonized_top_depth_unit`, `harmonized_bottom_depth_value`, `harmonized_bottom_depth_unit`, `harmonized_discrete_depth_value`, `harmonized_discrete_depth_unit`, `depth_flag`, `mdl_flag`, `approx_flag`, `greater_flag`, `tier`, `field_flag`, `misc_flag`, `harmonized_units`. This selection limits the columns included in the final dataset, but we also provide a copy of the AquaMatch dataset prior to its aggregation (pipeline target `p3_tss_preagg_grouped`), and include the `subgroup_id` column, so that users can use the disaggregated data as well and match make joins between dataset versions.
 

@@ -164,8 +164,10 @@ step_3_rows <- filter(step_data,
 
 step_3_dropped <- filter(step_data,
                          reorder == step_counter) %>%
-  pull(number_dropped) %>%
-  round(digits = 1)
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
 ```
 
 The final step in pre-harmonization is to filter the `ResultStatusIdentifier` column to include only the following statuses:
@@ -517,8 +519,10 @@ step_9_rows <- filter(step_data,
 
 step_9_dropped <- filter(step_data,
                          reorder == step_counter) %>%
-  pull(number_dropped) %>%
-  round(digits = 1)
+  mutate(thou_row = number_dropped / 1000) %>%
+  pull(thou_row) %>%
+  round(digits = 1) %>%
+  paste0(., " thousand")
 ```
 
 The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point.
@@ -691,11 +695,11 @@ This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
 
 The next step towards creating tiers is to then identify the methods in `ResultAnalyticalMethod.MethodName` that:
 
-+ Indicate non-surface sampling: This includes detection of "Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom", "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline", or "hypolimnion" in `ActivityCommentText` or "pump", "peristaltic", "niskin", "van dorn", or "Kemmerer" in `SampleCollectionEquipmentName`.
-+ Have `NA` values in `ResultAnalyticalMethod.MethodName` or `SampleCollectionEquipmentName`
-+ Indicate low-flow conditions: This includes detection of "low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low", "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow", "NO DISCERNIBLE FLOW", or "Low base flow" in `ActivityCommentText` with **no** detection of "too deep" or "high flow". 
-+ Have `USGSPCode` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration): Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
-+ Have 15 or fewer records associated with them
++ **Indicate non-surface sampling**: This includes detection of "Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom", "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline", or "hypolimnion" in `ActivityCommentText` or "pump", "peristaltic", "niskin", "van dorn", or "Kemmerer" in `SampleCollectionEquipmentName`.
++ **Have `NA` values in `ResultAnalyticalMethod.MethodName` or `SampleCollectionEquipmentName`**
++ **Indicate low-flow conditions**: This includes detection of "low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low", "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow", "NO DISCERNIBLE FLOW", or "Low base flow" in `ActivityCommentText` with **no** detection of "too deep" or "high flow". 
++ **Have `USGSPCode` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration)**: Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
++ **Have 15 or fewer records associated with them**
 
 These classifications are not the final tiers, but they inform the tiering in the final step of this process.
 
@@ -760,6 +764,7 @@ step_13_dropped <- filter(step_data,
 ```
 
 Next, we use the `field_flag` column to flag records that have a qualifier related to sampling depth:
+
 + `field_flag` = `1` when:
   + TSS was sampled at depth
   + non-USGS SSC was **not** sampled at depth

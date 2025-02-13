@@ -347,9 +347,10 @@ harmonize_tss <- function(raw_tss, p_codes){
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
                                       "mg/m3", "ppb", "mg/cm3", "ug/ml",
-                                      "mg/ml", "ppt", "ug/mL", "mg/mL"),
+                                      "mg/ml", "ppt", "ug/mL", "mg/mL",
+                                      "g/L"),
     conversion = c(1, 1, 1, .001, .001, .001, .001, 1000, 1,
-                   1000, 1000, 1, 1000))
+                   1000, 1000, 1, 1000, 1000))
   
   unit_table_out_path <- "3_harmonize/out/tss_unit_table.csv"
   
@@ -889,7 +890,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & Provider",
+    ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & ProviderName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = comma) +
     scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
@@ -1023,7 +1024,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     ggtitle(label = "Distribution of harmonized TSS CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
+    # scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

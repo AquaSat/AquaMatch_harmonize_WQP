@@ -1,154 +1,153 @@
 CharacteristicName,ResultAnalyticalMethod.MethodName,USGSPCode,pump_tag,low_flow_tag,na_tag,common_tag,tier,n
-Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,0,0,1,0,801542
-Total suspended solids,Non-Filterable Residue - TSS,NA,0,0,0,0,0,633830
-Suspended Sediment Concentration (SSC),NA,80154,0,0,1,1,2,608964
-Total suspended solids,NA,NA,0,0,1,0,2,457633
-Total suspended solids,NA,00530,0,0,1,1,2,238643
-Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,0,0,1,1,232129
-Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,0,0,0,0,190106
-Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,0,0,1,0,139156
-Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,0,0,0,1,0,100734
-Total suspended solids,Non-Filterable Residue - TSS,NA,0,0,0,0,1,88123
-Total suspended solids,analyticTSS_101,NA,1,0,0,0,2,83375
-Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,1,1,2,62996
-Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,1,0,0,1,2,59160
-Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,1,0,0,0,2,59097
+Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,0,0,1,0,782760
+Total suspended solids,Non-Filterable Residue - TSS,NA,0,0,0,0,0,626464
+Suspended Sediment Concentration (SSC),NA,80154,0,0,1,1,2,608227
+Total suspended solids,NA,NA,0,0,1,0,2,457389
+Total suspended solids,NA,00530,0,0,1,1,2,237658
+Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,0,0,1,1,229912
+Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,0,0,0,0,188461
+Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,0,0,1,0,138987
+Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,0,0,0,1,0,100675
+Total suspended solids,Non-Filterable Residue - TSS,NA,0,0,0,0,1,87496
+Total suspended solids,analyticTSS_101,NA,1,0,0,0,2,86072
+Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,1,0,0,1,2,78742
+Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,1,1,2,62984
+Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,1,0,0,0,2,60653
 Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,0,1,1,2,53070
-Suspended Sediment Concentration (SSC),Sediment conc by evaporation,80154,0,0,0,1,0,50444
-Total suspended solids,Residue by Evaporation and Gravimetric,NA,1,0,0,0,2,37692
+Suspended Sediment Concentration (SSC),Sediment conc by evaporation,80154,0,0,0,1,0,50437
+Total suspended solids,Non-Filterable Residue - TSS,NA,1,0,0,0,2,41775
+Total suspended solids,Residue by Evaporation and Gravimetric,NA,1,0,0,0,2,39076
 Total suspended solids,160.2 M ~ Total Suspended Solids,NA,0,0,0,1,1,36740
-Total suspended solids,160.2 M ~ Total Suspended Solids,NA,0,0,0,1,0,36717
+Total suspended solids,160.2 M ~ Total Suspended Solids,NA,0,0,0,1,0,36716
 Total suspended solids,SM2540D,NA,0,0,0,1,0,34361
-Total suspended solids,Non-Filterable Residue - TSS,NA,1,0,0,0,2,34283
-Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,0,0,0,0,0,31411
-Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,0,1,0,30828
 Total suspended solids,Not Available,NA,0,0,1,0,2,30687
-Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,0,0,0,1,29402
+Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,0,1,0,30315
+Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,0,0,0,1,29376
 Total suspended solids,160.2,NA,0,0,0,1,0,29026
+Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,0,0,0,0,0,28803
 Total suspended solids,N/A Calculation,NA,0,0,1,0,2,25961
-Total suspended solids,SM 2540D,NA,0,0,0,1,0,23239
-Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,0,0,0,0,0,22764
+Total suspended solids,SM 2540D,NA,0,0,0,1,0,23234
 Total suspended solids,EPA 160.4,NA,0,0,0,1,1,22200
 Total suspended solids,Residue,NA,0,0,0,0,0,21917
-Total suspended solids,SM 2540 D,NA,0,0,0,1,1,20069
+Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,0,0,0,0,0,20806
+Total suspended solids,SM 2540 D,NA,0,0,0,1,1,20066
 Total suspended solids,Unkn Lab Proc,NA,0,0,1,0,2,19335
-Total suspended solids,analyticTSS_101,NA,0,0,0,0,0,19316
 Suspended Sediment Concentration (SSC),2540 E ~ Fixed and Volatile Solids in Water,NA,0,0,0,1,2,19261
-Total suspended solids,UNKNOWN,NA,0,0,1,0,2,16967
+Total suspended solids,UNKNOWN,NA,0,0,1,0,2,16956
+Total suspended solids,analyticTSS_101,NA,0,0,0,0,0,16631
 Suspended Sediment Concentration (SSC),Sediment conc by evaporation,80154,0,0,1,1,2,16600
-Total suspended solids,NA,70299,0,0,1,1,2,16135
+Total suspended solids,NA,70299,0,0,1,1,2,16126
 Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,0,0,1,1,2,15479
-Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,0,0,1,1,15432
+Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,0,0,1,1,15424
 Total suspended solids,UNKOWN,NA,0,0,1,0,2,15237
 Total suspended solids,Total Suspended Solids in Water,NA,0,0,0,0,0,14202
 Total suspended solids,Historic,NA,0,0,1,0,2,14029
 Total suspended solids,"Solids, residue at 105°C",NA,0,0,0,0,0,13985
-Suspended Sediment Concentration (SSC),NA,80154,1,0,1,1,2,13563
+Suspended Sediment Concentration (SSC),NA,80154,1,0,1,1,2,13712
 Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,0,1,1,2,11994
 Total suspended solids,Historic Procedure,NA,0,0,1,0,2,11932
 Suspended Sediment Concentration (SSC),Gravimetric Filtration Method; Dried At 90-105,NA,0,0,0,0,2,10684
 Total suspended solids,Volatile Residue,NA,0,0,0,0,0,10514
-Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,0,0,0,0,1,9588
-Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,0,0,0,1,1,9430
+Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,0,0,0,0,1,9541
+Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,0,0,0,1,1,9427
 Total suspended solids,LEGACY,NA,0,0,1,0,2,9283
 Total suspended solids,Total Suspended Solids,NA,0,0,0,0,0,9069
 Total suspended solids,EPA 160.2,NA,0,0,0,1,1,9043
 Total suspended solids,SM2540D,NA,0,0,0,1,1,8692
 Total suspended solids,Analytical method not available,NA,0,0,1,0,2,8616
 Suspended Sediment Concentration (SSC),Sediment conc by evaporation,80154,0,0,0,1,1,8502
-Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,0,1,0,8350
-Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,0,0,0,0,2,8338
+Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,0,1,0,8348
+Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,0,0,0,0,2,8329
 Suspended Sediment Concentration (SSC),2540 D ~ Total Suspended Solids in Water,NA,0,0,0,1,2,8317
 Total suspended solids,160.2 M ~ Total Suspended Solids,NA,1,0,0,1,2,8095
+Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,1,0,0,0,2,7730
 Total suspended solids,2540 E ~ Fixed and Volatile Solids in Water,NA,0,0,0,1,0,6461
 Total suspended solids,209 C ~ Residue Non- filterable (TSS) ,NA,0,0,0,0,0,6335
 Suspended Sediment Concentration (SSC),Sediments,NA,0,0,0,0,2,5777
-Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,1,0,1,2,5434
-Total suspended solids,2540 C ~ Total Dissolved Solids in Water,NA,0,0,0,1,0,5085
-Total suspended solids,"RESIDUE, TOTAL NONFILTRABLE (MG/L)",NA,1,0,0,0,2,5075
+Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,0,1,0,1,2,5420
+Total suspended solids,2540 C ~ Total Dissolved Solids in Water,NA,0,0,0,1,0,5081
 Total suspended solids,General Listing of Field and Lab Analytical Procedures for Manatee County,NA,0,0,0,0,0,4786
 Total suspended solids,Analytical procedure not specified,NA,0,0,1,0,2,4315
 Total suspended solids,Standard Methods for the Examination of Water and Wastewater,NA,0,0,0,0,0,4109
-Suspended Sediment Concentration (SSC),SSC by filtration (D3977;WI WSC),80154,0,0,1,1,2,4085
 Total suspended solids,Standard Methods for the Examination of Water and Wastewater,NA,0,0,0,0,1,4037
+Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,1,0,0,1,0,3989
 Total suspended solids,Standard Methods for the Examination of Water and Wastewater,NA,0,0,1,0,2,3832
-Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,1,0,0,1,0,3822
-Suspended Sediment Concentration (SSC),ASTM D3977,NA,0,0,0,1,2,3773
-Suspended Sediment Concentration (SSC),SSC by filtration (D3977;WI WSC),80154,0,0,0,1,0,3771
-Total suspended solids,Total Suspended Solids (TSS),NA,0,0,0,0,0,3726
+Suspended Sediment Concentration (SSC),ASTM D3977,NA,0,0,0,1,2,3770
+Total suspended solids,Total Suspended Solids (TSS),NA,1,0,0,0,2,3422
 Total suspended solids,"Suspended solids, 105C,grav (PA)",00530,0,0,1,1,2,3191
-Total suspended solids,"TSS, 105C (SM 2540D; WI WSC)",00530,0,0,0,1,0,3082
-Total suspended solids,QA Plan #900456,NA,0,0,0,0,1,3076
-Total suspended solids,EPA 160.2,NA,0,0,0,1,0,2934
-Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,1,0,0,2,2835
-Total suspended solids,Total Suspended Solids (TSS),NA,0,0,0,0,1,2807
-Total suspended solids,"TSS, dried 103-105C (I-3765-85)",00530,0,0,0,1,0,2724
-Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,0,1,1,2622
-Suspended Sediment Concentration (SSC),"Sediment, wet-sieving-filtration",80154,0,0,0,1,0,2528
-Total suspended solids,NA,NA,1,0,1,0,2,2491
-Suspended Sediment Concentration (SSC),BLS-256,NA,0,0,0,0,2,2232
+Total suspended solids,"TSS, 105C (SM 2540D; WI WSC)",00530,0,0,0,1,0,3080
+Total suspended solids,QA Plan #900456,NA,0,0,0,0,1,3054
+Total suspended solids,EPA 160.2,NA,0,0,0,1,0,2929
+Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,1,0,0,2,2833
+Total suspended solids,"TSS, dried 103-105C (I-3765-85)",00530,0,0,0,1,0,2697
+Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,0,1,1,2606
+Total suspended solids,NA,NA,1,0,1,0,2,2548
+Suspended Sediment Concentration (SSC),"Sediment, wet-sieving-filtration",80154,0,0,0,1,0,2497
+Suspended Sediment Concentration (SSC),BLS-256,NA,0,0,0,0,2,2223
 Suspended Sediment Concentration (SSC),Suspended SedimUSEPAent Concentration (SSC),NA,0,0,0,0,2,2159
 Suspended Sediment Concentration (SSC),Total Sediment,NA,0,0,0,0,2,2158
 Total suspended solids,Nutrient analyses,NA,0,0,0,0,1,2154
-Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,1,0,0,1,0,2029
-Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,0,0,0,0,1,1951
+Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,1,0,0,1,0,2077
+Total suspended solids,Total Suspended Solids (TSS),NA,0,0,0,0,0,1948
 Total suspended solids,L01,NA,0,0,0,0,1,1944
-Total suspended solids,"Solids, Suspended and Volatile Suspended",NA,0,0,0,0,0,1851
 Suspended Sediment Concentration (SSC),UNKNOWN,NA,0,0,1,0,2,1783
 Total suspended solids,Non-Filterable Residue - TSS,NA,0,0,1,0,2,1728
+Total suspended solids,Nutrient analyses from water samples,NA,1,0,0,0,2,1698
 Total suspended solids,Standard Methods 2540 D,NA,1,0,0,1,2,1696
+Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,0,0,0,0,1,1690
 Total suspended solids,Residue by Evaporation and Gravimetric,NA,0,0,1,0,2,1549
-Total suspended solids,analyticTSS_101,NA,0,0,0,0,1,1549
+Total suspended solids,analyticTSS_101,NA,0,0,0,0,1,1537
 Total suspended solids,200.7 W  ~ Metals in Water by ICP-AES,NA,0,0,0,0,1,1472
 Total suspended solids,Laboratory Procedures for Water Quality Chemical Analysis,NA,0,0,0,0,1,1464
 Total suspended solids,Lake Trafford,NA,0,0,0,0,0,1436
 Suspended Sediment Concentration (SSC),SUSPENDED SEDIMENT CONCENTRATION,NA,0,0,0,0,2,1434
-Suspended Sediment Concentration (SSC),ASTM D3977C,NA,0,0,0,1,2,1418
-Total suspended solids,"Solids, residue at 105°C",NA,0,0,0,0,1,1380
-Total suspended solids,Filterable Residue - TDS,NA,0,0,0,0,0,1358
+Suspended Sediment Concentration (SSC),ASTM D3977C,NA,0,0,0,1,2,1408
+Total suspended solids,"Solids, residue at 105°C",NA,0,0,0,0,1,1378
 Suspended Sediment Concentration (SSC),Non-Filterable Residue - TSS,NA,0,0,0,0,2,1347
+Total suspended solids,Filterable Residue - TDS,NA,0,0,0,0,0,1345
+Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,1,0,0,1,2,1292
 Suspended Sediment Concentration (SSC),NA,NA,0,0,1,0,2,1262
 Total suspended solids,Legacy Guam EPA Analytical Procedures,NA,0,0,1,0,2,1239
+Total suspended solids,"Solids, Suspended and Volatile Suspended",NA,1,0,0,0,2,1207
 Total suspended solids,QA Plan #900456,NA,0,0,0,0,0,1194
+Total suspended solids,Total Suspended Solids (TSS),NA,0,0,0,0,1,1163
 Total suspended solids,Other or Unknown Procedure,NA,0,0,1,0,2,1161
-Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,0,0,0,1,1,1139
 Total suspended solids,See QA Plan for this Project,NA,0,0,0,0,0,1118
-Total suspended solids,Nutrient analyses from water samples,NA,0,0,0,0,1,1107
+Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,0,0,0,1,1,1109
 Total suspended solids,USGS_HIST,NA,0,0,0,0,1,1098
 Total suspended solids,EPA160.4,NA,0,0,0,1,1,1088
-Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,0,0,0,1,0,1076
 Total suspended solids,L01,NA,0,0,0,0,0,1075
+Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,0,0,0,1,0,1075
 Total suspended solids,SM 2540 E,NA,0,0,0,1,1,1024
-Total suspended solids,USGS I-3765-85,NA,0,0,0,0,0,993
+Total suspended solids,USGS I-3765-85,NA,0,0,0,0,0,981
 Suspended Sediment Concentration (SSC),Computed using GCLAS,80154,0,0,1,1,2,976
 Total suspended solids,In-House Lab Analysis,NA,0,0,0,0,0,938
-Total suspended solids,Suspended-Sediment in Water,NA,0,0,0,0,0,886
-Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,1,0,0,1,2,863
-Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,1,0,0,0,0,856
+Total suspended solids,Suspended-Sediment in Water,NA,0,0,0,0,0,884
+Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,1,0,0,0,0,865
+Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,1,0,0,1,2,858
 Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,0,0,1,0,2,844
-Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,1,0,0,1,2,833
 Suspended Sediment Concentration (SSC),Gravimetric Evaporation Method; Dried At 90-105 Degrees C,NA,0,0,0,0,2,818
 Total suspended solids,Non-filterable Residue by Filtration and Drying,NA,0,0,0,0,0,811
 Total suspended solids,TSS Data - In House,NA,0,0,0,0,0,758
 Total suspended solids,TOTAL SUSPENDED SOLIDS,NA,0,0,0,0,0,748
 Total suspended solids,2540 B ~ Total Solids Dried 103-105C in Water,NA,0,0,0,1,0,726
-Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,1,1,0,1,2,718
+Total suspended solids,2540 D ~ Total Suspended Solids in Water,NA,1,1,0,1,2,726
+Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,1,0,0,1,2,718
 Total suspended solids,"Solids, residue at 105°C",NA,1,0,0,0,2,708
 Total suspended solids,200.7 W  ~ Metals in Water by ICP-AES,NA,1,0,0,0,2,707
 Suspended Sediment Concentration (SSC),"ASTM 3977C, SEDIMENT CONCENTRATION",NA,0,0,0,1,2,705
 Total suspended solids,total suspended solids,NA,0,0,0,0,0,649
+Total suspended solids,"Solids, Suspended and Volatile Suspended",NA,0,0,0,0,0,644
 Total suspended solids,"Suspended solids, freeze dried",00530,0,0,0,1,0,626
 Total suspended solids,LAKE COUNTY QUALITY SYSTEMS MANUAL,NA,0,0,0,0,0,619
 Total suspended solids,STANDARD METHODS 2540D - TSS,NA,0,0,0,1,1,595
-Total suspended solids,Nutrient analyses from water samples,NA,1,0,0,0,2,591
 Total suspended solids,Estero Bay Aquatic Preserve tributary sampling,NA,0,0,0,0,0,582
 Total suspended solids,"TOTAL SUSPENDED SOLIDS, DRIED AT 103-105C",NA,0,0,0,0,0,582
 Total suspended solids,Laboratory Procedures for Water Quality Chemical Analysis,NA,0,0,0,0,0,563
 Total suspended solids,TOTAL SUSPENDED SOLIDS,NA,0,0,0,0,1,554
 Total suspended solids,Filterable Residue - TDS,NA,0,0,0,0,1,546
 Total suspended solids,Total suspended solids,NA,1,0,0,0,2,541
-Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,0,0,0,1,0,501
-Total suspended solids,"Residue, total nonfilter, 105C S",00530,0,0,1,1,2,490
+Total suspended solids,"Residue, total nonfilter, 105C S",00530,0,0,1,1,2,487
 Total suspended solids,Total Residue,NA,0,0,0,0,0,486
 Total suspended solids,"TSS, 105C (SM 2540D; WI WSC)",00530,0,0,1,1,2,483
 Total suspended solids,Hawaii historic procedures for Legacy STORET,NA,0,0,1,0,2,482
@@ -161,7 +160,7 @@ Total suspended solids,R10PORTLANDHARBOR Method,NA,0,0,0,0,1,436
 Total suspended solids,Field Office procedures,NA,0,0,1,0,2,435
 Total suspended solids,Lake Trafford,NA,0,0,0,0,1,430
 Total suspended solids,"Suspended solids, freeze dried",00530,1,0,0,1,2,428
-Total suspended solids,"TSS, dried 103-105C (I-3765-85)",00530,0,0,0,1,1,416
+Total suspended solids,"TSS, dried 103-105C (I-3765-85)",00530,0,0,0,1,1,403
 Total suspended solids,"Residue, wf, 105C (SM2540D; ND)",00530,0,0,0,1,0,396
 Total suspended solids,"Suspended solids, 105C,grav (PA)",00530,0,0,0,1,0,387
 Total suspended solids,2540 F ~ Settleable Solids in Water,NA,0,0,0,1,0,370
@@ -169,7 +168,6 @@ Total suspended solids,Harrel's TSS Procedure at BITH,NA,0,0,0,0,0,365
 Total suspended solids,"Residue,total nonfilterable,105C",00530,0,0,0,1,0,328
 Total suspended solids,Total Suspended Solids Dried at 103-105,NA,0,0,0,0,0,326
 Total suspended solids,NA,70293,0,0,1,1,2,314
-Total suspended solids,"SOLIDS, SUSP. - RESIDUE ON EVAP. AT 180 C (MG/L)",NA,0,0,0,0,0,303
 Total suspended solids,200.8 W  ~ Metals in Waters by ICP/MS,NA,0,0,0,0,1,299
 Total suspended solids,Southern Ute Tribe Standard Operating Procedures,NA,0,0,0,0,0,294
 Suspended Sediment Concentration (SSC),NA,69588,0,0,1,1,2,284
@@ -177,23 +175,22 @@ Total suspended solids,200.8 W  ~ Metals in Waters by ICP/MS,NA,0,0,0,0,0,282
 Total suspended solids,USGS_HIST,NA,0,0,0,0,0,280
 Total suspended solids,USGS I-3765-85,NA,0,0,0,0,1,278
 Total suspended solids,160.2,NA,0,0,0,1,1,268
-Total suspended solids,"Residue, total nonfilter, 105C S",00530,0,0,0,1,0,264
+Suspended Sediment Concentration (SSC),SSC by filtration (D3977;WI WSC),80154,0,0,0,1,0,259
 Total suspended solids,TOTAL NONFILTRATABLE RESIDUE,NA,0,0,0,0,0,259
 Total suspended solids,Total Suspended Solids,NA,0,0,0,0,1,259
 Total suspended solids,Standard Methods 2540 D,NA,0,0,0,1,0,258
+Total suspended solids,"Residue, total nonfilter, 105C S",00530,0,0,0,1,0,257
 Suspended Sediment Concentration (SSC),ASTM D3977M,NA,0,0,0,1,2,254
 Suspended Sediment Concentration (SSC),NA,69582,0,0,1,1,2,249
 Suspended Sediment Concentration (SSC),NA,69583,0,0,1,1,2,247
-Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,0,1,1,245
 Total suspended solids,NA,NA,0,1,1,0,2,245
 Suspended Sediment Concentration (SSC),NA,69587,0,0,1,1,2,243
 Total suspended solids,209 C ~ Residue Non- filterable (TSS) ,NA,0,0,1,0,2,243
 Total suspended solids,TSS,NA,0,0,0,0,0,240
 Total suspended solids,300 A  ~ Inorganic Anions by Ion Chromatography,NA,0,0,0,0,1,234
-Total suspended solids,NA,00530,1,0,1,1,2,234
+Total suspended solids,NA,00530,1,0,1,1,2,232
 Total suspended solids,200.8 W  ~ Metals in Waters by ICP/MS,NA,1,0,0,0,2,227
 Total suspended solids,EPA160.4,NA,0,0,0,1,0,226
-Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,0,0,0,1,1,226
 Suspended Sediment Concentration (SSC),NA,69585,0,0,1,1,2,224
 Total suspended solids,200.7 W  ~ Metals in Water by ICP-AES,NA,0,0,0,0,0,223
 Suspended Sediment Concentration (SSC),NA,69586,0,0,1,1,2,220
@@ -206,7 +203,9 @@ Suspended Sediment Concentration (SSC),NA,69581,0,0,1,1,2,192
 Total suspended solids,ASTM D3977C,NA,0,0,0,1,0,188
 Total suspended solids,PIIC_QAPP,NA,0,0,0,0,0,188
 Total suspended solids,Standard Operation Procedure,NA,0,0,0,0,1,188
-Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,1,1,2,186
+Total suspended solids,"SOLIDS, SUSP. - RESIDUE ON EVAP. AT 180 C (MG/L)",NA,0,0,0,0,0,187
+Total suspended solids,"Residue, NF,105C (SM2540D/DODEC)",00530,0,0,1,1,2,184
+Suspended Sediment Concentration (SSC),SSC by filtration (D3977;WI WSC),80154,0,0,1,1,2,181
 Total suspended solids,Lower Brule Quality Assurance Project Plan,NA,0,0,0,0,0,180
 Total suspended solids,UNK-CH2M,NA,0,0,0,0,1,176
 Total suspended solids,"Solids, residue at 105°C",NA,0,0,1,0,2,172
@@ -231,16 +230,17 @@ Total suspended solids,Turbidity by Nephelometry,NA,1,0,0,0,2,132
 Total suspended solids,Residue by Evaporation and Gravimetric,NA,1,1,0,0,2,130
 Suspended Sediment Concentration (SSC),2540 C ~ Total Dissolved Solids in Water,NA,0,0,0,1,2,128
 Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,1,1,1,2,125
-Total suspended solids,Legacy STORET migration; analytical procedure not specified,NA,0,0,1,0,2,120
-Total suspended solids,"TSS, w, 103-105C, gravimetric",00530,1,0,0,1,2,112
+Total suspended solids,"SOLIDS, SUSP. - RESIDUE ON EVAP. AT 180 C (MG/L)",NA,1,0,0,0,2,116
 Total suspended solids,5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,0,0,0,0,1,111
 Total suspended solids,"In-house""/Water Resource Recovery Facility lab measurement",NA,0,0,0,0,0,109
+Total suspended solids,"TSS, w, 103-105C, gravimetric",00530,1,0,0,1,2,109
+Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,1,0,0,1,1,107
 Total suspended solids,EPA 160.2M,NA,0,0,0,1,1,105
 Suspended Sediment Concentration (SSC),SED10,NA,0,0,0,0,2,101
 Suspended Sediment Concentration (SSC),NA,69579,0,0,1,1,2,100
 Total suspended solids,Unknown or Unspecified Procedure,NA,0,0,1,0,2,100
-Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,1,0,0,1,1,99
 Total suspended solids,LAKE COUNTY QUALITY SYSTEMS MANUAL,NA,0,0,0,0,1,99
+Total suspended solids,Legacy STORET migration; analytical procedure not specified,NA,1,0,1,0,2,99
 Suspended Sediment Concentration (SSC),Confederated Salish and Kootenai Tribes Quality Assurance Project Plan,NA,0,0,0,0,2,97
 Total suspended solids,300 A  ~ Inorganic Anions by Ion Chromatography,NA,1,0,0,0,2,96
 Total suspended solids,SM182540D,NA,0,0,0,1,0,96
@@ -255,12 +255,12 @@ Total suspended solids,Lab Method,NA,0,0,1,0,2,88
 Total suspended solids,"TSS, dried 105C, grav. (DODESP)",00530,0,0,1,1,2,86
 Suspended Sediment Concentration (SSC),Sediment conc by filtration,NA,0,0,0,0,2,85
 Total suspended solids,Total Suspended Solids in Water,NA,0,0,0,0,1,84
-Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,1,0,0,1,2,83
 Total suspended solids,Total Suspended Solids by James River Total Maximum Daily Load Standard Operating Procedure TSS-D-1,NA,0,0,0,0,0,80
 Total suspended solids,NFS or Nonfilterable Solids,NA,0,0,0,0,0,79
-Suspended Sediment Concentration (SSC),ASTM D3977,NA,0,1,0,1,2,78
+Suspended Sediment Concentration (SSC),ASTM D3977,NA,0,1,0,1,2,77
 Total suspended solids,EPA 160.4,NA,0,1,0,1,2,76
 Suspended Sediment Concentration (SSC),Suspended Sediment Concentration,NA,0,0,0,0,2,75
+Total suspended solids,Filterable Residue - TDS,NA,1,0,0,0,2,73
 Suspended Sediment Concentration (SSC),"ASTM 3977B, TOTAL SUSPENDED SOLIDS",NA,0,0,0,1,2,72
 Total suspended solids,2540 E ~ Fixed and Volatile Solids in Water,NA,1,0,0,1,2,71
 Total suspended solids,EPA160.2,NA,0,0,0,1,1,69
@@ -274,7 +274,6 @@ Total suspended solids,ASTM D3977-97(2002),NA,0,0,0,1,0,62
 Total suspended solids,Procedure is unknown,NA,1,0,1,0,2,62
 Total suspended solids,pH,NA,0,0,0,0,1,61
 Suspended Sediment Concentration (SSC),ASTM D3977B,NA,0,0,0,1,2,60
-Total suspended solids,Filterable Residue - TDS,NA,1,0,0,0,2,60
 Total suspended solids,"In-house""/Water Resource Recovery Facility lab measurement",NA,0,0,1,0,2,60
 Total suspended solids,PIIC_QAPP,NA,0,0,0,0,1,60
 Total suspended solids,Total Suspended Solids by Filtration and Gravimetric Procedure,NA,0,0,0,0,0,60
@@ -284,6 +283,7 @@ Total suspended solids,Suspended-Sediment in Water,NA,1,0,0,0,2,58
 Total suspended solids,Total Nonfilterable Residue Solids,NA,0,0,1,0,2,56
 Total suspended solids,Turbidity by Nephelometry,NA,0,0,0,0,0,55
 Total suspended solids,MA Department of Environmental Quality Engineering Unspecified,NA,0,0,1,0,2,54
+Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,0,0,0,1,1,53
 Total suspended solids,160.2,NA,0,1,0,1,2,52
 Total suspended solids,MA Department of Environmental Quality Engineering Standard Methods,NA,0,0,0,0,0,52
 Suspended Sediment Concentration (SSC),Suspended-sediment concentration in water by filtration or evaporation,NA,0,0,1,0,2,51
@@ -293,7 +293,7 @@ Total suspended solids,NA,70299,1,0,1,1,2,50
 Suspended Sediment Concentration (SSC),Suspended-Sediment in Water,NA,0,1,0,0,2,49
 Total suspended solids,2540 B ~ Total Solids Dried 103-105C in Water,NA,0,0,0,1,1,49
 Suspended Sediment Concentration (SSC),Bunker_USGS Analytical Methods,NA,1,0,0,0,1,46
-Total suspended solids,Nutrient water sample analyses from Morro Bay,NA,0,0,0,0,1,46
+Total suspended solids,Nutrient water sample analyses from Morro Bay,NA,1,0,0,0,2,46
 Suspended Sediment Concentration (SSC),NA,69613,0,0,1,1,2,45
 Total suspended solids,Total Residue,NA,0,0,0,0,1,44
 Suspended Sediment Concentration (SSC),Sediment conc by evaporation,80154,1,0,0,1,1,43
@@ -302,7 +302,7 @@ Total suspended solids,EPA 160.2,NA,0,1,0,1,2,43
 Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,0,0,1,1,2,43
 Total suspended solids,SM2540D,NA,0,1,0,1,2,41
 Suspended Sediment Concentration (SSC),"Solids, residue at 105°C",NA,0,0,0,0,2,40
-Total suspended solids,"Sus solids, wat, 110C,wt Ocala)",70299,0,0,0,1,0,39
+Total suspended solids,"Susp solids, 105C (160.2;CO WSC)",00530,0,0,0,1,0,39
 Total suspended solids,Non-filterable Residue by Filtration and Drying,NA,1,0,0,0,2,38
 Total suspended solids,External files contain methodological data,NA,0,0,0,0,1,37
 Total suspended solids,SLD04,NA,0,0,0,0,0,37
@@ -314,12 +314,14 @@ Total suspended solids,I-3765-85,NA,0,0,0,0,0,33
 Suspended Sediment Concentration (SSC),See Comments,NA,0,0,1,0,2,32
 Total suspended solids,SM2540D/EPA160.,NA,0,0,0,1,1,32
 Total suspended solids,Silica in Water by Colorimetry,NA,0,0,0,0,0,32
+Suspended Sediment Concentration (SSC),"Sediment, wet-sieving-filtration",80154,1,0,0,1,0,31
 Total suspended solids,See Comments,NA,0,0,1,0,2,31
+Total suspended solids,"TSS, dried 103-105C (I-3765-85)",00530,1,0,0,1,2,31
 Suspended Sediment Concentration (SSC),MPSL-108v2,NA,0,0,0,1,2,30
 Suspended Sediment Concentration (SSC),SED16,NA,0,0,0,0,2,30
 Total suspended solids,EPA 180.1,NA,0,0,0,0,0,27
-Total suspended solids,"TSS, w, 103-105C, gravimetric",00530,0,0,0,1,0,27
 Total suspended solids,5310 B ~ Total Organic Carbon by Combustion-Infrared Method,NA,0,0,0,0,0,26
+Total suspended solids,"TSS, w, 103-105C, gravimetric",00530,0,0,0,1,0,26
 Total suspended solids,Total Suspended Matter by Standard Method 208D,NA,0,0,0,0,0,26
 Total suspended solids,SM 2540C,NA,0,0,0,1,0,25
 Total suspended solids,Suspended Sediment in Water Calculation Described in Standard Methods,NA,0,0,1,0,2,25
@@ -327,25 +329,30 @@ Suspended Sediment Concentration (SSC),LEGACY,NA,0,0,1,0,2,24
 Total suspended solids,SAIR Unspecified Standard Methods 15th Edition 1981,NA,0,0,1,0,2,24
 Total suspended solids,Total Suspended Solids (TSS) by Drying Oven,NA,0,0,0,0,0,24
 Total suspended solids,Suspended-Sediment in Water,NA,0,0,0,0,1,22
+Total suspended solids,Legacy STORET migration; analytical procedure not specified,NA,0,0,1,0,2,21
+Total suspended solids,"Sus solids, wat, 110C,wt Ocala)",70299,0,0,0,1,0,21
 Total suspended solids,TOTAL NONFILTRATABLE RESIDUE,NA,0,0,0,0,1,21
 Total suspended solids,160.2 M ~ Total Suspended Solids,NA,0,0,1,1,2,20
 Total suspended solids,SM2540D/EPA160.,NA,0,0,0,1,0,20
 Total suspended solids,analyticTSS_GRAVIMETRIC; DRIED AT 103-105 C,NA,0,1,0,0,2,20
 Suspended Sediment Concentration (SSC),Sediment conc by centrifuge,80154,0,0,1,1,2,19
 Suspended Sediment Concentration (SSC),Sed conc by acoustic backscatter,80154,0,0,0,1,0,18
+Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,1,0,0,1,1,18
 Total suspended solids,2540 B ~ Total Solids Dried 103-105C in Water,NA,0,0,1,1,2,18
 Total suspended solids,"ASTM 3977C, SEDIMENT CONCENTRATION",NA,0,0,0,1,1,18
 Total suspended solids,ASTM D3977C,NA,0,0,0,1,1,18
+Total suspended solids,"Sus solids, wat, 110C,wt Ocala)",70299,1,0,0,1,2,18
 Suspended Sediment Concentration (SSC),BLS-256,NA,0,1,0,0,2,17
 Suspended Sediment Concentration (SSC),SED09,NA,0,0,0,0,2,17
-Suspended Sediment Concentration (SSC),Sediment conc from size analysis,80154,1,0,0,1,1,17
 Total suspended solids,pH,NA,0,0,0,0,0,16
 Total suspended solids,UNKOWN,NA,0,1,1,0,2,15
 Total suspended solids,ASTM D3977B,NA,0,0,0,1,0,14
+Total suspended solids,"Sus solids, wat, 105C,wt (NWQL)",00530,0,0,0,1,1,14
 Total suspended solids,EPA160.2,NA,0,0,0,1,0,13
 Total suspended solids,"Residue,total nonfilterable,105C",00530,0,0,1,1,2,13
 Total suspended solids,Volatile Residue,NA,0,0,0,0,1,13
 Total suspended solids,"Water Quality Measurements by Standard Methods, 14th Edition",NA,0,0,0,0,2,13
+Total suspended solids,USGS I-3765-85,NA,1,0,0,0,2,12
 Total suspended solids,USGS_UNKN,NA,0,0,1,0,2,12
 Total suspended solids,Unknown method - historic STORET DATA,NA,0,0,1,0,2,12
 Suspended Sediment Concentration (SSC),2540 B ~ Total Solids Dried 103-105C in Water,NA,0,0,0,1,2,11
@@ -361,17 +368,18 @@ Total suspended solids,NA,70292,1,0,1,1,2,11
 Total suspended solids,"Suspended solids, freeze dried",00530,0,0,0,1,1,10
 Suspended Sediment Concentration (SSC),Sediment conc by centrifuge,80154,0,0,0,1,0,9
 Suspended Sediment Concentration (SSC),Sediment conc by filtration,80154,0,1,0,1,2,9
+Total suspended solids,2540 C ~ Total Dissolved Solids in Water,NA,1,0,0,1,2,9
 Total suspended solids,EPA 160.1,NA,0,0,0,1,0,9
 Suspended Sediment Concentration (SSC),Sed conc by acoustic backscatter,80154,0,0,1,1,2,8
 Suspended Sediment Concentration (SSC),USGS Unknown/Unspecified Analytical Procedure,NA,0,0,1,0,2,8
 Total suspended solids,5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method,NA,1,0,0,0,2,8
 Total suspended solids,Determination of Opacity of Emissions,NA,0,0,0,0,2,8
+Total suspended solids,"TSS, 105C (EPA 160.2 /DODEC)",00530,1,0,0,1,2,8
 Suspended Sediment Concentration (SSC),NA,80154,0,1,1,1,2,6
 Total suspended solids,200.7 W  ~ Metals in Water by ICP-AES,NA,1,1,0,0,2,6
 Total suspended solids,ASTM D3977C,NA,0,1,0,1,2,6
-Total suspended solids,Nutrient water sample analyses from Santa Monica Bay,NA,0,0,0,0,2,6
+Total suspended solids,Nutrient water sample analyses from Santa Monica Bay,NA,1,0,0,0,2,6
 Total suspended solids,"TSS, dried 103-105C (SM2540D)",00530,0,0,1,1,2,6
-Total suspended solids,2540 C ~ Total Dissolved Solids in Water,NA,1,0,0,1,2,5
 Total suspended solids,2540 E ~ Fixed and Volatile Solids in Water,NA,0,0,0,1,1,5
 Total suspended solids,EPA 160.1,NA,0,0,0,1,1,5
 Total suspended solids,MPSL-108v2,NA,0,0,0,1,1,5
@@ -402,7 +410,7 @@ Total suspended solids,2540 F ~ Settleable Solids in Water,NA,0,1,0,1,2,2
 Total suspended solids,5310 C ~ Total Organic Carbon in Water- Ultraviolet Oxidation Method,NA,0,0,0,0,2,2
 Total suspended solids,I-3765-85,NA,0,1,0,0,2,2
 Total suspended solids,SM 2540 D v20,NA,0,0,0,1,1,2
-Total suspended solids,"Susp solids,105C(160.2;CO;HFMAN)",00530,0,0,0,1,0,2
+Total suspended solids,"Susp solids,105C(160.2;CO;HFMAN)",00530,1,0,0,1,2,2
 Total suspended solids,Suspended-Sediment in Water,NA,0,1,0,0,2,2
 Total suspended solids,"TSS, dried 103-105C (SM2540D)",00530,0,0,0,1,1,2
 Total suspended solids,Unknown,NA,0,0,1,0,2,2

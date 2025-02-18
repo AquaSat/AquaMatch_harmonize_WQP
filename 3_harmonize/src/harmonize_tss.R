@@ -45,15 +45,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # The values that will be considered fails for each column:
   fail_text <- c(
-    "beyond accept", "cancelled", "contaminat", "error", "fail", 
-    "improper", "instrument down", "interference", "invalid", "no result", 
-    "no test", "not accept", "outside of accept", "problem", "QC EXCEEDED", 
-    "questionable", "suspect", "unable", "violation", "reject", "no data"
+    "beyond accept", "cancelled", "contaminat", "error", "fail", "improper",
+    "interference", "invalid", "no result", "no test", "not accept",
+    "outside of accept", "problem", "questionable", "suspect", "unable",
+    "violation", "reject", "no data", "time exceed", "value extrapolated",
+    "exceeds", "biased", "parameter not required", "not visited"
   )
   
   # Now get counts of fail-related string detections for each column: 
   fail_counts <- list("ActivityCommentText", "ResultLaboratoryCommentText",
-                      "ResultCommentText", "ResultMeasureValue_original") %>%
+                      "ResultCommentText", "ResultMeasureValue_original",
+                      "ResultDetectionConditionText") %>%
     # Set list item names equal to each item in the list so that map will return
     # a named list
     set_names() %>%
@@ -101,7 +103,8 @@ harmonize_tss <- function(raw_tss, p_codes){
   tss_fails_removed <- tss %>%
     filter(
       if_all(.cols = c(ActivityCommentText, ResultLaboratoryCommentText,
-                       ResultCommentText, ResultMeasureValue_original),
+                       ResultCommentText, ResultMeasureValue_original,
+                       ResultDetectionConditionText),
              .fns = ~
                !grepl(
                  pattern = paste0(fail_text, collapse = "|"),
@@ -344,9 +347,10 @@ harmonize_tss <- function(raw_tss, p_codes){
   unit_conversion_table <- tibble(
     ResultMeasure.MeasureUnitCode = c("mg/l", "mg/L", "ppm", "ug/l", "ug/L",
                                       "mg/m3", "ppb", "mg/cm3", "ug/ml",
-                                      "mg/ml", "ppt", "ug/mL", "mg/mL"),
-    conversion = c(1000, 1000, 1000, 1, 1, 1, 1, 1000000, 1000,
-                   1000000, 1000000, 1000, 1000000))
+                                      "mg/ml", "ppt", "ug/mL", "mg/mL",
+                                      "g/L"),
+    conversion = c(1, 1, 1, .001, .001, .001, .001, 1000, 1,
+                   1000, 1000, 1, 1000, 1000))
   
   unit_table_out_path <- "3_harmonize/out/tss_unit_table.csv"
   
@@ -358,7 +362,7 @@ harmonize_tss <- function(raw_tss, p_codes){
                y = unit_conversion_table,
                by = "ResultMeasure.MeasureUnitCode") %>%
     mutate(harmonized_value = harmonized_value * conversion,
-           harmonized_units = "ug/L")
+           harmonized_units = "mg/L")
   
   # Plot and export unit codes that didn't make through joining
   tss_no_na %>%
@@ -393,15 +397,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Recode any error-related character values to NAs
   recode_depth_na_tss <- converted_units_tss %>%
-    mutate(across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
-                            ResultDepthHeightMeasure.MeasureValue,
-                            ActivityTopDepthHeightMeasure.MeasureValue,
-                            ActivityBottomDepthHeightMeasure.MeasureValue),
-                  .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
-                                                        "9999", "-9999", "-99",
-                                                        "99", "NaN"),
-                                  true = NA_character_,
-                                  false = .x)))
+    mutate(
+      across(.cols = c(ActivityDepthHeightMeasure.MeasureValue,
+                       ResultDepthHeightMeasure.MeasureValue,
+                       ActivityTopDepthHeightMeasure.MeasureValue,
+                       ActivityBottomDepthHeightMeasure.MeasureValue),
+             .fns = ~if_else(condition = .x %in% c("NA", "999", "-999",
+                                                   "9999", "-9999", "-99",
+                                                   "99", "NaN"),
+                             true = NA_character_,
+                             false = .x))
+    )
   
   # Reference table for unit conversion
   depth_unit_conversion_table <- tibble(
@@ -619,7 +625,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     )
   )
   
-  # Before creating tiers remove any records that have unrelated or unreliable
+  # Before creating tiers remove records that have clearly unrelated or unreliable
   # data based on their method:
   unrelated_text <- paste0(
     c("10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", 
@@ -642,6 +648,14 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Flag relevant conditions for tiering:
   
+  # Comment mentions deep depth
+  deep_text <- paste0(
+    c("Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom",
+      "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline",
+      "hypolimnion"),
+    collapse = "|"
+  )
+  
   # Low flow flag
   low_flow_text <- paste0(
     c("low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low",
@@ -663,26 +677,37 @@ harmonize_tss <- function(raw_tss, p_codes){
     c("2540", "160", "ASTM", "14B", "8006", "108"),
     collapse = "|")
   
-  # Add flags
-  tss_relevant_flagged <- tss_relevant %>%
+  # USGS P codes expected for TSS/SSC
+  correct_pcodes <- paste0(
+    c("00530", "80154", "70299", "70293", "69613", "69586", "69587", 
+      "69588", "69584", "69581", "69582", "69585", "69583", "69580", 
+      "69579", "70292"),
+    collapse = "|")
+  
+  # Add tags
+  tss_relevant_tagged <- tss_relevant %>%
     mutate(
       # Taken with a pump/at depth/etc.?
-      pump_flag = if_else(
+      pump_tag = if_else(
         condition = grepl(x = SampleCollectionEquipmentName,
-                          pattern = "pump|peristaltic|niskin|van dorn",
-                          ignore.case = T),
+                          pattern = "pump|peristaltic|niskin|van dorn|Kemmerer",
+                          ignore.case = T) |
+          grepl(x = ActivityCommentText,
+                pattern = deep_text,
+                ignore.case = T),
         true = 1, false = 0),
       # Low flow indications?
-      low_flow_flag = if_else(
+      low_flow_tag = if_else(
         condition = grepl(x = ActivityCommentText,
                           pattern = low_flow_text,
                           ignore.case = TRUE) & 
           !grepl(x = ActivityCommentText,
-                 pattern = "too deep|high flow"),
+                 pattern = "too deep|high flow",
+                 ignore.case = TRUE),
         true = 1, false = 0
       ),
       # NA methods or equipment
-      na_flag = if_else(
+      na_tag = if_else(
         condition = is.na(ResultAnalyticalMethod.MethodName) |
           is.na(SampleCollectionEquipmentName) |
           grepl(x = ResultAnalyticalMethod.MethodName,
@@ -693,135 +718,64 @@ harmonize_tss <- function(raw_tss, p_codes){
                 ignore.case = TRUE),
         true = 1, false = 0
       ),
-      # Flag expected methods
-      common_flag = if_else(
+      # Tag expected methods
+      common_tag = if_else(
         condition = grepl(x = ResultAnalyticalMethod.MethodName,
                           pattern = correct_text,
-                          ignore.case = TRUE),
+                          ignore.case = TRUE) |
+          grepl(x = USGSPCode,
+                pattern = correct_pcodes),
         true = 1, false = 0
       )
     )
   
   # Tiering process
-  tss_relevant_flagged %>%
+  tiered_methods_tss <- tss_relevant_tagged %>%
+    group_by(ResultAnalyticalMethod.MethodName) %>%
+    add_count() %>%
+    ungroup() %>%
     mutate(
-      tier = case_when(
+      tier = if_else(
         # Has NA method/equip
-        na_flag == 1 |
+        condition = na_tag == 1 |
           # Has low flow indication
-          low_flow_flag == 1 |
-          # Is non-USGS, labeled as SSC, and has pump/depth flag
+          low_flow_tag == 1 |
+          # Is non-USGS, labeled as SSC, and has pump/depth tag
           ( 
             (ProviderName == "STORET") &
               (CharacteristicName == "Suspended Sediment Concentration (SSC)") &
-              (pump_flag == 1)
-          ) ~ 2
+              (pump_tag == 0)
+          ) |
+          # TSS with pump tag
+          (
+            (CharacteristicName == "Total suspended solids") &
+              (pump_tag == 1)
+          ) |
+          # Not part of a common method group and has few records
+          (common_tag == 0) & (n <= 15),
+        true = 2,
+        false = 0
+      ),
+      tier = if_else(
+        condition = (tier == 0) & !is.na(ResultCommentText),
+        true = 1,
+        false = tier
       )
-    )
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  # 1.1 HPLC detection
-  
-  # Create a new column indicating detection of HPLC-related methods text: T or F
-  hplc_text <- paste0(c("447", "chromatography", "hplc"),
-                      collapse = "|") 
-  
-  tss_tag_hplc <- tss_relevant %>%
-    # TRUE if methods contain HPLC-related text or if the correct USGS p code
-    mutate(hplc_tag = if_else(condition = grepl(pattern = hplc_text,
-                                                x = ResultAnalyticalMethod.MethodName,
-                                                ignore.case = TRUE) |
-                                USGSPCode %in% c(70951, 70953),
-                              true = TRUE,
-                              false = FALSE,
-                              missing = FALSE))
-  
-  # 1.2 Spec/Fluor detection - new column
-  
-  # Create a new column indicating detection of non-HPLC lab-analyzed methods: T or F
-  spec_fluor_text <- paste0(c("445", "fluor", "Welshmeyer", "fld", "10200",
-                              "446", "trichromatic", "spectrophoto", "monochrom",
-                              "monchrom",
-                              # spec not as part of a word
-                              "(?<!\\w)spec"),
-                            collapse = "|")
-  
-  tss_tag_spec_fluor <- tss_tag_hplc %>%
-    mutate(spec_fluor_tag = if_else(
-      condition = grepl(pattern = spec_fluor_text,
-                        x = ResultAnalyticalMethod.MethodName,
-                        ignore.case = TRUE,
-                        perl = TRUE) |
-        parameter_code %in% c(32211, 32230),
-      true = TRUE,
-      false = FALSE,
-      missing = FALSE))
-  
-  # 1.3 Correction for pheo detection - new column
-  
-  # Create a new column indicating whether the lab-analyzed tss data for spec
-  # and fluor have been corrected for pheophytin
-  tss_tag_pheo <- tss_tag_spec_fluor %>%
-    mutate(pheo_corr_tag = 
-             case_when(
-               # If correction or correction-related methods mentioned in
-               # analytical method OR...
-               grepl(pattern = "\\bcorrect|in presence",
-                     x = ResultAnalyticalMethod.MethodName,
-                     ignore.case = TRUE) ~ TRUE,
-               # The characteristic name mentions correction
-               grepl(pattern = "\\bcorrected for pheophytin|free of pheophytin",
-                     x = CharacteristicName,
-                     ignore.case = TRUE) ~ TRUE,
-               .default = FALSE))
-  
-  # 1.4 Create tiers
-  tiered_methods_tss <- tss_tag_pheo %>%
-    mutate(tier = case_when(
-      # Conflicting method info
-      grepl(pattern = "445", x = ResultAnalyticalMethod.MethodName) & hplc_tag ~ 2,
-      # Top tier is HPLC = TRUE
-      hplc_tag ~ 0,
-      # Narrowed tier is non-HPLC lab analyzed AND corrected
-      spec_fluor_tag & pheo_corr_tag ~ 1,
-      USGSPCode == 32209 ~ 1,
-      # No specific method listed but correction mentioned
-      pheo_corr_tag ~ 1,
-      # Everything else is inclusive tier
-      .default = 2
-    ))
+    ) %>%
+    select(-n)
   
   # Export a record of how methods were tiered and their respective row counts
   tiering_record <- tiered_methods_tss %>%
     count(CharacteristicName, ResultAnalyticalMethod.MethodName, USGSPCode,
-          hplc_tag, spec_fluor_tag, pheo_corr_tag, tier) %>%
+          pump_tag, low_flow_tag, na_tag, common_tag, tier) %>%
     arrange(desc(n)) 
   
   tiering_record_out_path <- "3_harmonize/out/tss_tiering_record.csv"
   
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
-  # Slim the tiered product
-  cleaned_tiered_methods_tss <- tiered_methods_tss %>%
-    # Drop tag columns - these are recorded and exported in tiering_record. We
-    # keep only the final tier
-    select(-contains("_tag"))
-  
   # Confirm that no rows were lost during tiering
-  if(nrow(tss_relevant) != nrow(cleaned_tiered_methods_tss)){
+  if(nrow(tss_relevant) != nrow(tiered_methods_tss)){
     stop("Rows were lost during analytical method tiering. This is not expected.")
   }  
   
@@ -829,61 +783,43 @@ harmonize_tss <- function(raw_tss, p_codes){
     step = "tss harmonization",
     reason = "Dropped rows while tiering analytical methods",
     short_reason = "Analytical methods",
-    number_dropped = nrow(flagged_depth_tss) - nrow(cleaned_tiered_methods_tss),
-    n_rows = nrow(tss_relevant),
+    number_dropped = nrow(flagged_depth_tss) - nrow(tiered_methods_tss),
+    n_rows = nrow(tiered_methods_tss),
     order = 9
   )
   
   
   # Flag field methods ------------------------------------------------------
   
-  # Strings to use in determining sampling procedure
-  in_vitro_pattern <- paste0(
-    c("grab", "bottle", "vessel", "bucket", "jar", "composite",
-      "integrate", "UHL001", "surface", "filter", "filtrat",
-      "1060B", "kemmerer", "collect", "rosette", "equal width",
-      "vertical", "van dorn", "bail", "sample",
-      "sampling",
-      # "lab" not in the middle of another word
-      "\\blab", 
-      # G on its own for "grab"
-      "^g$"),
-    collapse = "|")
-  
-  in_situ_pattern <- paste0(c("in situ", "probe", "ctd"),
-                            collapse = "|")
-  
-  # Create a temporary tag column for use when comparing to methods
-  tagged_sampling_tss <- cleaned_tiered_methods_tss %>%
-    mutate(field_tag = case_when(
-      grepl(pattern = in_vitro_pattern,
-            x = SampleCollectionMethod.MethodName,
-            ignore.case = TRUE,
-            perl = TRUE) ~ "in vitro",
-      grepl(pattern = in_situ_pattern,
-            x = SampleCollectionMethod.MethodName,
-            ignore.case = TRUE,
-            perl = TRUE) ~ "in situ",
-      .default = "unknown"
-    )) 
-  
-  # Now flag whether the sampling method makes sense with the analytical method
-  field_flagged_tss <- tagged_sampling_tss %>% 
-    mutate(field_flag = case_when(
-      # HPLC or other lab analysis + in vitro = expected methods
-      tier %in% c(0, 1) & field_tag == "in vitro" ~ 0,
-      # HPLC or other lab analysis + in situ = UNexpected methods
-      tier %in% c(0, 1) & field_tag %in% c("in situ", "unknown") ~ 1,
-      # The inclusive tier is unknown
-      tier == 2 ~ 2
-    )) %>%
-    select(-field_tag)
+  # Field flag 1 = TSS was taken at depth, van dorn, etc. and SSC was NOT
+  # taken at depth
+  field_flagged_tss <- tiered_methods_tss %>%
+    mutate(
+      field_flag = if_else(
+        # TSS with pump tag
+        condition = (
+          (CharacteristicName == "Total suspended solids") &
+            (pump_tag == 1)
+        ) |
+          # Is non-USGS, labeled as SSC, and has pump/depth tag
+          ( 
+            (ProviderName == "STORET") &
+              (CharacteristicName == "Suspended Sediment Concentration (SSC)") &
+              (pump_tag == 0)
+          ),
+        true = 1,
+        false = 0
+      )
+    ) %>%
+    # Drop tag columns - these are recorded and exported in tiering_record. We
+    # keep only the final tier
+    select(-contains("_tag"))
   
   # How many records removed due to unlikely fraction types?
   print(
     paste0(
       "Rows removed while assigning field flags: ",
-      nrow(cleaned_tiered_methods_tss) - nrow(field_flagged_tss)
+      nrow(tiered_methods_tss) - nrow(field_flagged_tss)
     )
   )
   
@@ -891,7 +827,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     step = "tss harmonization",
     reason = "Dropped rows while assigning field flags",
     short_reason = "Field flagging",
-    number_dropped = nrow(cleaned_tiered_methods_tss) - nrow(field_flagged_tss),
+    number_dropped = nrow(tiered_methods_tss) - nrow(field_flagged_tss),
     n_rows = nrow(field_flagged_tss),
     order = 10
   )
@@ -918,10 +854,14 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Unrealistic values ------------------------------------------------------
   
   # We remove unrealistically high values prior to the final data export
-  # This is based on Wetzel (2001), Chapter 15, Figure 19
   
   realistic_tss <- misc_flagged_tss %>%
-    filter(harmonized_value <= 1000)
+    filter(
+      harmonized_value <= 10000,
+      harmonized_top_depth_value <= 592 | is.na(harmonized_top_depth_value),
+      harmonized_bottom_depth_value <= 592 | is.na(harmonized_bottom_depth_value),
+      harmonized_discrete_depth_value <= 592 | is.na(harmonized_discrete_depth_value)
+    )
   
   dropped_unreal <- tibble(
     step = "tss harmonization",
@@ -937,22 +877,23 @@ harmonize_tss <- function(raw_tss, p_codes){
   # We'll generate plots now before aggregating across simultaneous records
   # because it won't be possible to use CharacteristicName after that point.
   
-  # Plot harmonized measurements by CharacteristicName
+  # Plot harmonized measurements by CharacteristicName and ProviderName
   
   plotting_subset <- realistic_tss %>%
-    select(CharacteristicName, USGSPCode, tier, harmonized_value) %>%
+    select(CharacteristicName, ProviderName, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001)
   
   char_dists <- plotting_subset %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
+    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by CharacteristicName",
+    ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & ProviderName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
-    scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
+    scale_x_log10(label = comma) +
+    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
@@ -963,8 +904,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Aggregate simultaneous records ------------------------------------------
   
-  # There are true duplicate entries in the WQP or records with non-identical values recorded at the same time and place and by the same organization (field and/or lab replicates/duplicates)
-  # We take the mean of those values here
+  # There are true duplicate entries in the WQP or records with non-identical
+  # values recorded at the same time and place and by the same organization
+  # (field and/or lab replicates/duplicates). We take the mean of those values here
   
   # First tag aggregate subgroups with group IDs
   grouped_tss <- realistic_tss %>%
@@ -1036,14 +978,14 @@ harmonize_tss <- function(raw_tss, p_codes){
              tier == 2 ~ "Inclusive (Tier 2)"
            )) %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
-    xlab(expression("Harmonized chl a (ug/L, " ~ log[10] ~ " transformed)")) +
+    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a values by tier",
+    ggtitle(label = "Distribution of harmonized TSS values by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
+    scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
@@ -1075,14 +1017,14 @@ harmonize_tss <- function(raw_tss, p_codes){
              tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
            )) %>%
     ggplot() +
-    geom_histogram(aes(plot_value)) +
+    geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized chl a CVs by tier",
+    ggtitle(label = "Distribution of harmonized TSS CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    scale_y_continuous(label = label_scientific()) +
+    # scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   

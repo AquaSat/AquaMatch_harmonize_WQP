@@ -131,7 +131,8 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Clean up MDLs -----------------------------------------------------------
   
-  non_detect_text <- "non-detect|not detect|non detect|undetect|below"
+  # non_detect_text <- "non-detect|not detect|non detect|undetect|below"
+  non_detect_text <- "non-detect|not detect|non detect|undetect|below|Present <QL"
   
   # Find MDLs and make them usable as numeric data
   mdl_updates <- tss_fails_removed %>%
@@ -140,12 +141,17 @@ harmonize_tss <- function(raw_tss, p_codes){
     # if the value is NA BUT there is non detect language in the comments...  
     mutate(
       mdl_vals = ifelse(
-        test = (is.na(ResultMeasureValue_original) & 
+        test = (is.na(ResultMeasureValue_original) &
                   (grepl(non_detect_text, ResultLaboratoryCommentText, ignore.case = TRUE) | 
                      grepl(non_detect_text, ResultCommentText, ignore.case = TRUE) |
                      grepl(non_detect_text, ResultDetectionConditionText, ignore.case = TRUE))) |
-          #.... OR, there is non-detect language in the value column itself....
-          grepl(non_detect_text, ResultMeasureValue_original, ignore.case = TRUE),
+          #.... OR, there is non-detect language in the value column itself /
+          # it's labeled as ND
+          (
+            grepl(non_detect_text, ResultMeasureValue_original, ignore.case = TRUE) |
+              ResultMeasureValue_original == "ND" |
+              ResultMeasureValue_original == "nd"
+          ),
         #... use the DetectionQuantitationLimitMeasure.MeasureValue value.
         yes = DetectionQuantitationLimitMeasure.MeasureValue,
         # if there is a `<` and a number in the values column...
@@ -192,7 +198,7 @@ harmonize_tss <- function(raw_tss, p_codes){
              (!(index %in% mdl_updates$index) & DetectionQuantitationLimitMeasure.MeasureValue <= ResultMeasureValue) |
                (!(index %in% mdl_updates$index) & is.na(DetectionQuantitationLimitMeasure.MeasureValue)) ~ 0,
              DetectionQuantitationLimitMeasure.MeasureValue > ResultMeasureValue ~ 2,
-             .default = NA_integer_
+             .default = 0
            ))
   
   dropped_mdls <- tibble(

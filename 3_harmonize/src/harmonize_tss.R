@@ -636,7 +636,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   unrelated_text <- paste0(
     c("10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", 
       "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", 
-      "Oxygen", "Phosphorus", "Temperature"),
+      "Oxygen", "Phosphorus", "Temperature", "Silica"),
     collapse = "|")
   
   tss_relevant <- flagged_depth_tss %>%
@@ -644,11 +644,22 @@ harmonize_tss <- function(raw_tss, p_codes){
                   x = ResultAnalyticalMethod.MethodName,
                   ignore.case = TRUE))
   
-  # How many records removed due to irrelevant analytical method?
+  # Also remove instances where there's no flow in a stream or river
+  tss_flow <- tss_relevant %>%
+    filter(
+      !(
+        # No flow
+        grepl(pattern = "no flow|not flow|zero flow", x = ActivityCommentText, ignore.case = TRUE) &
+          # River or stream
+          grepl(pattern = "river|stream|canal", x = MonitoringLocationTypeName, ignore.case = TRUE)
+      )
+    )
+  
+  # How many records removed due to irrelevant analytical methods / no flow?
   print(
     paste0(
-      "Rows removed due to unrelated analytical methods: ",
-      nrow(flagged_depth_tss) - nrow(tss_relevant)
+      "Rows removed due to unrelated analytical methods or no flow: ",
+      nrow(flagged_depth_tss) - nrow(tss_flow)
     )
   )
   
@@ -690,8 +701,13 @@ harmonize_tss <- function(raw_tss, p_codes){
       "69579", "70292"),
     collapse = "|")
   
+  # Less reliable methods
+  lower_reliability <- paste0(
+    c("GCLAS", "I-3765-85", "Nephelometry"),
+    collapse = "|")
+  
   # Add tags
-  tss_relevant_tagged <- tss_relevant %>%
+  tss_flow_tagged <- tss_flow %>%
     mutate(
       # Taken with a pump/at depth/etc.?
       pump_tag = if_else(
@@ -732,11 +748,18 @@ harmonize_tss <- function(raw_tss, p_codes){
           grepl(x = USGSPCode,
                 pattern = correct_pcodes),
         true = 1, false = 0
+      ),
+      # Methods with lower reliability
+      lower_reliability_tag = if_else(
+        condition = grepl(x = ResultAnalyticalMethod.MethodName,
+                          pattern = lower_reliability,
+                          ignore.case = TRUE),
+        true = 1, false = 0
       )
     )
   
   # Tiering process
-  tiered_methods_tss <- tss_relevant_tagged %>%
+  tiered_methods_tss <- tss_flow_tagged %>%
     group_by(ResultAnalyticalMethod.MethodName) %>%
     add_count() %>%
     ungroup() %>%
@@ -746,6 +769,8 @@ harmonize_tss <- function(raw_tss, p_codes){
         condition = na_tag == 1 |
           # Has low flow indication
           low_flow_tag == 1 |
+          # Less reliable methods
+          lower_reliability_tag == 1 |
           # Is non-USGS, labeled as SSC, and has pump/depth tag
           ( 
             (ProviderName == "STORET") &
@@ -781,7 +806,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
   # Confirm that no rows were lost during tiering
-  if(nrow(tss_relevant) != nrow(tiered_methods_tss)){
+  if(nrow(tss_flow) != nrow(tiered_methods_tss)){
     stop("Rows were lost during analytical method tiering. This is not expected.")
   }  
   

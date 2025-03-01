@@ -689,9 +689,11 @@ step_12_dropped <- filter(step_data,
 
 We next review the analytical methods used in measuring TSS, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", "Oxygen", "Phosphorus", "Temperature".
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", "Oxygen", "Phosphorus", "Temperature", "Silica".
 
-This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
+We additionally remove samples that indicate being collected from flowing waters during a "no flow" period. We check for phrases matching "no flow", "not flow", or "zero flow" in `ActivityCommentText` **in addition to** `MonitoringLocationTypeName` entries matching "river", "stream", or "canal".
+
+The above two processes drop `r step_12_dropped` rows, leaving `r step_12_rows` remaining.
 
 The next step towards creating tiers is to then identify the methods in `ResultAnalyticalMethod.MethodName` that:
 
@@ -699,6 +701,7 @@ The next step towards creating tiers is to then identify the methods in `ResultA
 + **Have `NA` values in `ResultAnalyticalMethod.MethodName` or `SampleCollectionEquipmentName`**
 + **Indicate low-flow conditions**: This includes detection of "low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low", "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow", "NO DISCERNIBLE FLOW", or "Low base flow" in `ActivityCommentText` with **no** detection of "too deep" or "high flow". 
 + **Have `USGSPCode` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration)**: Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
++ **Have `ResultAnalyticalMethod.MethodName` values that are less reliable TSS analytical methods**: Includes detection of "GCLAS", "I-3765-85", or "Nephelometry"
 + **Have 15 or fewer records associated with them**
 
 These classifications are not the final tiers, but they inform the tiering in the final step of this process.
@@ -713,7 +716,7 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 |---|---|---|---|
 | 0 | Restrictive | Data that are verifiably self-similar across organizations and  time-periods and can be considered highly reliable and interoperable | Records that don't fall into tiers 1 or 2 |
 | 1 | Narrowed | Data that we have good reason to believe are self-similar, but for which  we can’t verify full interoperability across data providers | Records that do not meet the definition of tier 2, but have a non-NA ResultCommentText value |
-| 2 | Inclusive | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Records that meet one of the following criteria: Have NA values in ResultAnalyticalMethod.MethodName or SampleCollectionEquipmentName; have ActivityCommentText values indicating low-flow conditions; are TSS samples that were taken at depth, with a pump, etc.; are non-USGS, SSC samples that were **not** taken at depth or with a pump, etc.; or have ResultAnalyticalMethod.MethodName values with 15 or fewer total records and which are not clearly standard SSC or TSS methods. |
+| 2 | Inclusive | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Records that meet one of the following criteria: Have NA values in ResultAnalyticalMethod.MethodName or SampleCollectionEquipmentName; have ActivityCommentText values indicating low-flow conditions; are TSS samples that were taken at depth, with a pump, etc.; are non-USGS, SSC samples that were **not** taken at depth or with a pump, etc.; have ResultAnalyticalMethod.MethodName methods with low reliability; or have ResultAnalyticalMethod.MethodName values with 15 or fewer total records and which are not clearly standard SSC or TSS methods. |
 <br>
 
 At this point we export a file (`3_harmonize/out/tss_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.

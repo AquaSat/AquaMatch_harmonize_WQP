@@ -1014,7 +1014,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # 1. Harmonized values
   tier_dists <- no_simul_tss %>%
-    select(tier, harmonized_value) %>%
+    select(parameter, tier, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001,
            tier_label = case_when(
              tier == 0 ~ "Restrictive (Tier 0)",
@@ -1023,7 +1023,8 @@ harmonize_tss <- function(raw_tss, p_codes){
            )) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    # facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    facet_grid(cols = vars(parameter), rows = vars(tier_label), scales = "free_y") +
     xlab(expression("Harmonized values (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
     ggtitle(label = "Distribution of harmonized values by parameter and tier",
@@ -1074,7 +1075,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     theme(strip.text = element_text(size = 7))
   
   # Extract build info from initial plot
-  gg_build <- ggplot_build(tier_cv_dists)
+  gg_build <- ggplot_build(tier_cv_dists_draft)
   
   # Find out what the max y-axis break values are for each row's panels
   panel_break_y_values <- map(
@@ -1119,7 +1120,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   plot_tier_maps(dataset = no_simul_tss, parameter = "tss")
   
   # And year, month, day of week
-  plot_time_charts(dataset = no_simul_tss, parameter = "tss")
+  plot_time_charts(dataset = no_simul_tss)
   
   # How many records removed in aggregating simultaneous records?
   print(

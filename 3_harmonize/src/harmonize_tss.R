@@ -25,7 +25,16 @@ harmonize_tss <- function(raw_tss, p_codes){
              is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
-    rowid_to_column(., "index")
+    rowid_to_column(., "index") %>%
+    # Create a persistent identifier of SSC vs TSS
+    mutate(parameter = case_when(
+      CharacteristicName == "Suspended Sediment Concentration (SSC)" ~ "ssc",
+      CharacteristicName == "Total suspended solids" ~ "tss"
+    ))
+  
+  if(any(is.na(tss$parameter))){
+    stop("Unexpected values generated when classifying parameters by CharacteristicName.")
+    }
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
@@ -716,7 +725,11 @@ harmonize_tss <- function(raw_tss, p_codes){
                           ignore.case = T) |
           grepl(x = ActivityCommentText,
                 pattern = deep_text,
-                ignore.case = T),
+                ignore.case = T) |
+          # Sampling depth > 1m
+          (!is.na(harmonized_top_depth_value) & (abs(harmonized_top_depth_value) > 1)) |
+          (!is.na(harmonized_bottom_depth_value) & (abs(harmonized_bottom_depth_value) > 1)) |
+          (!is.na(harmonized_discrete_depth_value) & (abs(harmonized_discrete_depth_value) > 1)),
         true = 1, false = 0),
       # Low flow indications?
       low_flow_tag = if_else(
@@ -1011,9 +1024,9 @@ harmonize_tss <- function(raw_tss, p_codes){
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
-    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
+    xlab(expression("Harmonized values (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized TSS values by tier",
+    ggtitle(label = "Distribution of harmonized values by parameter and tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
@@ -1025,39 +1038,78 @@ harmonize_tss <- function(raw_tss, p_codes){
          width = 6, height = 4, units = "in", device = "png")
   
   # 2: Harmonized CVs
-  # Count NA CVs in each tier for plotting:
+  # Count NA CVs in each tier for plotting and make short count labels:
   na_labels <- no_simul_tss %>%
     filter(is.na(harmonized_value_cv)) %>%
-    count(tier)
+    count(parameter, tier) %>%
+    rowwise() %>%
+    mutate(
+      short = if_else(
+        condition = n > 1000000,
+        false = number(x = n, scale_cut = cut_short_scale()),
+        true = number(x = n, accuracy = .1, scale_cut = cut_short_scale())
+      ),
+      removed_label = paste0("NAs removed: ", short)
+    ) %>%
+    ungroup()
   
-  tier_0 <- filter(na_labels, tier == 0)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_1 <- filter(na_labels, tier == 1)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_2 <- filter(na_labels, tier == 2)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_cv_dists <- no_simul_tss %>%
-    select(tier, harmonized_value_cv) %>%
+  # Make the initial plot (will add labels with number of NAs removed below)
+  tier_cv_dists_draft <- no_simul_tss %>%
+    select(parameter, tier, harmonized_value_cv) %>%
     mutate(plot_value = harmonized_value_cv + 0.001,
            tier_label = case_when(
-             tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
-             tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
-             tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
+             tier == 0 ~ "Restrictive (Tier 0)",
+             tier == 1 ~ "Narrowed (Tier 1)",
+             tier == 2 ~ "Inclusive (Tier 2)"
            )) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    facet_grid(rows = vars(tier_label), cols = vars(parameter), scales = "free_y") +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
     ylab("Count") +
-    ggtitle(label = "Distribution of harmonized TSS CVs by tier",
+    ggtitle(label = "Distribution of harmonized CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    # scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
+  
+  # Extract build info from initial plot
+  gg_build <- ggplot_build(tier_cv_dists)
+  
+  # Find out what the max y-axis break values are for each row's panels
+  panel_break_y_values <- map(
+    .x = 1:3,
+    .f = ~{
+      data.frame(
+        row = .x,
+        # Retrieve the max break value used on the y-axis
+        max_y = max(gg_build$layout$panel_scales_y[[.x]]$get_breaks())
+      )
+    }
+  ) %>%
+    bind_rows()
+  
+  # Find out what the median x-axis break values are for the panels so we can
+  # center the labels
+  panel_break_x_values <- gg_build$layout$panel_scales_x[[1]]$get_labels() %>%
+    as.numeric() %>%
+    median()
+  
+  # Extract the param * tier combinations that correspond to panel numbers under the hood
+  grid_info <- gg_build$layout$layout %>%
+    # Extract the raw tier numbers for back joining
+    mutate(tier = as.numeric(str_extract(string = tier_label, pattern = "[0-9]"))) %>%
+    # Join corresponding NA removal labels by panel
+    left_join(x = ., y = na_labels, by = c("parameter", "tier")) %>%
+    # Join info on max breaks used in each panel
+    left_join(x = ., y = panel_break_y_values, by = c("ROW" = "row")) %>%
+    # Slap on the median x val. Only 1 b/c we use "free_y" in facet_grid
+    mutate(median_x = panel_break_x_values)
+  
+  # Now update the plot using this info for geom_text placement
+  tier_cv_dists <- tier_cv_dists_draft +
+    geom_text(data = grid_info,
+              aes(x = median_x, y = max_y, label = removed_label))
   
   ggsave(filename = "3_harmonize/out/tss_tier_cv_dists_postagg.png",
          plot = tier_cv_dists,

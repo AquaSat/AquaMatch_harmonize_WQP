@@ -897,7 +897,11 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Unrealistic values ------------------------------------------------------
   
-  # We remove unrealistically high values prior to the final data export
+  # We remove unrealistically high values prior to the final data export. This
+  # is based on values from Gray et al. (2000), "Comparability of
+  # suspended-sediment concentration and total suspended solids data". SSC values
+  # in SSC-TSS pairs in the Gray et al. dataset were below 10,000 with one
+  # exception and most TSS values were lower than their paired SSC value.
   
   realistic_tss <- misc_flagged_tss %>%
     filter(

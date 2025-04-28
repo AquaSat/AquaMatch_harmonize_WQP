@@ -1124,7 +1124,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   plot_tier_maps(dataset = no_simul_tss)
   
   # And year, month, day of week
-  plot_time_charts(dataset = no_simul_tss)
+  plot_time_charts(dataset = no_simul_tss, custom_width = 8, custom_height = 4)
   
   # How many records removed in aggregating simultaneous records?
   print(

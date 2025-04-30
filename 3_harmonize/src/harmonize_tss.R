@@ -1121,7 +1121,7 @@ harmonize_tss <- function(raw_tss, p_codes){
          width = 6, height = 4, units = "in", device = "png")
   
   # Similarly, create maps of records counts by tier
-  plot_tier_maps(dataset = no_simul_tss)
+  plot_tier_maps(dataset = no_simul_tss, custom_width = 6.5, custom_height = 6.5)
   
   # And year, month, day of week
   plot_time_charts(dataset = no_simul_tss, custom_width = 8, custom_height = 4)

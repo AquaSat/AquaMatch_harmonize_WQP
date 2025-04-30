@@ -69,7 +69,7 @@ admin_update:
   tc_use_stable: TRUE
   tc_stable_date: "20240701" #YYYYMMDD format
   tss_use_stable: TRUE
-  tss_stable_date: "20250131" #YYYYMMDD format
+  tss_stable_date: "20250430" #YYYYMMDD format
   general_use_stable: TRUE
   general_stable_date: "20240701" #YYYYMMDD format
   drive_project_folder: "~/aquamatch_download_wqp/" # folder name must end with "/", 

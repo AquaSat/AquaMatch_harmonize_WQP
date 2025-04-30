@@ -78,7 +78,7 @@ plot_time_charts <- function(dataset, #parameter,
   }
   
   ggsave(filename = paste0("3_harmonize/out/",
-                           paste0(unique_params, collapse = ", "), "_",
+                           paste0(unique_params, collapse = "_"), "_",
                            "wday_tier_chart.png"),
          plot = day_plot, units = "in", device = "png",
          width = custom_width, height = custom_height)

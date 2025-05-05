@@ -29,7 +29,8 @@ harmonize_tss <- function(raw_tss, p_codes){
     # Create a persistent identifier of SSC vs TSS
     mutate(parameter = case_when(
       CharacteristicName == "Suspended Sediment Concentration (SSC)" ~ "ssc",
-      CharacteristicName == "Total suspended solids" ~ "tss"
+      CharacteristicName == "Total suspended solids" ~ "tss",
+      CharacteristicName == "Total Particulate Matter" ~ "tss"
     ))
   
   if(any(is.na(tss$parameter))){
@@ -906,6 +907,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   realistic_tss <- misc_flagged_tss %>%
     filter(
       harmonized_value <= 10000,
+      # Limit depth based on deeping US lake
       harmonized_top_depth_value <= 592 | is.na(harmonized_top_depth_value),
       harmonized_bottom_depth_value <= 592 | is.na(harmonized_bottom_depth_value),
       harmonized_discrete_depth_value <= 592 | is.na(harmonized_discrete_depth_value)

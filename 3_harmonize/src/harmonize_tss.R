@@ -35,7 +35,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   if(any(is.na(tss$parameter))){
     stop("Unexpected values generated when classifying parameters by CharacteristicName.")
-    }
+  }
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
@@ -726,11 +726,7 @@ harmonize_tss <- function(raw_tss, p_codes){
                           ignore.case = T) |
           grepl(x = ActivityCommentText,
                 pattern = deep_text,
-                ignore.case = T) |
-          # Sampling depth > 1m
-          (!is.na(harmonized_top_depth_value) & (abs(harmonized_top_depth_value) > 1)) |
-          (!is.na(harmonized_bottom_depth_value) & (abs(harmonized_bottom_depth_value) > 1)) |
-          (!is.na(harmonized_discrete_depth_value) & (abs(harmonized_discrete_depth_value) > 1)),
+                ignore.case = T),
         true = 1, false = 0),
       # Low flow indications?
       low_flow_tag = if_else(

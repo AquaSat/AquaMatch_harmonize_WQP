@@ -935,7 +935,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
     facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
+    ylab("Record count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & ProviderName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = comma) +
@@ -1015,20 +1015,22 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Plot harmonized measurements by Tier:
   
   # 1. Harmonized values
-  tier_dists <- no_simul_tss %>%
-    select(parameter, tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001,
-           tier_label = case_when(
-             tier == 0 ~ "Restrictive (Tier 0)",
-             tier == 1 ~ "Narrowed (Tier 1)",
-             tier == 2 ~ "Inclusive (Tier 2)"
-           )) %>%
+  no_simul_tss_tier_factor <- no_simul_tss %>%
+    mutate(tier_label = case_when(
+      tier == 0 ~ "Restrictive (Tier 0)",
+      tier == 1 ~ "Narrowed (Tier 1)",
+      tier == 2 ~ "Inclusive (Tier 2)"
+    ))
+  
+  tier_dists <- no_simul_tss_tier_factor %>%
+    select(parameter, tier_label, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     # facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     facet_grid(cols = vars(parameter), rows = vars(tier_label), scales = "free_y") +
     xlab(expression("Harmonized values (mg/L, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
+    ylab("Record count") +
     ggtitle(label = "Distribution of harmonized values by parameter and tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
@@ -1057,19 +1059,14 @@ harmonize_tss <- function(raw_tss, p_codes){
     ungroup()
   
   # Make the initial plot (will add labels with number of NAs removed below)
-  tier_cv_dists_draft <- no_simul_tss %>%
-    select(parameter, tier, harmonized_value_cv) %>%
-    mutate(plot_value = harmonized_value_cv + 0.001,
-           tier_label = case_when(
-             tier == 0 ~ "Restrictive (Tier 0)",
-             tier == 1 ~ "Narrowed (Tier 1)",
-             tier == 2 ~ "Inclusive (Tier 2)"
-           )) %>%
+  tier_cv_dists_draft <- no_simul_tss_tier_factor %>%
+    select(parameter, tier_label, harmonized_value_cv) %>%
+    mutate(plot_value = harmonized_value_cv + 0.001) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_grid(rows = vars(tier_label), cols = vars(parameter), scales = "free_y") +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
+    ylab("Record count") +
     ggtitle(label = "Distribution of harmonized CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
@@ -1114,15 +1111,41 @@ harmonize_tss <- function(raw_tss, p_codes){
     geom_text(data = grid_info,
               aes(x = median_x, y = max_y, label = removed_label))
   
-  ggsave(filename = "3_harmonize/out/tss_tier_cv_dists_postagg.png",
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png",
          plot = tier_cv_dists,
          width = 6, height = 4, units = "in", device = "png")
   
+  # 3. Maps
   # Similarly, create maps of records counts by tier
   plot_tier_maps(dataset = no_simul_tss, custom_width = 6.5, custom_height = 6.5)
   
-  # And year, month, day of week
+  # 4. Time
+  # Year, month, day of week
   plot_time_charts(dataset = no_simul_tss, custom_width = 8, custom_height = 4)
+  
+  # 5. Depths
+  # And the three depth cols
+  no_simul_tss_tier_factor %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_top_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_top_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_top_depth_value distribution") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png",
+         plot = tier_cv_dists,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  rm(no_simul_tss_tier_factor)
+  gc()
   
   # How many records removed in aggregating simultaneous records?
   print(

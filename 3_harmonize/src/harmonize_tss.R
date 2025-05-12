@@ -1125,7 +1125,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # 5. Depths
   # And the three depth cols
-  no_simul_tss_tier_factor %>%
+  top_depth_dist <- no_simul_tss_tier_factor %>%
     ggplot() +
     geom_histogram(
       aes(harmonized_top_depth_value, fill = tier_label),
@@ -1137,15 +1137,56 @@ harmonize_tss <- function(raw_tss, p_codes){
     scale_fill_viridis_d("Tier", direction = -1) +
     xlab("harmonized_top_depth_value, m") +
     ylab("Record count") +
-    ggtitle("harmonized_top_depth_value distribution") +
+    ggtitle("harmonized_top_depth_value distribution by parameter and location type") +
     theme_bw()
   
-  ggsave(filename = "3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png",
-         plot = tier_cv_dists,
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_top_depth_dist_postagg.png",
+         plot = top_depth_dist,
          width = 6, height = 4, units = "in", device = "png")
+  
+  bottom_depth_dist <- no_simul_tss_tier_factor %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_bottom_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_bottom_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_bottom_depth_value distribution by parameter and location type") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_bottom_depth_dist_postagg.png",
+         plot = bottom_depth_dist,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  discrete_depth_dist <- no_simul_tss_tier_factor %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_discrete_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_discrete_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_discrete_depth_value distribution by parameter and location type") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_discrete_depth_dist_postagg.png",
+         plot = discrete_depth_dist,
+         width = 6, height = 4, units = "in", device = "png")
+  
+  
   
   rm(no_simul_tss_tier_factor)
   gc()
+  
   
   # How many records removed in aggregating simultaneous records?
   print(

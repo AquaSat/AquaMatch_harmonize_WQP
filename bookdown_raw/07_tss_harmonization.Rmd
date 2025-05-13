@@ -973,10 +973,10 @@ Below are several sets of figures illustrating different qualities of the datase
 
 <br>
 
-<img src="3_harmonize/out/tss_tier_dists_postagg.png" alt="Distribution of TSS values by tier" width="650"/>
+<img src="3_harmonize/out/ssc_tss_tier_dists_postagg.png" alt="Distribution of TSS values by tier" width="650"/>
 
 
-<img src="3_harmonize/out/tss_tier_cv_dists_postagg.png" alt="Distribution of TSS CVs by tier" width="650"/>
+<img src="3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png" alt="Distribution of TSS CVs by tier" width="650"/>
 
 <br>
 
@@ -986,12 +986,22 @@ Below are several sets of figures illustrating different qualities of the datase
 
 <br>
 
-3. Lastly, bar charts showing the distribution of values by tier across years, months, and days of the week:
+3. Bar charts showing the distribution of values by tier across years, months, and days of the week:
 
 <img src="3_harmonize/out/ssc_tss_year_tier_chart.png" alt="Temporal distribution of TSS records by tier across years" width="650"/>
 
 <img src="3_harmonize/out/ssc_tss_month_tier_chart.png" alt="Temporal distribution of TSS records by tier across months" width="650"/>
 
 <img src="3_harmonize/out/ssc_tss_wday_tier_chart.png" alt="Temporal distribution of TSS records by tier across days of the week" width="650"/>
+
+<br>
+
+4. Lastly, bar charts showing the distribution of depth values by parameter, location type, and tier:
+
+<img src="3_harmonize/out/ssc_tss_tier_top_depth_dist_postagg.png" alt="Distribution of harmonized_top_depth_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
+
+<img src="3_harmonize/out/ssc_tss_tier_bottom_depth_dist_postagg.png" alt="Distribution of harmonized_top_bottom_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
+
+<img src="3_harmonize/out/ssc_tss_tier_discrete_depth_dist_postagg.png" alt="Distribution of harmonized_discrete_depth_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
 
 <br>

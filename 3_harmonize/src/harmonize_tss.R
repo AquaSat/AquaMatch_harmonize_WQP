@@ -1015,19 +1015,25 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Plot harmonized measurements by Tier:
   
   # 1. Harmonized values
-  no_simul_tss_tier_factor <- no_simul_tss %>%
-    mutate(tier_label = case_when(
-      tier == 0 ~ "Restrictive (Tier 0)",
-      tier == 1 ~ "Narrowed (Tier 1)",
-      tier == 2 ~ "Inclusive (Tier 2)"
-    ))
+  no_simul_tss_tier_label <- no_simul_tss %>%
+    mutate(
+      tier_label = case_when(
+        tier == 0 ~ "Restrictive (Tier 0)",
+        tier == 1 ~ "Narrowed (Tier 1)",
+        tier == 2 ~ "Inclusive (Tier 2)"
+      ),
+      tier_label = factor(
+        x = tier_label,
+        levels = c("Restrictive (Tier 0)", "Narrowed (Tier 1)", "Inclusive (Tier 2)"),
+        ordered = TRUE
+      )
+    )
   
-  tier_dists <- no_simul_tss_tier_factor %>%
+  tier_dists <- no_simul_tss_tier_label %>%
     select(parameter, tier_label, harmonized_value) %>%
     mutate(plot_value = harmonized_value + 0.001) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    # facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
     facet_grid(cols = vars(parameter), rows = vars(tier_label), scales = "free_y") +
     xlab(expression("Harmonized values (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Record count") +
@@ -1059,7 +1065,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     ungroup()
   
   # Make the initial plot (will add labels with number of NAs removed below)
-  tier_cv_dists_draft <- no_simul_tss_tier_factor %>%
+  tier_cv_dists_draft <- no_simul_tss_tier_label %>%
     select(parameter, tier_label, harmonized_value_cv) %>%
     mutate(plot_value = harmonized_value_cv + 0.001) %>%
     ggplot() +
@@ -1125,7 +1131,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # 5. Depths
   # And the three depth cols
-  top_depth_dist <- no_simul_tss_tier_factor %>%
+  top_depth_dist <- no_simul_tss_tier_label %>%
     ggplot() +
     geom_histogram(
       aes(harmonized_top_depth_value, fill = tier_label),
@@ -1142,9 +1148,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   ggsave(filename = "3_harmonize/out/ssc_tss_tier_top_depth_dist_postagg.png",
          plot = top_depth_dist,
-         width = 6, height = 4, units = "in", device = "png")
+         width = 8, height = 4, units = "in", device = "png")
   
-  bottom_depth_dist <- no_simul_tss_tier_factor %>%
+  bottom_depth_dist <- no_simul_tss_tier_label %>%
     ggplot() +
     geom_histogram(
       aes(harmonized_bottom_depth_value, fill = tier_label),
@@ -1161,9 +1167,9 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   ggsave(filename = "3_harmonize/out/ssc_tss_tier_bottom_depth_dist_postagg.png",
          plot = bottom_depth_dist,
-         width = 6, height = 4, units = "in", device = "png")
+         width = 8, height = 4, units = "in", device = "png")
   
-  discrete_depth_dist <- no_simul_tss_tier_factor %>%
+  discrete_depth_dist <- no_simul_tss_tier_label %>%
     ggplot() +
     geom_histogram(
       aes(harmonized_discrete_depth_value, fill = tier_label),
@@ -1180,11 +1186,10 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   ggsave(filename = "3_harmonize/out/ssc_tss_tier_discrete_depth_dist_postagg.png",
          plot = discrete_depth_dist,
-         width = 6, height = 4, units = "in", device = "png")
+         width = 8, height = 4, units = "in", device = "png")
   
-  
-  
-  rm(no_simul_tss_tier_factor)
+  # Clean up
+  rm(no_simul_tss_tier_label)
   gc()
   
   

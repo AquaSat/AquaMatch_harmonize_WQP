@@ -1044,7 +1044,7 @@ harmonize_tss <- function(raw_tss, p_codes){
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
-  ggsave(filename = "3_harmonize/out/tss_tier_dists_postagg.png",
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_dists_postagg.png",
          plot = tier_dists,
          width = 6, height = 4, units = "in", device = "png")
   

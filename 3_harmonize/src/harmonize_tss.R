@@ -1119,7 +1119,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   ggsave(filename = "3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png",
          plot = tier_cv_dists,
-         width = 6, height = 4, units = "in", device = "png")
+         width = 6, height = 5, units = "in", device = "png")
   
   # 3. Maps
   # Similarly, create maps of records counts by tier

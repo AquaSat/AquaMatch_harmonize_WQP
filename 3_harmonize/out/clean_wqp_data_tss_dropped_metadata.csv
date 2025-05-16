@@ -1,4 +1,4 @@
 reason,short_reason,number_dropped,n_rows,order,step
-Starting dataset,Start,0,6015881,0,tss pre-harmonization
-Removed missing results,Remove missing,206188,5809693,1,tss pre-harmonization
-Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,14607,5795086,2,tss pre-harmonization
+Starting dataset,Start,0,6046423,0,tss pre-harmonization
+Removed missing results,Remove missing,201312,5845111,1,tss pre-harmonization
+Keep only status = accepted/final/historical/validated/preliminary/NA,Finalized statuses,14659,5830452,2,tss pre-harmonization

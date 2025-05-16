@@ -927,13 +927,17 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   plotting_subset <- realistic_tss %>%
     select(CharacteristicName, ProviderName, tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001)
+    mutate(plot_value = harmonized_value + 0.001,
+           provider_label = case_when(
+             ProviderName == "NWIS" ~ "NWIS: National Water Information System (USGS)",
+             ProviderName == "STORET" ~ "STORET: Storage and Retrieval (EPA)"
+           ))
   
   char_dists <- plotting_subset %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
+    facet_grid(rows = vars(provider_label), cols = vars(CharacteristicName)) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
     ylab("Record count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & ProviderName",

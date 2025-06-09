@@ -1,8 +1,7 @@
 #' @title Export a single target to Google Drive
 #' 
 #' @description
-#' A function to export a single target (as a file) to Google Drive and return
-#' the shareable Drive link as a file path.
+#' A function to export a single target (as a file) to Google Drive.
 #' 
 #' @param target The name of the target to be exported (as an object not a string).
 #' 
@@ -19,8 +18,7 @@
 #' FALSE, then ".rds". Defaults to FALSE.
 #' 
 #' @returns 
-#' Returns a local path to a csv file containing a text link to the uploaded
-#' file in Google Drive.
+#' Logical
 #' 
 export_single_file <- function(target, drive_path, stable, google_email,
                                date_stamp, feather = FALSE){

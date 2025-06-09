@@ -25,7 +25,17 @@ harmonize_tss <- function(raw_tss, p_codes){
              is.na(ActivityMediaSubdivisionName)) %>%
     # Add an index to control for cases where there's not enough identifying info
     # to track a unique record
-    rowid_to_column(., "index")
+    rowid_to_column(., "index") %>%
+    # Create a persistent identifier of SSC vs TSS
+    mutate(parameter = case_when(
+      CharacteristicName == "Suspended Sediment Concentration (SSC)" ~ "ssc",
+      CharacteristicName == "Total suspended solids" ~ "tss",
+      CharacteristicName == "Total Particulate Matter" ~ "tss"
+    ))
+  
+  if(any(is.na(tss$parameter))){
+    stop("Unexpected values generated when classifying parameters by CharacteristicName.")
+  }
   
   # Record info on any dropped rows  
   dropped_media <- tibble(
@@ -636,7 +646,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   unrelated_text <- paste0(
     c("10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", 
       "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", 
-      "Oxygen", "Phosphorus", "Temperature"),
+      "Oxygen", "Phosphorus", "Temperature", "Silica"),
     collapse = "|")
   
   tss_relevant <- flagged_depth_tss %>%
@@ -644,11 +654,22 @@ harmonize_tss <- function(raw_tss, p_codes){
                   x = ResultAnalyticalMethod.MethodName,
                   ignore.case = TRUE))
   
-  # How many records removed due to irrelevant analytical method?
+  # Also remove instances where there's no flow in a stream or river
+  tss_flow <- tss_relevant %>%
+    filter(
+      !(
+        # No flow
+        grepl(pattern = "no flow|not flow|zero flow", x = ActivityCommentText, ignore.case = TRUE) &
+          # River or stream
+          grepl(pattern = "river|stream|canal", x = MonitoringLocationTypeName, ignore.case = TRUE)
+      )
+    )
+  
+  # How many records removed due to irrelevant analytical methods / no flow?
   print(
     paste0(
-      "Rows removed due to unrelated analytical methods: ",
-      nrow(flagged_depth_tss) - nrow(tss_relevant)
+      "Rows removed due to unrelated analytical methods or no flow: ",
+      nrow(flagged_depth_tss) - nrow(tss_flow)
     )
   )
   
@@ -690,8 +711,13 @@ harmonize_tss <- function(raw_tss, p_codes){
       "69579", "70292"),
     collapse = "|")
   
+  # Less reliable methods
+  lower_reliability <- paste0(
+    c("GCLAS", "I-3765-85", "Nephelometry"),
+    collapse = "|")
+  
   # Add tags
-  tss_relevant_tagged <- tss_relevant %>%
+  tss_flow_tagged <- tss_flow %>%
     mutate(
       # Taken with a pump/at depth/etc.?
       pump_tag = if_else(
@@ -732,11 +758,18 @@ harmonize_tss <- function(raw_tss, p_codes){
           grepl(x = USGSPCode,
                 pattern = correct_pcodes),
         true = 1, false = 0
+      ),
+      # Methods with lower reliability
+      lower_reliability_tag = if_else(
+        condition = grepl(x = ResultAnalyticalMethod.MethodName,
+                          pattern = lower_reliability,
+                          ignore.case = TRUE),
+        true = 1, false = 0
       )
     )
   
   # Tiering process
-  tiered_methods_tss <- tss_relevant_tagged %>%
+  tiered_methods_tss <- tss_flow_tagged %>%
     group_by(ResultAnalyticalMethod.MethodName) %>%
     add_count() %>%
     ungroup() %>%
@@ -746,6 +779,8 @@ harmonize_tss <- function(raw_tss, p_codes){
         condition = na_tag == 1 |
           # Has low flow indication
           low_flow_tag == 1 |
+          # Less reliable methods
+          lower_reliability_tag == 1 |
           # Is non-USGS, labeled as SSC, and has pump/depth tag
           ( 
             (ProviderName == "STORET") &
@@ -781,7 +816,7 @@ harmonize_tss <- function(raw_tss, p_codes){
   write_csv(x = tiering_record, file = tiering_record_out_path)
   
   # Confirm that no rows were lost during tiering
-  if(nrow(tss_relevant) != nrow(tiered_methods_tss)){
+  if(nrow(tss_flow) != nrow(tiered_methods_tss)){
     stop("Rows were lost during analytical method tiering. This is not expected.")
   }  
   
@@ -859,11 +894,16 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   # Unrealistic values ------------------------------------------------------
   
-  # We remove unrealistically high values prior to the final data export
+  # We remove unrealistically high values prior to the final data export. This
+  # is based on values from Gray et al. (2000), "Comparability of
+  # suspended-sediment concentration and total suspended solids data". SSC values
+  # in SSC-TSS pairs in the Gray et al. dataset were below 10,000 with one
+  # exception and most TSS values were lower than their paired SSC value.
   
   realistic_tss <- misc_flagged_tss %>%
     filter(
       harmonized_value <= 10000,
+      # Limit depth based on deeping US lake
       harmonized_top_depth_value <= 592 | is.na(harmonized_top_depth_value),
       harmonized_bottom_depth_value <= 592 | is.na(harmonized_bottom_depth_value),
       harmonized_discrete_depth_value <= 592 | is.na(harmonized_discrete_depth_value)
@@ -887,15 +927,19 @@ harmonize_tss <- function(raw_tss, p_codes){
   
   plotting_subset <- realistic_tss %>%
     select(CharacteristicName, ProviderName, tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001)
+    mutate(plot_value = harmonized_value + 0.001,
+           provider_label = case_when(
+             ProviderName == "NWIS" ~ "NWIS: National Water Information System (USGS)",
+             ProviderName == "STORET" ~ "STORET: Storage and Retrieval (EPA)"
+           ))
   
   char_dists <- plotting_subset %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
     facet_wrap(vars(CharacteristicName), scales = "free_y") +
-    facet_grid(rows = vars(ProviderName), cols = vars(CharacteristicName)) +
+    facet_grid(rows = vars(provider_label), cols = vars(CharacteristicName)) +
     xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
+    ylab("Record count") +
     ggtitle(label = "Distribution of harmonized TSS values by CharacteristicName & ProviderName",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = comma) +
@@ -975,74 +1019,183 @@ harmonize_tss <- function(raw_tss, p_codes){
   # Plot harmonized measurements by Tier:
   
   # 1. Harmonized values
-  tier_dists <- no_simul_tss %>%
-    select(tier, harmonized_value) %>%
-    mutate(plot_value = harmonized_value + 0.001,
-           tier_label = case_when(
-             tier == 0 ~ "Restrictive (Tier 0)",
-             tier == 1 ~ "Narrowed (Tier 1)",
-             tier == 2 ~ "Inclusive (Tier 2)"
-           )) %>%
+  no_simul_tss_tier_label <- no_simul_tss %>%
+    mutate(
+      tier_label = case_when(
+        tier == 0 ~ "Restrictive (Tier 0)",
+        tier == 1 ~ "Narrowed (Tier 1)",
+        tier == 2 ~ "Inclusive (Tier 2)"
+      ),
+      tier_label = factor(
+        x = tier_label,
+        levels = c("Restrictive (Tier 0)", "Narrowed (Tier 1)", "Inclusive (Tier 2)"),
+        ordered = TRUE
+      )
+    )
+  
+  tier_dists <- no_simul_tss_tier_label %>%
+    select(parameter, tier_label, harmonized_value) %>%
+    mutate(plot_value = harmonized_value + 0.001) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
-    xlab(expression("Harmonized TSS (mg/L, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
-    ggtitle(label = "Distribution of harmonized TSS values by tier",
+    facet_grid(cols = vars(parameter), rows = vars(tier_label), scales = "free_y") +
+    xlab(expression("Harmonized values (mg/L, " ~ log[10] ~ " transformed)")) +
+    ylab("Record count") +
+    ggtitle(label = "Distribution of harmonized values by parameter and tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
     scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
-  ggsave(filename = "3_harmonize/out/tss_tier_dists_postagg.png",
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_dists_postagg.png",
          plot = tier_dists,
          width = 6, height = 4, units = "in", device = "png")
   
   # 2: Harmonized CVs
-  # Count NA CVs in each tier for plotting:
+  # Count NA CVs in each tier for plotting and make short count labels:
   na_labels <- no_simul_tss %>%
     filter(is.na(harmonized_value_cv)) %>%
-    count(tier)
+    count(parameter, tier) %>%
+    rowwise() %>%
+    mutate(
+      short = if_else(
+        condition = n > 1000000,
+        false = number(x = n, scale_cut = cut_short_scale()),
+        true = number(x = n, accuracy = .1, scale_cut = cut_short_scale())
+      ),
+      removed_label = paste0("NAs removed: ", short)
+    ) %>%
+    ungroup()
   
-  tier_0 <- filter(na_labels, tier == 0)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_1 <- filter(na_labels, tier == 1)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_2 <- filter(na_labels, tier == 2)$n %>%
-    number(scale_cut = cut_short_scale())
-  
-  tier_cv_dists <- no_simul_tss %>%
-    select(tier, harmonized_value_cv) %>%
-    mutate(plot_value = harmonized_value_cv + 0.001,
-           tier_label = case_when(
-             tier == 0 ~ paste0("Restrictive (Tier 0) NAs removed: ", tier_0),
-             tier == 1 ~ paste0("Narrowed (Tier 1) NAs removed: ", tier_1),
-             tier == 2 ~ paste0("Inclusive (Tier 2) NAs removed: ", tier_2)
-           )) %>%
+  # Make the initial plot (will add labels with number of NAs removed below)
+  tier_cv_dists_draft <- no_simul_tss_tier_label %>%
+    select(parameter, tier_label, harmonized_value_cv) %>%
+    mutate(plot_value = harmonized_value_cv + 0.001) %>%
     ggplot() +
     geom_histogram(aes(plot_value), color = "black", fill = "white") +
-    facet_wrap(vars(tier_label), scales = "free_y", ncol = 1) +
+    facet_grid(rows = vars(tier_label), cols = vars(parameter), scales = "free_y") +
     xlab(expression("Harmonized coefficient of variation, " ~ log[10] ~ " transformed)")) +
-    ylab("Count") +
-    ggtitle(label = "Distribution of harmonized TSS CVs by tier",
+    ylab("Record count") +
+    ggtitle(label = "Distribution of harmonized CVs by tier",
             subtitle = "0.001 added to each value for the purposes of visualization only") +
     scale_x_log10(label = label_scientific()) +
-    # scale_y_continuous(label = label_number(scale_cut = cut_short_scale())) +
     theme_bw() +
     theme(strip.text = element_text(size = 7))
   
-  ggsave(filename = "3_harmonize/out/tss_tier_cv_dists_postagg.png",
+  # Extract build info from initial plot
+  gg_build <- ggplot_build(tier_cv_dists_draft)
+  
+  # Find out what the max y-axis break values are for each row's panels
+  panel_break_y_values <- map(
+    .x = 1:3,
+    .f = ~{
+      data.frame(
+        row = .x,
+        # Retrieve the max break value used on the y-axis
+        max_y = max(gg_build$layout$panel_scales_y[[.x]]$get_breaks())
+      )
+    }
+  ) %>%
+    bind_rows()
+  
+  # Find out what the median x-axis break values are for the panels so we can
+  # center the labels
+  panel_break_x_values <- gg_build$layout$panel_scales_x[[1]]$get_labels() %>%
+    as.numeric() %>%
+    median()
+  
+  # Extract the param * tier combinations that correspond to panel numbers under the hood
+  grid_info <- gg_build$layout$layout %>%
+    # Extract the raw tier numbers for back joining
+    mutate(tier = as.numeric(str_extract(string = tier_label, pattern = "[0-9]"))) %>%
+    # Join corresponding NA removal labels by panel
+    left_join(x = ., y = na_labels, by = c("parameter", "tier")) %>%
+    # Join info on max breaks used in each panel
+    left_join(x = ., y = panel_break_y_values, by = c("ROW" = "row")) %>%
+    # Slap on the median x val. Only 1 b/c we use "free_y" in facet_grid
+    mutate(median_x = panel_break_x_values)
+  
+  # Now update the plot using this info for geom_text placement
+  tier_cv_dists <- tier_cv_dists_draft +
+    geom_text(data = grid_info,
+              aes(x = median_x, y = max_y, label = removed_label))
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png",
          plot = tier_cv_dists,
-         width = 6, height = 4, units = "in", device = "png")
+         width = 6, height = 5, units = "in", device = "png")
   
+  # 3. Maps
   # Similarly, create maps of records counts by tier
-  plot_tier_maps(dataset = no_simul_tss, parameter = "tss")
+  plot_tier_maps(dataset = no_simul_tss, custom_width = 6.5, custom_height = 6.5)
   
-  # And year, month, day of week
-  plot_time_charts(dataset = no_simul_tss, parameter = "tss")
+  # 4. Time
+  # Year, month, day of week
+  plot_time_charts(dataset = no_simul_tss, custom_width = 8, custom_height = 4)
+  
+  # 5. Depths
+  # And the three depth cols
+  top_depth_dist <- no_simul_tss_tier_label %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_top_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_top_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_top_depth_value distribution by parameter and location type") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_top_depth_dist_postagg.png",
+         plot = top_depth_dist,
+         width = 8, height = 4, units = "in", device = "png")
+  
+  bottom_depth_dist <- no_simul_tss_tier_label %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_bottom_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_bottom_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_bottom_depth_value distribution by parameter and location type") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_bottom_depth_dist_postagg.png",
+         plot = bottom_depth_dist,
+         width = 8, height = 4, units = "in", device = "png")
+  
+  discrete_depth_dist <- no_simul_tss_tier_label %>%
+    ggplot() +
+    geom_histogram(
+      aes(harmonized_discrete_depth_value, fill = tier_label),
+      color = "black") +
+    facet_grid(
+      cols = vars(ResolvedMonitoringLocationTypeName), rows = vars(parameter),
+      scales = "free_y"
+    ) +
+    scale_fill_viridis_d("Tier", direction = -1) +
+    xlab("harmonized_discrete_depth_value, m") +
+    ylab("Record count") +
+    ggtitle("harmonized_discrete_depth_value distribution by parameter and location type") +
+    theme_bw()
+  
+  ggsave(filename = "3_harmonize/out/ssc_tss_tier_discrete_depth_dist_postagg.png",
+         plot = discrete_depth_dist,
+         width = 8, height = 4, units = "in", device = "png")
+  
+  # Clean up
+  rm(no_simul_tss_tier_label)
+  gc()
+  
   
   # How many records removed in aggregating simultaneous records?
   print(

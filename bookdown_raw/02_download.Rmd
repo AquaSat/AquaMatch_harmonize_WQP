@@ -50,7 +50,7 @@ map_df(.x = names_yaml,
 
 The pipeline uses a spatial grid to download data from the WQP in batches. Maps are presented below with counts of records across this spatial grid. **Note:** The counts here are for raw data that are not yet filtered or harmonized.
 
-```{r}
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within the conterminous United States."}
 # Combine sample counts in each grid_id with the grid polygons
 grid_counts <- left_join(x = global_grid,
                          y = site_counts %>%
@@ -86,7 +86,11 @@ ggplot() +
                        breaks = c(1, 10, 100, 1000, 10000)) +
   ggtitle("Conterminous US") +
   theme_bw()
+```
 
+<br>
+
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within the state of Alaska."}
 # Alaska map:
 AK <- state_selection %>%
   filter(NAME == "Alaska")
@@ -109,6 +113,11 @@ ggplot() +
                        breaks = c(1, 10, 100, 1000, 10000)) +
   ggtitle("Alaska") +
   theme_bw()
+```
+
+<br>
+
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within the state of Hawaii."}
 
 # Hawaii map:
 HI <- state_selection %>%
@@ -132,7 +141,11 @@ ggplot() +
                        breaks = c(1, 10, 100, 1000, 10000)) +
   ggtitle("Hawaii") +
   theme_bw()
+```
 
+<br>
+
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within American Samoa."}
 
 # American Samoa map:
 AS <- state_selection %>%
@@ -157,7 +170,11 @@ ggplot() +
                        breaks = c(1, 10, 100, 1000, 10000)) +
   ggtitle("American Samoa") +
   theme_bw()
+```
 
+<br>
+
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within Guam and the Commonwealth of the Northern Mariana Islands."}
 
 # Guam & Commonwealth of the Northern Mariana Islands map
 GU_CNMI <- state_selection %>%
@@ -181,7 +198,11 @@ ggplot() +
                        breaks = c(1, 10, 100, 1000, 10000)) +
   ggtitle("Guam & Commonwealth of the Northern Mariana Islands") +
   theme_bw()
+```
 
+<br>
+
+```{r fig.cap="A map of the spatial distribution of raw data downloaded from the Water Quality Portal within Puerto Rico and the United States Virgin Islands."}
 
 # Puerto Rico & United States Virgin Islands map:
 PR_VI <- state_selection %>%

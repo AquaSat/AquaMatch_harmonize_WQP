@@ -71,7 +71,7 @@ step_1_rows <- filter(step_data,
 
 At the start of the pre-harmonization process the raw TSS WQP dataset contains `r step_1_rows` rows.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -121,11 +121,11 @@ Next, records that have missing data are dropped from the dataset. Several crite
 
 1.  Both the result column and detection limit column had `NA` data
 2.  Result, result unit, activity comment, laboratory comment, and result comment columns are all `NA`
-3.  The result comment column contains any user-provided text indicating a missing value, currently including: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
+3.  The result comment column contains any user-provided text indicating a missing value. This currently includes: `analysis lost`, `not analyzed`, `not recorded`, `not collected`, or `no measurement taken`
 
 `r step_2_dropped` rows are dropped, resulting in a final count of `r step_2_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -179,11 +179,11 @@ The final step in pre-harmonization is to filter the `ResultStatusIdentifier` co
 + `"Preliminary"`
 + `NA`
 
-These statuses generally indicate a reliable result having been reached, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
+These statuses generally indicate a reliable result was obtained, however we also include `NA` in an effort to be conservative. More specifically, when making decisions for this and other columns we occasionally retain `NA` values if removing the records would otherwise drop 10% or more of the available data.
 
 This step removes `r step_3_dropped` rows of data, leaving it with `r step_3_rows` rows remaining.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -212,7 +212,7 @@ step_data %>%
 
 Once ready for harmonization, the TSS WQP dataset contains the following user-defined `characteristicNames`: `r tss_chars`.
 
-These names are chosen in order to select for only those measurements that pertain to TSS.
+These `characteristicNames` are chosen in order to select for only those measurements that pertain to TSS.
 
 <br>
 
@@ -238,7 +238,7 @@ step_4_dropped <- filter(step_data,
 
 We next ensure that the media type for all TSS data is `"Surface Water"`, `"Water"`, `"Estuary"`, or `NA`. `r step_4_dropped` rows are removed. The final row count after this is `r step_4_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -317,7 +317,7 @@ Below are pie charts that break down the number of failure detections by column.
 
 `r step_5_dropped` rows are removed after detecting failure-related phrases and `r step_5_rows` rows remain.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -362,15 +362,15 @@ step_6_dropped <- filter(step_data,
 
 In this step method detection limits (MDLs) are used to clean up the reported values. When a numeric value is missing for the data record (i.e., `NA` or text that became `NA` during an `as.numeric` call) we check for non-detect language in the `ResultLaboratoryCommentText`, `ResultCommentText`, `ResultDetectionConditionText`, and `ResultMeasureValue` columns. This language can be `"non-detect"`, `"not detect"`, `"non detect"`, `"undetect"`, or `"below"`.
 
-If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL, otherwise if there is a `<` and a number in the `ResultMeasureValue` column we use that number instead.
+If non-detect language exists then we use the `DetectionQuantitationLimitMeasure.MeasureValue` column for the MDL. Otherwise if there is a `<` and a number in the `ResultMeasureValue` column, we use that number instead.
 
 We then use a random number between 0 and `0.5 * MDL` as the record's value moving forward.
 
 We produce a new column, `mdl_flag`, from the MDL cleaning process. Records where no MDL-based adjustment was made and which are at or above the MDL are assigned a 0. Records with corrected values based on the MDL method are assigned a 1. Finally, records where no MDL-based adjustment was made and which contain a numeric value below the provided MDL are assigned a 2.
 
-This should not result in a change in rows but we still check: `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
+This should not result in a change in rows, but we still check: `r step_6_dropped` rows are removed. The final row count after this is `r step_6_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -423,9 +423,9 @@ We then use the approximate value as the record's value moving forward.
 
 Records with corrected values based on the above method are noted with a 1 in the `approx_flag` column. Note, however, that occasionally approximate language will be used in a record but not changed or flagged. This occurs when the language is used in a comment-related column and **not** the result column itself, meaning that there is a usable numeric value provided (and thus doesn't need correction).
 
-This should not result in a change in rows but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
+This should not result in a change in rows, but we still check: `r step_7_dropped` rows are removed. The final row count after this is `r step_7_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -478,9 +478,9 @@ We then use the "greater than" value (without `>`) as the record's value moving 
 
 Records with corrected values based on the above method are noted with a 1 in the `greater_flag` column.
 
-This should not result in a change in rows but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
+This should not result in a change in rows, but we still check: `r step_8_dropped` rows are removed. The final row count after this is `r step_8_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -525,11 +525,11 @@ step_9_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point.
+The goal of the preceding three steps was to prevent records with seemingly missing measurement data from being dropped if there was still a chance of recovering a usable value. At this point we've finished with that process and we proceed to check for remaining records with `NA` values in their `harmonized_value` column. If they exist, they are dropped. We also filter out any negative values in the dataset at this point because TSS cannot be negative.
 
 `r step_9_dropped` rows are removed. The final row count after this is `r step_9_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -574,7 +574,7 @@ step_10_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-The next step in TSS harmonization is converting the units of WQP records. We create the following conversion table, which is used to translate units provided in WQP into mg per liter (mg/L):
+The next step in TSS harmonization is converting the units of WQP records. Records that don't make sense for TSS or can't be converted to mg per liter (mg/L) are dropped. We use the following unit conversion table for this:
 
 ```{r echo=FALSE, message = FALSE}
 read_csv("../3_harmonize/out/tss_unit_table.csv") %>%
@@ -595,7 +595,7 @@ Below is a pie chart that breaks down the different unit codes that were dropped
 
 `r step_10_dropped` rows are removed. The final row count after this is `r step_10_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -640,9 +640,9 @@ step_11_dropped <- filter(step_data,
 
 The next harmonization step cleans the four depth-related columns obtained from the WQP. The details behind this step are covered in the *Depth flags* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-This should not result in a change in rows but we still check: `r step_11_dropped` rows are removed. The final row count after this is `r step_11_rows`.
+This should not result in a change in rows, but we still check: `r step_11_dropped` rows are removed. The final row count after this is `r step_11_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -689,16 +689,19 @@ step_12_dropped <- filter(step_data,
 
 We next review the analytical methods used in measuring TSS, primarily by classifying the text provided with each record in `ResultAnalyticalMethod.MethodName`. Once these methods are classified we arrange them into hierarchical tiers as described in the *Method tiering* section of the *Tiering, flagging, and quality control philosophy* chapter.
 
-However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", "Oxygen", "Phosphorus", "Temperature".
+However, prior to classification we check the `ResultAnalyticalMethod.MethodName` column for names that indicate non-TSS measurements. Phrases used to flag and remove unrelated methods from TSS data are: "10200", "150.1", "2340", "2550", "4500", "9222", "9223", "Alkalinity", "Chlorophyll", "DO NOT USE", "Mercury", "Nitrate", "Nitrogen", "Oxygen", "Phosphorus", "Temperature", "Silica".
 
-This process drops `r step_12_dropped` rows leaving `r step_12_rows` remaining.
+We additionally remove samples that indicate being collected from flowing waters during a "no flow" period. We check for phrases matching "no flow", "not flow", or "zero flow" in `ActivityCommentText` **in addition to** `MonitoringLocationTypeName` entries matching "river", "stream", or "canal".
 
-The next step towards creating tiers is to then identify the methods in `ResultAnalyticalMethod.MethodName` that:
+The above two processes drop `r step_12_dropped` rows, leaving `r step_12_rows` remaining.
+
+The next step towards creating tiers is to then identify the analytical methods in `ResultAnalyticalMethod.MethodName` that:
 
 + **Indicate non-surface sampling**: This includes detection of "Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom", "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline", or "hypolimnion" in `ActivityCommentText` or "pump", "peristaltic", "niskin", "van dorn", or "Kemmerer" in `SampleCollectionEquipmentName`.
 + **Have `NA` values in `ResultAnalyticalMethod.MethodName` or `SampleCollectionEquipmentName`**
 + **Indicate low-flow conditions**: This includes detection of "low flow", "no flow", "no visible flow", "low stream flow", "Flow: Low", "Not flowing", "low visible flow", "slow flow", "BELOW NORMAL", "Gentle flow", "NO DISCERNIBLE FLOW", or "Low base flow" in `ActivityCommentText` with **no** detection of "too deep" or "high flow". 
-+ **Have `USGSPCode` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration)**: Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
++ **Have `[USGSPCode](https://help.waterdata.usgs.gov/codes-and-parameters/parameters)` or `ResultAnalyticalMethod.MethodName` values typical of TSS or SSC (Suspended Sediment Concentration)**: Includes "2540", "160", "ASTM", "14B", "8006", or "108" in `ResultAnalyticalMethod.MethodName` or "00530", "80154", "70299", "70293", "69613", "69586", "69587", "69588", "69584", "69581", "69582", "69585", "69583", "69580", "69579", "70292" in `USGSPCode`.
++ **Have `ResultAnalyticalMethod.MethodName` values that are less reliable TSS analytical methods**: Includes detection of "GCLAS", "I-3765-85", or "Nephelometry"
 + **Have 15 or fewer records associated with them**
 
 These classifications are not the final tiers, but they inform the tiering in the final step of this process.
@@ -713,14 +716,14 @@ Finally, we group the data into three tiers as described in *Tiering, flagging, 
 |---|---|---|---|
 | 0 | Restrictive | Data that are verifiably self-similar across organizations and  time-periods and can be considered highly reliable and interoperable | Records that don't fall into tiers 1 or 2 |
 | 1 | Narrowed | Data that we have good reason to believe are self-similar, but for which  we can’t verify full interoperability across data providers | Records that do not meet the definition of tier 2, but have a non-NA ResultCommentText value |
-| 2 | Inclusive | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Records that meet one of the following criteria: Have NA values in ResultAnalyticalMethod.MethodName or SampleCollectionEquipmentName; have ActivityCommentText values indicating low-flow conditions; are TSS samples that were taken at depth, with a pump, etc.; are non-USGS, SSC samples that were **not** taken at depth or with a pump, etc.; or have ResultAnalyticalMethod.MethodName values with 15 or fewer total records and which are not clearly standard SSC or TSS methods. |
+| 2 | Inclusive | Data that are assumed to be reliable and are harmonized to our best  ability given the information available from the data provider. This  tier includes  NA or non-resolvable descriptions for the  analytical method, which often make up the majority of methods  descriptions for any given parameter | Includes records that meet one of the following criteria: Have NA values in ResultAnalyticalMethod.MethodName or SampleCollectionEquipmentName; have ActivityCommentText values indicating low-flow conditions; are TSS samples that were taken at depth or with a pump; are non-USGS, SSC samples that were **not** taken at depth or with a pump; or have ResultAnalyticalMethod.MethodName values with 15 or fewer total records and which are not clearly standard SSC or TSS methods. We checked for sampling at depth or with a pump by checking for records that mention "pump", "peristaltic", "niskin", "van dorn", or "Kemmerer" in the SampleCollectionEquipmentName column or have one of the following phrases in the ActivityCommentText column: "Activity Relative Depth: Bottom", "Activity Relative Depth: Near Bottom",  "Activity Relative Depth: Midwater", "Relative Depth = Below Thermocline", "hypolimnion". |
 <br>
 
 At this point we export a file (`3_harmonize/out/tss_tiering_record.csv`) that contains a record of how specific method text was tiered and how many row counts corresponded to each method.
 
 <br>
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -766,7 +769,7 @@ step_13_dropped <- filter(step_data,
 Next, we use the `field_flag` column to flag records that have a qualifier related to sampling depth:
 
 + `field_flag` = `1` when:
-  + TSS was sampled at depth
+  + TSS was sampled at depth, or
   + non-USGS SSC was **not** sampled at depth
 + In all other cases `field_flag` is 0
 
@@ -774,7 +777,7 @@ Sampling at depth is determined by whether the record was highlighted as indicat
 
 No records should be removed by this process and so there are `r step_13_dropped` rows dropped leaving `r step_13_rows` remaining in the harmonized TSS dataset.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -817,13 +820,13 @@ step_14_dropped <- filter(step_data,
   round(digits = 1)
 ```
 
-Next we add a placeholder for the miscellaneous flag column, `misc_flag`.
+Next, we add a placeholder for the miscellaneous flag column, `misc_flag`.
 
-This will be filled with `NA`. Some parameters will have additional flagging requirements that TSS does not, so we include this placeholder to maintain the same columns across all parameter data products.
+This will be filled with `NA` for TSS. Some parameters will have additional flagging requirements that TSS does not, so we include this placeholder to maintain the same columns across all parameter data products.
 
 No records should be removed by this process and so there are `r step_14_dropped` rows dropped leaving `r step_14_rows` remaining in the harmonized TSS dataset.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -868,13 +871,13 @@ step_15_dropped <- filter(step_data,
   paste0(., " thousand")
 ```
 
-Before finalizing the dataset we remove TSS values that are beyond a realistic threshold. We use 10,000 mg/L as our cutoff for removal.
+Before finalizing the dataset we remove TSS values that are beyond a realistic threshold. We use 10,000 mg/L as our cutoff for removal. This is based on values from Gray et al. (2000), *"Comparability of suspended-sediment concentration and total suspended solids data"*. SSC values in SSC-TSS pairs in the Gray et al. dataset were below 10,000 with one exception and most TSS values were lower than their paired SSC value.
 
 We also remove any depths > 592m, the deepest point in a lake in the U.S.
 
 `r step_15_dropped` rows are removed. The final row count after this is `r step_15_rows`.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -935,7 +938,7 @@ The final, aggregated values are presented in the `harmonized_value` and `harmon
 
 `r step_16_dropped` rows dropped leaving `r step_16_rows` remaining in the final harmonized and aggregated TSS dataset.
 
-```{r echo = FALSE}
+```{r, fig.cap= "Bar plot showing the row count update for the current harmonization step.", echo = FALSE}
 step_data %>%
   filter(reorder %in% 1:step_counter) %>%
   ggplot() +
@@ -970,25 +973,35 @@ Below are several sets of figures illustrating different qualities of the datase
 
 <br>
 
-<img src="3_harmonize/out/tss_tier_dists_postagg.png" alt="Distribution of TSS values by tier" width="650"/>
+<img src="3_harmonize/out/ssc_tss_tier_dists_postagg.png" alt="Distribution of TSS values by tier" width="650"/>
 
 
-<img src="3_harmonize/out/tss_tier_cv_dists_postagg.png" alt="Distribution of TSS CVs by tier" width="650"/>
+<img src="3_harmonize/out/ssc_tss_tier_cv_dists_postagg.png" alt="Distribution of TSS CVs by tier" width="650"/>
 
 <br>
 
 2. Maps showing the geographic distribution of records by tier within the US:
 
-<img src="3_harmonize/out/tss_tier_hex_map.png" alt="Geographic distribution of TSS records by tier in the conterminous US" width="650"/>
+<img src="3_harmonize/out/ssc_tss_tier_hex_map.png" alt="Geographic distribution of SSC/TSS records by tier in the conterminous US" width="650"/>
 
 <br>
 
-3. Lastly, bar charts showing the distribution of values by tier across years, months, and days of the week:
+3. Bar charts showing the distribution of values by tier across years, months, and days of the week:
 
-<img src="3_harmonize/out/tss_year_tier_chart.png" alt="Temporal distribution of TSS records by tier across years" width="650"/>
+<img src="3_harmonize/out/ssc_tss_year_tier_chart.png" alt="Temporal distribution of TSS records by tier across years" width="650"/>
 
-<img src="3_harmonize/out/tss_month_tier_chart.png" alt="Temporal distribution of TSS records by tier across months" width="650"/>
+<img src="3_harmonize/out/ssc_tss_month_tier_chart.png" alt="Temporal distribution of TSS records by tier across months" width="650"/>
 
-<img src="3_harmonize/out/tss_wday_tier_chart.png" alt="Temporal distribution of TSS records by tier across days of the week" width="650"/>
+<img src="3_harmonize/out/ssc_tss_wday_tier_chart.png" alt="Temporal distribution of TSS records by tier across days of the week" width="650"/>
+
+<br>
+
+4. Lastly, bar charts showing the distribution of depth values by parameter, location type, and tier:
+
+<img src="3_harmonize/out/ssc_tss_tier_top_depth_dist_postagg.png" alt="Distribution of harmonized_top_depth_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
+
+<img src="3_harmonize/out/ssc_tss_tier_bottom_depth_dist_postagg.png" alt="Distribution of harmonized_top_bottom_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
+
+<img src="3_harmonize/out/ssc_tss_tier_discrete_depth_dist_postagg.png" alt="Distribution of harmonized_discrete_depth_value column values by parameter, tier, and ResolvedMonitoringLocationTypeName" width="650"/>
 
 <br>
